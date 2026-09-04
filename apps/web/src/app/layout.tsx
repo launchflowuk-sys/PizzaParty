@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { Archivo } from "next/font/google";
 import "./globals.css";
+
+/* The design system is set entirely in Archivo (400/600/800). Self-hosted through
+   next/font so there is no render-blocking Google Fonts request. */
+const archivo = Archivo({ subsets: ["latin"], weight: ["400", "600", "800"], variable: "--font-archivo", display: "swap" });
 import { contrastInk } from "@launchflow/ui";
 import { getConfig, assetUrl, localityPath } from "@/lib/config";
 import { env } from "@/lib/env";
@@ -22,7 +27,7 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export const viewport: Viewport = { themeColor: "#ffffff", width: "device-width", initialScale: 1, viewportFit: "cover" };
+export const viewport: Viewport = { themeColor: "#f3f2f2", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const cfg = getConfig();
@@ -32,10 +37,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     "--brand-secondary": cfg.brand.secondary,
   } as React.CSSProperties;
   return (
-    <html lang="en-GB" style={style}>
-      <body className="min-h-dvh flex flex-col">
-        <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} phone={cfg.contact.phone} />
-        <main className="flex-1 pb-24">{children}</main>
+    <html lang="en-GB" className={archivo.variable} style={style}>
+      <body style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+        <Header name={cfg.name} fulfilment={cfg.fulfilment} />
+        <main style={{ flex: 1 }}>{children}</main>
         <Footer name={cfg.name} phone={cfg.contact.phone} address={cfg.contact.address} localities={cfg.seo.locality.map((l) => ({ name: l, path: localityPath(cfg, l) }))} />
         <StickyBar />
       </body>

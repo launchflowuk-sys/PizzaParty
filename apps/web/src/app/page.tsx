@@ -1,94 +1,156 @@
 import Link from "next/link";
-import Image from "next/image";
-import { cookies } from "next/headers";
-import { getConfig, assetUrl, localityPath } from "@/lib/config";
+import { getConfig } from "@/lib/config";
 import { getMenu, getLocations, topSellers, productPath } from "@/lib/menu";
 import { availability } from "@/lib/availability";
 import { restaurantJsonLd } from "@/lib/seo";
 import { gbpShort } from "@/lib/money";
 import { JsonLd } from "@/components/JsonLd";
-import { OpenPill } from "@/components/OpenPill";
-import { PostcodeCheck } from "@/components/PostcodeCheck";
-import { ProductCard } from "@/components/ProductCard";
-import { CategoryChips } from "@/components/CategoryChips";
 
 export const dynamic = "force-dynamic";
 
+/** Home A - "Ruled grid", the default home direction in `Farm Pizza.dc.html`.
+ *  Layout, type and rules follow the prototype; the content is this client's real
+ *  menu, shops and opening hours rather than the prototype's sample data. */
 export default async function Home() {
   const cfg = getConfig();
-  const [menu, locations, jar] = await Promise.all([getMenu(), getLocations(), cookies()]);
+  const [menu, locations] = await Promise.all([getMenu(), getLocations()]);
   const primary = locations[0];
   const avail = primary ? availability(primary) : null;
-  const deal = menu.deals.find((d) => d.featured) ?? menu.deals[0];
-  const sellers = topSellers(menu, 6);
-  const lastPostcode = jar.get("lf_postcode")?.value ?? "";
+  const featured = topSellers(menu, 4);
+  const deals = menu.deals.slice(0, 4);
+  const towns = cfg.seo.locality.join(" · ");
 
   return (
     <>
       <JsonLd data={restaurantJsonLd(cfg, locations)} />
-      <section className="relative bg-ink text-white">
-        <div className="absolute inset-0 opacity-60">
-          <Image src={assetUrl(cfg.brand.hero)} alt="" fill priority sizes="100vw" className="object-cover" unoptimized={cfg.brand.hero.endsWith(".svg")} />
-        </div>
-        <div className="relative lf-container py-12 sm:py-20 max-w-2xl">
-          {avail && primary ? <OpenPill a={avail} tz={primary.timezone} etaMinutes={primary.deliveryMinutes} /> : null}
-          <h1 className="lf-h1 mt-4">{cfg.seo.cuisine} delivery in {cfg.seo.locality.join(" & ")}</h1>
-          <p className="mt-3 text-white/85 text-lg">{cfg.brand.tagline || `Order direct from ${cfg.name}. Fresh, fast and no app fees.`}</p>
-          <div className="mt-6 lf-card p-3 text-ink">
-            <PostcodeCheck initial={lastPostcode} />
+
+      {/* hero */}
+      <section
+        className="fp-wrap"
+        style={{
+          padding: "72px 32px 56px",
+          display: "grid",
+          gridTemplateColumns: "minmax(0,7fr) minmax(0,5fr)",
+          gap: 56,
+          alignItems: "center",
+        }}
+      >
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 20 }}>{towns}</span>
+          <h1
+            style={{
+              fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 76,
+              lineHeight: 1.02, letterSpacing: "-.02em", margin: "0 0 24px", marginLeft: "-.05em",
+            }}
+          >
+            Real pizza.<br />From a real farm.
+          </h1>
+          <p style={{ fontSize: 17, lineHeight: 1.65, maxWidth: "50ch", margin: "0 0 28px", color: "var(--color-neutral-800)" }}>
+            {cfg.brand.tagline || `Order direct from ${cfg.name}. Fresh, fast and no app fees.`}
+          </p>
+          <div style={{ display: "flex", gap: 12 }}>
+            <Link href="/menu" className="btn btn-primary">See the menu</Link>
+            <Link href="/menu" className="btn btn-ghost">Browse the menu &rarr;</Link>
           </div>
-          <div className="mt-4 flex gap-2 flex-wrap">
-            <Link href="/menu" className="lf-btn lf-btn-primary">Order now</Link>
-            {cfg.fulfilment.includes("collection") ? <Link href="/menu?fulfilment=collection" className="lf-btn lf-btn-ghost text-white border-white/40">Collect in {primary?.prepMinutes ?? 15} min</Link> : null}
+        </div>
+        <div className="grayscale" style={{ height: 440, minWidth: 0, overflow: "hidden" }}>
+          <div className="fp-photo" style={{ width: "100%", height: "100%" }}>
+            <span>hero photograph &middot; pizza on the pass &middot; b/w</span>
           </div>
         </div>
       </section>
 
-      <div className="lf-container">
-        <CategoryChips categories={menu.categories} />
+      <div className="fp-rule" />
 
-        {deal ? (
-          <section className="mt-6">
-            <Link href={`/deals/${deal.slug}`} className="lf-card block p-5 bg-brand text-brand-ink hover:brightness-95">
-              <p className="text-xs font-bold uppercase tracking-wide">Today&apos;s deal</p>
-              <p className="text-2xl font-extrabold mt-1">{deal.name} · {gbpShort(deal.price)}</p>
-              <p className="mt-1 opacity-90">{deal.description}</p>
-              <span className="lf-btn lf-btn-secondary mt-4">Build this deal</span>
-            </Link>
-          </section>
-        ) : null}
-
-        <section className="mt-10">
-          <div className="flex items-end justify-between">
-            <h2 className="lf-h2">Most popular</h2>
-            <Link href="/menu" className="text-sm font-semibold text-brand">Full menu →</Link>
+      {/* the numbers */}
+      <section className="fp-wrap" style={{ padding: "40px 32px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 32 }}>
+        {[
+          [primary ? `${primary.deliveryMinutes} min` : "—", "Average delivery time"],
+          [featured[0] ? gbpShort(featured[0].product.sizes[0]?.price ?? 0) : "—", `A ${featured[0]?.product.name ?? "pizza"}, always`],
+          ["0", "Frozen ingredients on site"],
+          [avail?.open ? "Open" : "Pre-order", avail?.open ? "Taking orders right now" : "Order ahead for later"],
+        ].map(([big, label]) => (
+          <div key={label}>
+            <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 44, lineHeight: 1, color: "var(--color-accent)", letterSpacing: "-.02em" }}>{big}</div>
+            <div style={{ fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--color-neutral-700)", marginTop: 10 }}>{label}</div>
           </div>
-          <div className="grid gap-3 mt-4 sm:grid-cols-2">
-            {sellers.map(({ product, category }) => (
-              <ProductCard key={product.id} product={product} href={productPath(category, product)} image={assetUrl(product.image)} />
-            ))}
-          </div>
-        </section>
+        ))}
+      </section>
 
-        <section className="mt-12 grid gap-4 sm:grid-cols-3">
-          {[
-            { t: "Order direct, pay less", d: "No marketplace fees. Same prices as the shop." },
-            { t: "Apple Pay & Google Pay", d: "Checkout in one tap. Guest checkout, no account needed." },
-            { t: "Live order tracking", d: "See when the kitchen accepts, cooks and sends your food." },
-          ].map((x) => (
-            <div key={x.t} className="lf-card p-4"><p className="font-bold">{x.t}</p><p className="text-sm text-muted mt-1">{x.d}</p></div>
+      <div className="fp-rule" />
+
+      {/* tonight's menu */}
+      <section className="fp-wrap" style={{ padding: "56px 32px" }}>
+        <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", marginBottom: 24 }}>
+          <div>
+            <span className="fp-kicker" style={{ marginBottom: 10 }}>Tonight&rsquo;s menu</span>
+            <h2 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 36, letterSpacing: "-.02em", margin: 0, lineHeight: 1.05 }}>
+              {featured.length} pizzas. No filler.
+            </h2>
+          </div>
+          <Link href="/menu" style={{ fontSize: 14 }}>Full menu &rarr;</Link>
+        </div>
+        <div className="fp-grid" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+          {featured.map(({ product, category }) => (
+            <div key={product.slug} className="fp-cell">
+              <div className="fp-photo" style={{ aspectRatio: "4/3" }}>
+                <span>photo &middot; {product.name.toLowerCase()} &middot; b/w</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17, lineHeight: 1.2 }}>{product.name}</span>
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17 }}>{gbpShort(product.sizes[0]?.price ?? 0)}</span>
+              </div>
+              <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: "var(--color-neutral-700)", flex: 1 }}>{product.description}</p>
+              <span style={{ fontSize: 11, color: "var(--color-neutral-600)" }}>
+                {product.sizes.length > 1 ? `${product.sizes.length} sizes from ${product.sizes[0]?.name}` : product.sizes[0]?.name}
+              </span>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Link href={productPath(category, product)} className="btn btn-primary">Add</Link>
+                <Link href={productPath(category, product)} className="btn btn-secondary">Customise</Link>
+              </div>
+            </div>
           ))}
-        </section>
+        </div>
+      </section>
 
-        <section className="mt-12">
-          <h2 className="lf-h2">We deliver to</h2>
-          <ul className="mt-3 flex flex-wrap gap-2">
-            {cfg.seo.locality.map((l) => (
-              <li key={l}><Link href={localityPath(cfg, l)} className="lf-pill bg-surface border border-line">{cfg.seo.cuisine} delivery {l}</Link></li>
+      {/* deals */}
+      {deals.length ? (
+        <section className="fp-wrap" style={{ padding: "0 32px 64px" }}>
+          <span className="fp-kicker" style={{ marginBottom: 12 }}>Deals this week</span>
+          <div style={{ borderTop: "2px solid var(--color-divider)" }}>
+            {deals.map((d) => (
+              <div
+                key={d.slug}
+                style={{
+                  display: "grid", gridTemplateColumns: "120px 1fr 2fr auto", gap: 32,
+                  alignItems: "center", padding: "20px 0", borderBottom: "2px solid var(--color-divider)",
+                }}
+              >
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 32, letterSpacing: "-.02em", color: "var(--color-accent)" }}>
+                  {gbpShort(d.price)}
+                </span>
+                <div>
+                  <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 20, lineHeight: 1.1 }}>{d.name}</div>
+                </div>
+                <p style={{ margin: 0, fontSize: 14, color: "var(--color-neutral-800)" }}>{d.description}</p>
+                <Link href={`/deals/${d.slug}`} className="btn btn-secondary">Add the deal</Link>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
-      </div>
+      ) : null}
+
+      {/* the one red field on the page */}
+      <section style={{ background: "var(--color-accent)", color: "var(--color-bg)" }}>
+        <div className="fp-wrap" style={{ padding: "64px 32px", display: "flex", alignItems: "end", justifyContent: "space-between", gap: 48 }}>
+          <h2 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 64, lineHeight: 1, letterSpacing: "-.02em", margin: 0, marginLeft: "-.05em" }}>
+            Order tonight.<br />Eat tonight.
+          </h2>
+          <Link href="/menu" className="btn btn-ghost" style={{ color: "var(--color-bg)", border: "1px solid var(--color-bg)", padding: "10px 16px" }}>
+            Start an order &rarr;
+          </Link>
+        </div>
+      </section>
     </>
   );
 }

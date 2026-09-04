@@ -1,24 +1,37 @@
 import Link from "next/link";
+import { ModeSeg } from "./ModeSeg";
 import { BasketBadge } from "./basket/BasketBadge";
+import type { Fulfilment } from "@/lib/basket-types";
 
-export function Header({ name, logo, phone }: { name: string; logo: string; phone: string }) {
+/* The prototype nav also carries "Build your own", "Crust Club" and "Shops". Those
+   screens are not built yet, so they are held back rather than shipped as dead links -
+   see PROGRESS.md. Add each one here as its route lands. */
+const LINKS = [
+  { href: "/menu", label: "Menu" },
+  { href: "/deals", label: "Deals" },
+  { href: "/contact", label: "Shops" },
+];
+
+/** Storefront nav. Ported from the `Farm Pizza.dc.html` prototype: brand flush left,
+ *  links, order-mode segmented control, account, then the basket as the primary action. */
+export function Header({ name, fulfilment }: { name: string; fulfilment: Fulfilment[] }) {
   return (
-    <header className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-line">
-      <div className="lf-container flex items-center justify-between h-14 gap-3">
-        <Link href="/" className="flex items-center gap-2 min-w-0" aria-label={`${name} home`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={logo} alt={name} width={140} height={36} className="h-9 w-auto" />
-        </Link>
-        <nav className="flex items-center gap-1 text-sm font-semibold">
-          <Link href="/menu" className="px-3 py-2 rounded-full hover:bg-surface-2">Menu</Link>
-          <Link href="/deals" className="px-3 py-2 rounded-full hover:bg-surface-2">Deals</Link>
-          {phone ? <a href={`tel:${phone.replace(/\s+/g, "")}`} className="hidden sm:inline px-3 py-2 rounded-full hover:bg-surface-2">Call</a> : null}
-          <Link href="/account" className="px-3 py-2 rounded-full hover:bg-surface-2" aria-label="Account">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
-          </Link>
-          <BasketBadge />
-        </nav>
-      </div>
-    </header>
+    <nav
+      className="nav"
+      style={{
+        position: "sticky", top: 0, zIndex: 10, background: "var(--color-bg)",
+        paddingInline: "max(32px, calc((100% - 1200px) / 2 + 32px))",
+      }}
+    >
+      <Link href="/" className="nav-brand" style={{ letterSpacing: "-.01em" }}>
+        {name.toUpperCase()}
+      </Link>
+      {LINKS.map((l) => (
+        <Link key={l.href} href={l.href} style={{ whiteSpace: "nowrap" }}>{l.label}</Link>
+      ))}
+      <ModeSeg fulfilment={fulfilment} />
+      <Link href="/account" style={{ whiteSpace: "nowrap" }}>Account</Link>
+      <BasketBadge />
+    </nav>
   );
 }
