@@ -1,0 +1,20 @@
+# Build context hygiene. Without this, `COPY . .` in docker/Dockerfile drags the
+# developer's local node_modules (host-platform binaries + pnpm symlinks) over
+# the Linux ones installed in the deps stage, and `prisma generate` dies with
+# MODULE_NOT_FOUND. It would also bake .env secrets into an image layer.
+node_modules
+**/node_modules
+.next
+**/.next
+.git
+.github
+.env
+.env.*
+!.env.example
+.lighthouseci
+dist
+out
+*.tsbuildinfo
+packages/db/generated
+.DS_Store
+npm-debug.log*
