@@ -20,7 +20,7 @@ export const ROLE_LABEL: Record<StaffRole, string> = {
 /** Every guarded area of the back office. */
 export const SCREENS = [
   "dashboard", "kitchen", "orders", "dispatch", "menu", "deals",
-  "promos", "inventory", "customers", "campaigns", "reviews",
+  "promos", "inventory", "customers", "campaigns", "reviews", "marketing",
   "staff", "hours", "zones", "launchflow",
 ] as const;
 export type Screen = (typeof SCREENS)[number];
@@ -28,7 +28,7 @@ export type Screen = (typeof SCREENS)[number];
 export const SCREEN_LABEL: Record<Screen, string> = {
   dashboard: "Dashboard", kitchen: "Kitchen queue", orders: "Orders", dispatch: "Dispatch",
   menu: "Menu & pricing", deals: "Deals", promos: "Promotions", inventory: "Inventory",
-  customers: "Customers", campaigns: "Campaigns", reviews: "Reviews", staff: "Staff",
+  customers: "Customers", campaigns: "Campaigns", reviews: "Reviews", marketing: "Marketing", staff: "Staff",
   hours: "Hours & pause", zones: "Delivery zones", launchflow: "LaunchFlow",
 };
 

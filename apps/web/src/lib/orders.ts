@@ -1,4 +1,5 @@
 import "server-only";
+import { attributeOrder } from "./marketing";
 import { prisma, type Order, type OrderStatus, type Prisma } from "@launchflow/db";
 import { env } from "./env";
 import { getConfig } from "./config";
@@ -91,6 +92,9 @@ export async function markPlaced(orderId: string, actor: string, paymentData?: P
     data: { lastOrderAt: new Date(), ordersCount: { increment: 1 }, totalSpent: { increment: order.total }, lastPostcode: order.deliveryPostcode || undefined },
   });
   if (order.promoId) await prisma.promo.update({ where: { id: order.promoId }, data: { uses: { increment: 1 } } });
+  // Credit the marketing message that carried this code, if there was one. Best
+  // effort: a failure here must never stop an order being placed.
+  try { await attributeOrder(order.id); } catch (e) { console.error("[marketing] attribution failed", (e as Error).message); }
   // Popularity counters for top sellers
   const productIds = order.items.flatMap((i) => [i.productId, ...i.components.map((c) => c.productId)]).filter((x): x is string => !!x);
   if (productIds.length) await prisma.product.updateMany({ where: { id: { in: productIds } }, data: { ordersCount: { increment: 1 } } });

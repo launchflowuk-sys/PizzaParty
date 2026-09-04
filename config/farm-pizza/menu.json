@@ -4,30 +4,68 @@
     {
       "slug": "pizzas",
       "name": "Pizzas",
-      "description": "Hand-stretched dough, fresh toppings, baked to order."
+      "description": "Every pizza in five sizes, up to the 20 inch. All our recipes are flexible - customise any of them."
+    },
+    {
+      "slug": "starters",
+      "name": "Starters",
+      "description": "Garlic breads, straight from the oven."
     },
     {
       "slug": "sides",
       "name": "Sides",
-      "description": "Garlic bread, wings and more."
+      "description": "Wedges, skins, poppers and dips."
     },
     {
-      "slug": "drinks",
-      "name": "Drinks",
-      "description": "Cold cans and bottles."
+      "slug": "chicken",
+      "name": "Chicken",
+      "description": "Wings, strips, dippers and the Chicken Box."
+    },
+    {
+      "slug": "pasta",
+      "name": "Pasta",
+      "description": "Oven-baked, served hot."
     },
     {
       "slug": "desserts",
       "name": "Desserts",
-      "description": "Something sweet to finish."
+      "description": "Cakes and ice cream tubs."
+    },
+    {
+      "slug": "drinks",
+      "name": "Drinks",
+      "description": "Cans, bottles and milkshakes."
     }
   ],
   "modifierGroups": [
     {
+      "id": "base",
+      "name": "Base",
+      "min": 1,
+      "max": 1,
+      "options": [
+        {
+          "id": "tomato",
+          "name": "Tomato base",
+          "price": 0
+        },
+        {
+          "id": "bbq",
+          "name": "BBQ base",
+          "price": 0
+        },
+        {
+          "id": "garlic",
+          "name": "Garlic base",
+          "price": 0.5
+        }
+      ]
+    },
+    {
       "id": "extra-toppings",
       "name": "Extra toppings",
       "min": 0,
-      "max": 6,
+      "max": 8,
       "options": [
         {
           "id": "extra-cheese",
@@ -37,6 +75,36 @@
         {
           "id": "pepperoni",
           "name": "Pepperoni",
+          "price": 1.5
+        },
+        {
+          "id": "chicken",
+          "name": "Chicken",
+          "price": 1.5
+        },
+        {
+          "id": "beef",
+          "name": "Beef",
+          "price": 1.5
+        },
+        {
+          "id": "ham",
+          "name": "Ham",
+          "price": 1.5
+        },
+        {
+          "id": "bacon",
+          "name": "Bacon",
+          "price": 1.5
+        },
+        {
+          "id": "sausage",
+          "name": "Sausage",
+          "price": 1.5
+        },
+        {
+          "id": "meatballs",
+          "name": "Meatballs",
           "price": 1.5
         },
         {
@@ -55,6 +123,16 @@
           "price": 1.0
         },
         {
+          "id": "sweetcorn",
+          "name": "Sweetcorn",
+          "price": 1.0
+        },
+        {
+          "id": "pineapple",
+          "name": "Pineapple",
+          "price": 1.0
+        },
+        {
           "id": "jalapenos",
           "name": "Jalapeños",
           "price": 1.0
@@ -65,94 +143,48 @@
           "price": 1.0
         },
         {
-          "id": "sweetcorn",
-          "name": "Sweetcorn",
+          "id": "fresh-tomato",
+          "name": "Fresh tomato",
           "price": 1.0
-        },
-        {
-          "id": "chicken",
-          "name": "Chicken",
-          "price": 1.5
-        }
-      ]
-    },
-    {
-      "id": "crust",
-      "name": "Crust",
-      "min": 1,
-      "max": 1,
-      "options": [
-        {
-          "id": "classic",
-          "name": "Classic",
-          "price": 0
-        },
-        {
-          "id": "thin",
-          "name": "Thin & crispy",
-          "price": 0
-        },
-        {
-          "id": "stuffed",
-          "name": "Stuffed crust",
-          "price": 2.5
-        }
-      ]
-    },
-    {
-      "id": "dips",
-      "name": "Dips",
-      "min": 0,
-      "max": 4,
-      "options": [
-        {
-          "id": "garlic-mayo",
-          "name": "Garlic mayo",
-          "price": 0.7
-        },
-        {
-          "id": "bbq",
-          "name": "BBQ",
-          "price": 0.7
-        },
-        {
-          "id": "chilli",
-          "name": "Sweet chilli",
-          "price": 0.7
         }
       ]
     }
   ],
   "products": [
     {
-      "slug": "margherita",
+      "slug": "original",
       "category": "pizzas",
-      "name": "Margherita",
-      "description": "Tomato sauce, mozzarella and fresh basil.",
+      "name": "Original",
+      "description": "Cheese & tomato",
       "sizes": [
         {
           "id": "small",
-          "name": "Small 7\"",
-          "price": 7.5
+          "name": "7\" Small",
+          "price": 8.39
         },
         {
           "id": "medium",
-          "name": "Medium 10\"",
-          "price": 10.5
+          "name": "10\" Medium",
+          "price": 13.64
         },
         {
           "id": "large",
-          "name": "Large 13\"",
-          "price": 13.5
+          "name": "13\" Large",
+          "price": 15.74
         },
         {
           "id": "xlarge",
-          "name": "X-Large 15\"",
-          "price": 16.5
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
         }
       ],
       "modifierGroups": [
-        "crust",
+        "base",
         "extra-toppings"
       ],
       "tags": [
@@ -164,37 +196,130 @@
         "milk"
       ],
       "featured": true,
-      "image": "products/margherita.jpg"
+      "image": "products/original.jpg"
     },
     {
-      "slug": "pepperoni-feast",
+      "slug": "the-favourite",
       "category": "pizzas",
-      "name": "Pepperoni Feast",
-      "description": "Double pepperoni and extra mozzarella.",
+      "name": "The Favourite",
+      "description": "Ham & mushrooms",
       "sizes": [
         {
           "id": "small",
-          "name": "Small 7\"",
-          "price": 8.5
+          "name": "7\" Small",
+          "price": 8.39
         },
         {
           "id": "medium",
-          "name": "Medium 10\"",
-          "price": 11.5
+          "name": "10\" Medium",
+          "price": 13.64
         },
         {
           "id": "large",
-          "name": "Large 13\"",
-          "price": 14.5
+          "name": "13\" Large",
+          "price": 15.74
         },
         {
           "id": "xlarge",
-          "name": "X-Large 15\"",
-          "price": 17.5
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
         }
       ],
       "modifierGroups": [
-        "crust",
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "hawaiian",
+      "category": "pizzas",
+      "name": "Hawaiian",
+      "description": "Ham & pineapple",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "pepperoni-lover",
+      "category": "pizzas",
+      "name": "Pepperoni Lover",
+      "description": "Double pepperoni & extra cheese",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
         "extra-toppings"
       ],
       "tags": [
@@ -205,116 +330,1027 @@
         "milk"
       ],
       "featured": true,
-      "image": "products/pepperoni-feast.jpg"
+      "image": "products/pepperoni-lover.jpg"
+    },
+    {
+      "slug": "country-chicken",
+      "category": "pizzas",
+      "name": "Country Chicken",
+      "description": "BBQ sauce, red onions, Chinese chicken & mushrooms",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "products/country-chicken.jpg"
+    },
+    {
+      "slug": "seafood",
+      "category": "pizzas",
+      "name": "Seafood",
+      "description": "Prawns, anchovies, tuna & sweetcorn",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "farm-chicken",
+      "category": "pizzas",
+      "name": "Farm Chicken",
+      "description": "Onion, mushrooms & chicken",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "vegetarian",
+      "category": "pizzas",
+      "name": "Vegetarian",
+      "description": "Mushrooms, onions, peppers & sweetcorn",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "products/vegetarian.jpg"
+    },
+    {
+      "slug": "hot-vegetarian",
+      "category": "pizzas",
+      "name": "Hot Vegetarian",
+      "description": "Mushrooms, onions, peppers & hot chilli",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [
+        "vegetarian",
+        "spicy"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "products/hot-vegetarian.jpg"
+    },
+    {
+      "slug": "farm-pizza-classic",
+      "category": "pizzas",
+      "name": "Farm Pizza Classic",
+      "description": "Tomato base, mushroom, bacon, sausage & fresh tomato",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "meat-combo",
+      "category": "pizzas",
+      "name": "Meat Combo",
+      "description": "Ham, beef, pork & pepperoni",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "products/meat-combo.jpg"
+    },
+    {
+      "slug": "bbq-meat-combo",
+      "category": "pizzas",
+      "name": "BBQ Meat Combo",
+      "description": "BBQ base, ham, beef, pork & pepperoni",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "hot-and-spicy",
+      "category": "pizzas",
+      "name": "Hot & Spicy",
+      "description": "Pepperoni, chicken, onion, jalapeño & beef",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [
+        "spicy"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
     },
     {
       "slug": "bbq-chicken",
       "category": "pizzas",
       "name": "BBQ Chicken",
-      "description": "BBQ base, chicken, red onion, peppers and sweetcorn.",
+      "description": "BBQ base, mushroom, Chinese chicken, sweetcorn & green pepper",
       "sizes": [
         {
           "id": "small",
-          "name": "Small 7\"",
-          "price": 9.0
+          "name": "7\" Small",
+          "price": 8.39
         },
         {
           "id": "medium",
-          "name": "Medium 10\"",
-          "price": 12.0
+          "name": "10\" Medium",
+          "price": 13.64
         },
         {
           "id": "large",
-          "name": "Large 13\"",
-          "price": 15.0
+          "name": "13\" Large",
+          "price": 15.74
         },
         {
           "id": "xlarge",
-          "name": "X-Large 15\"",
-          "price": 18.0
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
         }
       ],
       "modifierGroups": [
-        "crust",
+        "base",
         "extra-toppings"
       ],
       "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "products/bbq-chicken.jpg"
+    },
+    {
+      "slug": "american-hot",
+      "category": "pizzas",
+      "name": "American Hot",
+      "description": "Onion, pepperoni & jalapeño",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [
+        "spicy"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "chicken-hot",
+      "category": "pizzas",
+      "name": "Chicken Hot",
+      "description": "Tandoori chicken, jalapeño, onions & mushrooms",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [
+        "spicy"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "out-of-this-world",
+      "category": "pizzas",
+      "name": "Out of this World",
+      "description": "Sausage, onions, beef, peppers & mushrooms",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "mexican-hot",
+      "category": "pizzas",
+      "name": "Mexican Hot",
+      "description": "Beef, onions, mushrooms, jalapeño & sliced tomatoes",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [
+        "spicy"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "hotter-than-hot",
+      "category": "pizzas",
+      "name": "Hotter Than Hot",
+      "description": "Pepperoni, beef, sausage & green chilli",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [
+        "spicy"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "bbq-special",
+      "category": "pizzas",
+      "name": "BBQ Special",
+      "description": "Texas BBQ sauce, chicken, bacon, peppers, jalapeño & sweetcorn",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "chinese-special",
+      "category": "pizzas",
+      "name": "Chinese Special",
+      "description": "Double Chinese chicken, mushrooms, onions & sweetcorn",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "farm-pizza-special",
+      "category": "pizzas",
+      "name": "Farm Pizza Special",
+      "description": "Beef, ham, pork, pepperoni, onions, mushrooms & pineapple",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [
+        "popular"
+      ],
       "allergens": [
         "gluten",
         "milk"
       ],
       "featured": true,
-      "image": "products/bbq-chicken.jpg"
+      "image": "products/farm-pizza-special.jpg"
     },
     {
-      "slug": "veggie-supreme",
+      "slug": "italian-meat-feast",
       "category": "pizzas",
-      "name": "Veggie Supreme",
-      "description": "Mushrooms, peppers, onions, olives and sweetcorn.",
+      "name": "Italian Meat Feast",
+      "description": "BBQ sauce, pepperoni, beef, chicken & sausage",
       "sizes": [
         {
           "id": "small",
-          "name": "Small 7\"",
-          "price": 8.5
+          "name": "7\" Small",
+          "price": 8.39
         },
         {
           "id": "medium",
-          "name": "Medium 10\"",
-          "price": 11.5
+          "name": "10\" Medium",
+          "price": 13.64
         },
         {
           "id": "large",
-          "name": "Large 13\"",
-          "price": 14.5
+          "name": "13\" Large",
+          "price": 15.74
         },
         {
           "id": "xlarge",
-          "name": "X-Large 15\"",
-          "price": 17.5
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
         }
       ],
       "modifierGroups": [
-        "crust",
+        "base",
         "extra-toppings"
       ],
-      "tags": [
-        "vegetarian"
-      ],
+      "tags": [],
       "allergens": [
         "gluten",
         "milk"
       ],
-      "image": "products/veggie-supreme.jpg"
+      "featured": false,
+      "image": "products/italian-meat-feast.jpg"
     },
     {
-      "slug": "meat-feast",
+      "slug": "italian-meatball",
       "category": "pizzas",
-      "name": "Meat Feast",
-      "description": "Pepperoni, ham, beef and chicken.",
+      "name": "Italian Meatball",
+      "description": "BBQ sauce, pepperoni, sausage & meatballs",
       "sizes": [
         {
           "id": "small",
-          "name": "Small 7\"",
-          "price": 9.5
+          "name": "7\" Small",
+          "price": 8.39
         },
         {
           "id": "medium",
-          "name": "Medium 10\"",
-          "price": 12.5
+          "name": "10\" Medium",
+          "price": 13.64
         },
         {
           "id": "large",
-          "name": "Large 13\"",
-          "price": 15.5
+          "name": "13\" Large",
+          "price": 15.74
         },
         {
           "id": "xlarge",
-          "name": "X-Large 15\"",
-          "price": 18.5
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
         }
       ],
       "modifierGroups": [
-        "crust",
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "pepperoni-special",
+      "category": "pizzas",
+      "name": "Pepperoni Special",
+      "description": "BBQ sauce, pepperoni, mushrooms & onions",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "products/pepperoni-special.jpg"
+    },
+    {
+      "slug": "tex-bbq",
+      "category": "pizzas",
+      "name": "Tex BBQ",
+      "description": "BBQ sauce, chicken, bacon & pepperoni",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "meat-machine",
+      "category": "pizzas",
+      "name": "Meat Machine",
+      "description": "Ham, pepperoni, beef, chicken, bacon & sausage",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
         "extra-toppings"
       ],
       "tags": [
@@ -324,17 +1360,154 @@
         "gluten",
         "milk"
       ],
-      "image": "products/meat-feast.jpg"
+      "featured": true,
+      "image": "products/meat-machine.jpg"
+    },
+    {
+      "slug": "italian-chicken",
+      "category": "pizzas",
+      "name": "Italian Chicken",
+      "description": "Double BBQ sauce, green peppers, Chinese chicken, Mexican chicken, BBQ chicken & roast chicken",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "mega-ball",
+      "category": "pizzas",
+      "name": "Mega Ball",
+      "description": "Double meatballs, beef, sausage, pepperoni & onion",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "half-and-half",
+      "category": "pizzas",
+      "name": "Half & Half",
+      "description": "Two different pizzas on one base - tell us which two in the notes.",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 14.68
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 16.78
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 18.88
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 20.98
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
     },
     {
       "slug": "garlic-bread",
-      "category": "sides",
+      "category": "starters",
       "name": "Garlic Bread",
-      "description": "Four slices with garlic butter.",
-      "price": 3.5,
-      "modifierGroups": [
-        "dips"
+      "description": "Four pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 2.74
+        }
       ],
+      "modifierGroups": [],
       "tags": [
         "vegetarian"
       ],
@@ -342,149 +1515,932 @@
         "gluten",
         "milk"
       ],
+      "featured": false,
       "image": "products/garlic-bread.jpg"
     },
     {
       "slug": "garlic-bread-cheese",
-      "category": "sides",
+      "category": "starters",
       "name": "Garlic Bread with Cheese",
-      "description": "Four slices, garlic butter and melted mozzarella.",
-      "price": 4.5,
-      "modifierGroups": [
-        "dips"
+      "description": "Four pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 2.74
+        }
       ],
+      "modifierGroups": [],
       "tags": [
-        "vegetarian",
-        "popular"
+        "vegetarian"
       ],
       "allergens": [
         "gluten",
         "milk"
       ],
+      "featured": false,
       "image": "products/garlic-bread-cheese.jpg"
     },
     {
-      "slug": "chicken-wings",
-      "category": "sides",
-      "name": "Chicken Wings",
-      "description": "Six oven-baked wings.",
+      "slug": "garlic-bread-cheese-pepperoni",
+      "category": "starters",
+      "name": "Garlic Bread with Cheese & Pepperoni",
+      "description": "Four pieces",
       "sizes": [
         {
-          "id": "6pc",
-          "name": "6 pieces",
-          "price": 5.5
-        },
-        {
-          "id": "12pc",
-          "name": "12 pieces",
-          "price": 9.5
+          "id": "regular",
+          "name": "Regular",
+          "price": 4.39
         }
       ],
-      "modifierGroups": [
-        "dips"
-      ],
+      "modifierGroups": [],
       "tags": [],
-      "allergens": [],
-      "image": "products/chicken-wings.jpg"
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "products/garlic-bread-cheese-pepperoni.jpg"
+    },
+    {
+      "slug": "garlic-bread-cheese-bacon",
+      "category": "starters",
+      "name": "Garlic Bread with Cheese & Bacon",
+      "description": "Four pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 4.39
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "products/garlic-bread-cheese-bacon.jpg"
+    },
+    {
+      "slug": "cheesy-garlic-bread-pizza",
+      "category": "starters",
+      "name": "Cheesy Garlic Bread Pizza",
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 7.69
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "potato-skins-cheese",
+      "category": "sides",
+      "name": "Potato Skins with Cheese",
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 5.49
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "potato-skins-cheese-bacon",
+      "category": "sides",
+      "name": "Potato Skins with Cheese & Bacon",
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 6.59
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
     },
     {
       "slug": "potato-wedges",
       "category": "sides",
       "name": "Potato Wedges",
-      "description": "Seasoned wedges.",
-      "price": 3.5,
-      "modifierGroups": [
-        "dips"
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 4.68
+        }
       ],
+      "modifierGroups": [],
       "tags": [
+        "vegetarian",
         "vegan"
       ],
-      "allergens": [],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
       "image": "products/potato-wedges.jpg"
     },
     {
-      "slug": "coke-can",
-      "category": "drinks",
-      "name": "Coca-Cola 330ml",
-      "price": 1.2,
-      "tags": [],
-      "image": "products/coke-can.jpg"
+      "slug": "curly-fries",
+      "category": "sides",
+      "name": "Curly Fries",
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 4.68
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian",
+        "vegan"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "products/curly-fries.jpg"
     },
     {
-      "slug": "diet-coke-can",
-      "category": "drinks",
-      "name": "Diet Coke 330ml",
-      "price": 1.2,
-      "tags": [],
-      "image": "products/diet-coke-can.jpg"
+      "slug": "jalapeno-poppers",
+      "category": "sides",
+      "name": "Jalapeño Cream Cheese Poppers",
+      "description": "Six pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 4.68
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
     },
     {
-      "slug": "fanta-can",
-      "category": "drinks",
-      "name": "Fanta Orange 330ml",
-      "price": 1.2,
-      "tags": [],
-      "image": "products/fanta-can.jpg"
+      "slug": "mozzarella-sticks",
+      "category": "sides",
+      "name": "Mozzarella Sticks",
+      "description": "Six pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 4.68
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
     },
     {
-      "slug": "coke-bottle",
-      "category": "drinks",
-      "name": "Coca-Cola 1.5L",
-      "price": 3.0,
-      "tags": [],
-      "image": "products/coke-bottle.jpg"
+      "slug": "stuffed-mushroom",
+      "category": "sides",
+      "name": "Stuffed Mushroom",
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 4.68
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
     },
     {
-      "slug": "water",
-      "category": "drinks",
-      "name": "Still Water 500ml",
-      "price": 1.0,
+      "slug": "onion-rings",
+      "category": "sides",
+      "name": "Onion Rings",
+      "description": "Ten pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 4.68
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian",
+        "vegan"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "chicken-dippers",
+      "category": "chicken",
+      "name": "Chicken Dippers",
+      "description": "Six pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 5.49
+        }
+      ],
+      "modifierGroups": [],
       "tags": [],
-      "image": "products/water.jpg"
+      "allergens": [
+        "gluten"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "hot-chicken-wings",
+      "category": "chicken",
+      "name": "Hot Chicken Wings",
+      "description": "Eight pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 5.49
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten"
+      ],
+      "featured": false,
+      "image": "products/hot-chicken-wings.jpg"
+    },
+    {
+      "slug": "bbq-chicken-wings",
+      "category": "chicken",
+      "name": "BBQ Chicken Wings",
+      "description": "Eight pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 5.49
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten"
+      ],
+      "featured": false,
+      "image": "products/bbq-chicken-wings.jpg"
+    },
+    {
+      "slug": "chicken-nuggets",
+      "category": "chicken",
+      "name": "Chicken Nuggets",
+      "description": "Ten pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 5.49
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "chicken-strips",
+      "category": "chicken",
+      "name": "Chicken Strips",
+      "description": "Six pieces",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 5.49
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "chicken-box",
+      "category": "chicken",
+      "name": "Chicken Box",
+      "description": "3 chicken strips, 3 nuggets, 3 hot wings, 3 BBQ wings, 3 dippers, potato wedges and 2 dips",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 16.49
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "tex-mix-platter",
+      "category": "chicken",
+      "name": "Tex-Mix Platter",
+      "description": "3 jalapeño cream cheese, potato wedges, 4 nuggets, 3 dippers, 3 BBQ wings and two dips",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 14.29
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "spaghetti-bolognese",
+      "category": "pasta",
+      "name": "Spaghetti Bolognese",
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 8.79
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk",
+        "egg"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "meat-lasagne",
+      "category": "pasta",
+      "name": "Meat Lasagne",
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 8.79
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [],
+      "allergens": [
+        "gluten",
+        "milk",
+        "egg"
+      ],
+      "featured": false,
+      "image": ""
     },
     {
       "slug": "chocolate-fudge-cake",
       "category": "desserts",
       "name": "Chocolate Fudge Cake",
-      "description": "Rich and gooey.",
-      "price": 3.5,
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 3.84
+        }
+      ],
+      "modifierGroups": [],
       "tags": [
         "vegetarian"
       ],
       "allergens": [
         "gluten",
         "milk",
-        "eggs"
+        "egg"
       ],
+      "featured": false,
       "image": "products/chocolate-fudge-cake.jpg"
     },
     {
-      "slug": "ben-jerrys",
+      "slug": "strawberry-cheesecake",
       "category": "desserts",
-      "name": "Ben & Jerry's 465ml",
-      "description": "Cookie Dough or Chocolate Fudge Brownie.",
-      "price": 5.5,
+      "name": "Strawberry Cheesecake",
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 3.84
+        }
+      ],
+      "modifierGroups": [],
       "tags": [
         "vegetarian"
       ],
       "allergens": [
+        "gluten",
         "milk",
-        "eggs",
-        "gluten"
+        "egg"
       ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "tennessee-toffee-pie",
+      "category": "desserts",
+      "name": "Tennessee Toffee Pie",
+      "description": "",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 3.84
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk",
+        "egg"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "coke-can",
+      "category": "drinks",
+      "name": "Coca-Cola",
+      "description": "330ml can",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 1.65
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegan"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": "products/coke-can.jpg"
+    },
+    {
+      "slug": "diet-coke-can",
+      "category": "drinks",
+      "name": "Diet Coke",
+      "description": "330ml can",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 1.64
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegan"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": "products/diet-coke-can.jpg"
+    },
+    {
+      "slug": "fanta-can",
+      "category": "drinks",
+      "name": "Fanta Orange",
+      "description": "330ml can",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 1.64
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegan"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": "products/fanta-can.jpg"
+    },
+    {
+      "slug": "7up-can",
+      "category": "drinks",
+      "name": "7UP",
+      "description": "330ml can",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 1.64
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegan"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": "products/7up-can.jpg"
+    },
+    {
+      "slug": "dr-pepper-can",
+      "category": "drinks",
+      "name": "Dr Pepper",
+      "description": "330ml can",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 1.64
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegan"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "coke-bottle",
+      "category": "drinks",
+      "name": "Coca-Cola",
+      "description": "1.5 litre bottle",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 3.29
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegan"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": "products/coke-bottle.jpg"
+    },
+    {
+      "slug": "pepsi-bottle",
+      "category": "drinks",
+      "name": "Pepsi",
+      "description": "1.5 litre bottle",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 3.29
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegan"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": "products/pepsi-bottle.jpg"
+    },
+    {
+      "slug": "7up-bottle",
+      "category": "drinks",
+      "name": "7UP",
+      "description": "1.5 litre bottle",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 3.29
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegan"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": "products/7up-bottle.jpg"
+    },
+    {
+      "slug": "tango-bottle",
+      "category": "drinks",
+      "name": "Tango Orange",
+      "description": "1.5 litre bottle",
+      "sizes": [
+        {
+          "id": "regular",
+          "name": "Regular",
+          "price": 3.29
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegan"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": "products/tango-bottle.jpg"
+    },
+    {
+      "slug": "dips",
+      "category": "sides",
+      "name": "Dips",
+      "description": "",
+      "sizes": [
+        {
+          "id": "chilli",
+          "name": "Chilli",
+          "price": 1.09
+        },
+        {
+          "id": "garlic-herb",
+          "name": "Garlic & herbs",
+          "price": 1.09
+        },
+        {
+          "id": "garlic-mayo",
+          "name": "Garlic mayo",
+          "price": 1.09
+        },
+        {
+          "id": "sour-cream",
+          "name": "Sour cream",
+          "price": 1.09
+        },
+        {
+          "id": "tomato",
+          "name": "Tomato",
+          "price": 1.09
+        },
+        {
+          "id": "bbq",
+          "name": "BBQ",
+          "price": 1.09
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "milkshake",
+      "category": "drinks",
+      "name": "Milkshake",
+      "description": "",
+      "sizes": [
+        {
+          "id": "banana",
+          "name": "Banana",
+          "price": 2.74
+        },
+        {
+          "id": "chocolate",
+          "name": "Chocolate",
+          "price": 2.74
+        },
+        {
+          "id": "strawberry",
+          "name": "Strawberry",
+          "price": 2.74
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [],
+      "featured": false,
+      "image": ""
+    },
+    {
+      "slug": "haagen-dazs",
+      "category": "desserts",
+      "name": "Häagen-Dazs",
+      "description": "500ml tub",
+      "sizes": [
+        {
+          "id": "strawberry",
+          "name": "Strawberry",
+          "price": 7.69
+        },
+        {
+          "id": "cookies-cream",
+          "name": "Cookies & cream",
+          "price": 7.69
+        },
+        {
+          "id": "pralines-cream",
+          "name": "Pralines & cream",
+          "price": 7.69
+        },
+        {
+          "id": "vanilla",
+          "name": "Vanilla",
+          "price": 7.69
+        },
+        {
+          "id": "chocolate-chip",
+          "name": "Chocolate chip",
+          "price": 7.69
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk",
+        "egg"
+      ],
+      "featured": false,
+      "image": "products/haagen-dazs.jpg"
+    },
+    {
+      "slug": "ben-jerrys",
+      "category": "desserts",
+      "name": "Ben & Jerry's",
+      "description": "465ml tub",
+      "sizes": [
+        {
+          "id": "phish-food",
+          "name": "Phish Food",
+          "price": 7.69
+        },
+        {
+          "id": "chocolate-fudge-brownie",
+          "name": "Chocolate Fudge Brownie",
+          "price": 7.69
+        },
+        {
+          "id": "cookie-dough",
+          "name": "Cookie Dough",
+          "price": 7.69
+        },
+        {
+          "id": "caramel-chew-chew",
+          "name": "Caramel Chew Chew",
+          "price": 7.69
+        },
+        {
+          "id": "half-baked",
+          "name": "Half Baked",
+          "price": 7.69
+        }
+      ],
+      "modifierGroups": [],
+      "tags": [
+        "vegetarian"
+      ],
+      "allergens": [
+        "gluten",
+        "milk",
+        "egg"
+      ],
+      "featured": false,
       "image": "products/ben-jerrys.jpg"
     }
   ],
   "deals": [
     {
-      "slug": "summer-meal",
-      "name": "Summer Meal",
-      "description": "Two 10\" pizzas, six BBQ chicken wings, four pieces of garlic bread and a bottle of drink.",
-      "price": 29.99,
+      "slug": "meal-for-1",
+      "name": "Meal for 1",
+      "description": "Any 10\" pizza, four pieces of garlic bread and a can of soft drink.",
+      "price": 15.39,
+      "featured": false,
+      "slots": [
+        {
+          "name": "10\" pizza",
+          "qty": 1,
+          "categories": [
+            "pizzas"
+          ],
+          "sizes": [
+            "medium"
+          ]
+        },
+        {
+          "name": "Garlic bread",
+          "qty": 1,
+          "products": [
+            "garlic-bread"
+          ]
+        },
+        {
+          "name": "Can of drink",
+          "qty": 1,
+          "products": [
+            "coke-can",
+            "diet-coke-can",
+            "fanta-can",
+            "7up-can",
+            "dr-pepper-can"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "meal-for-2",
+      "name": "Meal for 2",
+      "description": "Two 10\" pizzas, onion rings, six hot wings, garlic bread and a 1.5L bottle.",
+      "price": 29.69,
       "featured": true,
       "slots": [
         {
-          "name": "Medium 10\" pizza",
+          "name": "10\" pizza",
           "qty": 2,
           "categories": [
             "pizzas"
@@ -494,13 +2450,17 @@
           ]
         },
         {
-          "name": "BBQ chicken wings",
+          "name": "Onion rings",
           "qty": 1,
           "products": [
-            "chicken-wings"
-          ],
-          "sizes": [
-            "6pc"
+            "onion-rings"
+          ]
+        },
+        {
+          "name": "Hot wings",
+          "qty": 1,
+          "products": [
+            "hot-chicken-wings"
           ]
         },
         {
@@ -514,25 +2474,28 @@
           "name": "Bottle of drink",
           "qty": 1,
           "products": [
-            "coke-bottle"
+            "coke-bottle",
+            "pepsi-bottle",
+            "7up-bottle",
+            "tango-bottle"
           ]
         }
       ]
     },
     {
-      "slug": "party-meal",
-      "name": "Party Meal",
-      "description": "Two large pizzas of any type, two pieces of garlic bread and a bottle of drink.",
-      "price": 34.99,
+      "slug": "family-meal-1",
+      "name": "Family Meal 1",
+      "description": "Any 15\" pizza, four pieces of garlic bread, onion rings, potato wedges and a bottle of drink.",
+      "price": 29.69,
+      "featured": false,
       "slots": [
         {
-          "name": "Large pizza",
-          "qty": 2,
+          "name": "15\" pizza",
+          "qty": 1,
           "categories": [
             "pizzas"
           ],
           "sizes": [
-            "large",
             "xlarge"
           ]
         },
@@ -544,45 +2507,170 @@
           ]
         },
         {
+          "name": "Onion rings",
+          "qty": 1,
+          "products": [
+            "onion-rings"
+          ]
+        },
+        {
+          "name": "Potato wedges",
+          "qty": 1,
+          "products": [
+            "potato-wedges"
+          ]
+        },
+        {
           "name": "Bottle of drink",
           "qty": 1,
           "products": [
-            "coke-bottle"
+            "coke-bottle",
+            "pepsi-bottle",
+            "7up-bottle",
+            "tango-bottle"
           ]
         }
       ]
     },
     {
-      "slug": "meal-for-one",
-      "name": "Meal for One",
-      "description": "Any small pizza, a side and a can.",
-      "price": 11.99,
+      "slug": "family-meal-3",
+      "name": "Family Meal 3",
+      "description": "Any three 10\" pizzas, four pieces of garlic bread, six BBQ wings and a bottle of drink.",
+      "price": 37.39,
+      "featured": false,
       "slots": [
         {
-          "name": "Small pizza",
+          "name": "10\" pizza",
+          "qty": 3,
+          "categories": [
+            "pizzas"
+          ],
+          "sizes": [
+            "medium"
+          ]
+        },
+        {
+          "name": "Garlic bread",
+          "qty": 1,
+          "products": [
+            "garlic-bread"
+          ]
+        },
+        {
+          "name": "BBQ wings",
+          "qty": 1,
+          "products": [
+            "bbq-chicken-wings"
+          ]
+        },
+        {
+          "name": "Bottle of drink",
+          "qty": 1,
+          "products": [
+            "coke-bottle",
+            "pepsi-bottle",
+            "7up-bottle",
+            "tango-bottle"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "mega-deal",
+      "name": "Mega Deal",
+      "description": "Any 20\" pizza, BBQ wings, potato wedges and a 1.5L bottle.",
+      "price": 28.59,
+      "featured": true,
+      "slots": [
+        {
+          "name": "20\" pizza",
           "qty": 1,
           "categories": [
             "pizzas"
           ],
           "sizes": [
-            "small"
+            "xxlarge"
           ]
         },
         {
-          "name": "Side",
+          "name": "BBQ wings",
           "qty": 1,
           "products": [
-            "garlic-bread",
+            "bbq-chicken-wings"
+          ]
+        },
+        {
+          "name": "Potato wedges",
+          "qty": 1,
+          "products": [
             "potato-wedges"
           ]
         },
         {
-          "name": "Can",
+          "name": "Bottle of drink",
           "qty": 1,
           "products": [
-            "coke-can",
-            "diet-coke-can",
-            "fanta-can"
+            "coke-bottle",
+            "pepsi-bottle",
+            "7up-bottle",
+            "tango-bottle"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "three-20-inch",
+      "name": "Any 3 x 20\" Pizzas",
+      "description": "Three of our biggest pizzas, any toppings.",
+      "price": 51.69,
+      "featured": false,
+      "slots": [
+        {
+          "name": "20\" pizza",
+          "qty": 3,
+          "categories": [
+            "pizzas"
+          ],
+          "sizes": [
+            "xxlarge"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "two-pizzas-medium",
+      "name": "Any 2 x 10\" Pizzas",
+      "description": "Two medium pizzas, any toppings.",
+      "price": 24.19,
+      "featured": false,
+      "slots": [
+        {
+          "name": "10\" pizza",
+          "qty": 2,
+          "categories": [
+            "pizzas"
+          ],
+          "sizes": [
+            "medium"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "three-13-inch",
+      "name": "Any 3 x 13\" Pizzas",
+      "description": "Three large pizzas, any toppings.",
+      "price": 40.69,
+      "featured": false,
+      "slots": [
+        {
+          "name": "13\" pizza",
+          "qty": 3,
+          "categories": [
+            "pizzas"
+          ],
+          "sizes": [
+            "large"
           ]
         }
       ]

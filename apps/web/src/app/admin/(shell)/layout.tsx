@@ -19,6 +19,7 @@ const NAV: { href: string; label: string; screen: Screen }[] = [
   { screen: "inventory", href: "/admin/inventory", label: "Inventory" },
   { screen: "customers", href: "/admin/customers", label: "Customers" },
   { screen: "campaigns", href: "/admin/campaigns", label: "Campaigns" },
+  { screen: "marketing", href: "/admin/marketing", label: "Marketing" },
   { screen: "reviews", href: "/admin/reviews", label: "Reviews" },
   { screen: "staff", href: "/admin/staff", label: "Staff" },
   { screen: "hours", href: "/admin/hours", label: "Hours & pause" },

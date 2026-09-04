@@ -5,6 +5,7 @@ import { currentStaff } from "@/lib/session";
 import { can, type Screen } from "@/lib/permissions";
 import { getClientRow, MENU_TAG, CLIENT_TAG } from "@/lib/menu";
 import { toPence } from "@/lib/money";
+import { TRIGGERS, runAutomation } from "@/lib/marketing";
 
 /**
  * Every mutation goes through here. Hiding a link in the sidebar is cosmetic - without
@@ -222,4 +223,54 @@ export async function replyToReview(fd: FormData) {
   if (!reply) return;
   await prisma.review.updateMany({ where: { id, clientId: client.id }, data: { reply, repliedAt: new Date() } });
   revalidatePath("/admin/reviews");
+}
+
+/* ─── Marketing ─────────────────────────────────────────────────────────── */
+
+export async function saveAutomation(fd: FormData) {
+  const client = await guard("marketing");
+  const name = String(fd.get("name") ?? "").trim().slice(0, 60);
+  const trigger = String(fd.get("trigger") ?? "win_back");
+  const body = String(fd.get("body") ?? "").trim().slice(0, 280);
+  if (!name || !body) return;
+  if (!TRIGGERS.some((t) => t.key === trigger)) return;
+
+  const num = (k: string, d: number, min: number, max: number) => {
+    const v = Number(fd.get(k)); return Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : d;
+  };
+
+  const data = {
+    trigger, body,
+    channel: "sms",
+    days: num("days", 45, 0, 365),
+    cooldownDays: num("cooldownDays", 30, 1, 365),
+    maxPerRun: num("maxPerRun", 200, 1, 1000),
+    promoCode: String(fd.get("promoCode") ?? "").trim().toUpperCase().slice(0, 30),
+    // New automations start paused. Nobody should be able to create a rule that
+    // texts the whole customer list the moment it is saved.
+    active: false,
+  };
+  await prisma.automation.upsert({
+    where: { clientId_name: { clientId: client.id, name } },
+    create: { clientId: client.id, name, ...data },
+    update: data,
+  });
+  revalidatePath("/admin/marketing");
+}
+
+export async function toggleAutomation(fd: FormData) {
+  const client = await guard("marketing");
+  const id = String(fd.get("id") ?? "");
+  const a = await prisma.automation.findFirst({ where: { id, clientId: client.id } });
+  if (a) await prisma.automation.updateMany({ where: { id, clientId: client.id }, data: { active: !a.active } });
+  revalidatePath("/admin/marketing");
+}
+
+export async function runAutomationNow(fd: FormData) {
+  const client = await guard("marketing");
+  const id = String(fd.get("id") ?? "");
+  const a = await prisma.automation.findFirst({ where: { id, clientId: client.id }, select: { id: true } });
+  if (!a) return;
+  await runAutomation(a.id);
+  revalidatePath("/admin/marketing");
 }

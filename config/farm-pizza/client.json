@@ -14,7 +14,7 @@
     "logo": "assets/logo.png",
     "og": "assets/og.jpg",
     "hero": "assets/hero.jpg",
-    "tagline": "Fresh pizza, fast delivery in Basildon & Grays"
+    "tagline": "Home of the 20 inch pizza. Fresh, handmade, delivered."
   },
   "contact": {
     "phone": "01268 554034",
@@ -38,8 +38,8 @@
         "SS12",
         "CM11"
       ],
-      "deliveryFee": 2.5,
-      "minOrder": 12,
+      "deliveryFee": 1.99,
+      "minOrder": 9.99,
       "prepMinutes": 15,
       "deliveryMinutes": 35,
       "hours": {
@@ -71,7 +71,21 @@
           "12:00",
           "23:00"
         ]
-      }
+      },
+      "deliveryAreas": [
+        "Basildon",
+        "Pitsea",
+        "Vange",
+        "Laindon",
+        "Fryerns",
+        "Lee Chapel",
+        "Kingswood",
+        "Langdon Hills",
+        "Dry Street",
+        "Noak Bridge",
+        "Crays Hill",
+        "Nevendon"
+      ]
     },
     {
       "id": "grays",
@@ -87,8 +101,8 @@
         "RM19",
         "RM20"
       ],
-      "deliveryFee": 2.5,
-      "minOrder": 12,
+      "deliveryFee": 1.99,
+      "minOrder": 9.99,
       "prepMinutes": 15,
       "deliveryMinutes": 35,
       "hours": {
@@ -120,7 +134,20 @@
           "11:00",
           "02:00"
         ]
-      }
+      },
+      "deliveryAreas": [
+        "Grays",
+        "Little Thurrock",
+        "Chadwell St Mary",
+        "Chafford Hundred",
+        "West Thurrock",
+        "South Stifford",
+        "North Stifford",
+        "Tilbury",
+        "Purfleet-on-Thames",
+        "Aveley",
+        "South Ockendon"
+      ]
     }
   ],
   "fulfilment": [
