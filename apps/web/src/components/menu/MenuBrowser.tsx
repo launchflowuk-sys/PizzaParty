@@ -72,7 +72,7 @@ export function MenuBrowser({ categories, items }: { categories: TileCategory[];
                   textAlign: "left", background: "none", border: 0, borderTop: "2px solid var(--color-divider)",
                   padding: "12px 0", fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18,
                   cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "baseline",
-                  color: !q && c.slug === cat ? "var(--color-accent)" : "var(--color-text)",
+                  color: !q && c.slug === cat ? "var(--color-accent-700)" : "var(--color-text)",
                 }}
               >
                 <span>{c.name}</span>

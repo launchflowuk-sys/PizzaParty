@@ -145,7 +145,7 @@ export default async function Home() {
           <h2 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 64, lineHeight: 1, letterSpacing: "-.02em", margin: 0, marginLeft: "-.05em" }}>
             Order tonight.<br />Eat tonight.
           </h2>
-          <Link href="/menu" className="btn btn-ghost" style={{ color: "var(--color-bg)", border: "1px solid var(--color-bg)", padding: "10px 16px" }}>
+          <Link href="/menu" className="btn" style={{ background: "var(--color-bg)", color: "var(--color-accent-700)", padding: "10px 16px" }}>
             Start an order &rarr;
           </Link>
         </div>
