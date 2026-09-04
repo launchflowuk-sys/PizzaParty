@@ -1,9 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { prisma } from "@launchflow/db";
-import { getStripe } from "@/lib/stripe";
+import { connectOpts, getStripe } from "@/lib/stripe";
 import { env } from "@/lib/env";
+import { getConfig } from "@/lib/config";
 import { addEvent, markPlaced } from "@/lib/orders";
+
+
+/** Resolve a PaymentIntent's receipt URL, tolerating an unexpanded latest_charge. */
+async function chargeReceiptUrl(latestCharge: Stripe.Charge | string | null | undefined): Promise<string | undefined> {
+  if (latestCharge && typeof latestCharge === "object") return latestCharge.receipt_url ?? undefined;
+  if (typeof latestCharge !== "string" || !latestCharge) return undefined;
+  try {
+    const charge = await getStripe().charges.retrieve(latestCharge, {}, connectOpts(getConfig().payments.stripeAccountId));
+    return charge.receipt_url ?? undefined;
+  } catch (e) {
+    console.error("[stripe] could not fetch receipt url", (e as Error).message);
+    return undefined;
+  }
+}
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +39,11 @@ export async function POST(req: NextRequest) {
       const payment = await prisma.payment.findFirst({ where: { stripePaymentIntentId: pi.id } });
       const orderId = payment?.orderId ?? (pi.metadata?.orderId as string | undefined);
       if (!orderId) break;
-      const charge = pi.latest_charge as Stripe.Charge | string | null;
-      await prisma.payment.update({ where: { orderId }, data: { status: "succeeded", stripePaymentIntentId: pi.id, receiptUrl: typeof charge === "object" && charge?.receipt_url ? charge.receipt_url : undefined } }).catch(() => null);
+      // Webhook payloads never expand nested objects, so latest_charge arrives as
+      // a bare id. Fetch the charge to get its receipt URL; best-effort only, a
+      // failure here must not stop the order being marked paid.
+      const receiptUrl = await chargeReceiptUrl(pi.latest_charge);
+      await prisma.payment.update({ where: { orderId }, data: { status: "succeeded", stripePaymentIntentId: pi.id, receiptUrl } }).catch(() => null);
       await addEvent(orderId, "paid", "stripe", `PaymentIntent ${pi.id}`);
       await markPlaced(orderId, "stripe");
       break;
