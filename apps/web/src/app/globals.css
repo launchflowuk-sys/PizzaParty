@@ -21,3 +21,41 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .fp-cell { border-right: 2px solid var(--color-divider); border-bottom: 2px solid var(--color-divider); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .fp-cell:hover { background: var(--color-surface); }
 @keyframes fp-pulse { 0%,100% { box-shadow: 0 0 0 0 var(--color-accent-300); } 50% { box-shadow: 0 0 0 6px var(--color-accent-200); } }
+
+/* ── Layout classes ─────────────────────────────────────────────────────────
+   The prototypes are desktop-first at 1200px and carry no mobile design. These
+   classes hold the desktop layout exactly as drawn, then collapse below it so the
+   site is usable on a phone - which is where most takeaway orders come from.
+   Columns live here rather than inline so the media queries can win. */
+.fp-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.fp-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.fp-split-hero { display: grid; grid-template-columns: minmax(0,7fr) minmax(0,5fr); gap: 56px; align-items: center; }
+.fp-split-half { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 56px; align-items: start; }
+.fp-split-rail { display: grid; grid-template-columns: 200px 1fr; gap: 48px; align-items: start; }
+.fp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+.fp-dealrow { display: grid; grid-template-columns: 120px 1fr 2fr auto; gap: 32px; align-items: center; }
+
+@media (max-width: 1000px) {
+  .fp-grid-4 { grid-template-columns: repeat(3, 1fr); }
+  .fp-split-hero, .fp-split-half { grid-template-columns: minmax(0,1fr); gap: 32px; }
+  .fp-split-rail { grid-template-columns: minmax(0,1fr); gap: 24px; }
+  /* The category rail and the product photograph stop sticking once stacked. */
+  .fp-split-rail > aside, .fp-split-half > div:first-child { position: static !important; }
+  .fp-stats { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .fp-dealrow { grid-template-columns: 90px 1fr; row-gap: 12px; }
+  .fp-dealrow > p { grid-column: 1 / -1; }
+}
+
+@media (max-width: 700px) {
+  .fp-wrap { padding-inline: 16px; }
+  .fp-grid-4, .fp-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  /* Wrap rather than overflow; the nav is a single flex row at desktop width. */
+  .nav { flex-wrap: wrap; row-gap: 8px; padding-inline: 16px !important; }
+  .nav .nav-brand { margin-right: 0; }
+  .nav .seg { order: 10; }
+}
+
+@media (max-width: 440px) {
+  .fp-grid-4, .fp-grid-3 { grid-template-columns: minmax(0,1fr); }
+}
+

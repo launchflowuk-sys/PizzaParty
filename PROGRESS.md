@@ -14,6 +14,7 @@ literally would have made the product worse for this client.
 | `<link>` the Google Fonts stylesheet | Archivo via `next/font` (self-hosted, same family and weights) | A render-blocking font request would cost the Lighthouse 100 the storefront currently holds. Tokens are unchanged. |
 | "No Tailwind" | Modernist CSS ported verbatim and imported **after** Tailwind; converted screens use only design-system classes | The repo has 20+ existing screens on Tailwind. Ripping it out before the rebuild lands would break every unconverted page. Tailwind gets removed once the last screen is converted. |
 | Routes `/track/[orderNo]`, `/build`, `/rewards`, `/shops` | Not yet created | Existing app uses `/order/[id]`. Nav links to unbuilt routes are held back rather than shipped as 404s. |
+| Desktop-first at 1200px, no mobile design given | Added a responsive layer: desktop is pixel-identical, layouts collapse below 1000px / 700px / 440px | Converted faithfully, the storefront overflowed a 375px phone by 111px and the product screen kept two 127px columns. Most takeaway orders come from a phone. The prototypes contain no mobile design at all, so these breakpoints are invented - worth a designer's eye. |
 
 ## Foundation
 
@@ -31,9 +32,9 @@ literally would have made the product worse for this client.
 - [x] `#home` — Home A "Ruled grid" (hero, numerals, ruled menu grid, deals list, red closing banner)
 - [ ] `#home-poster` — Home B "Red poster"
 - [ ] `#home-order` — Home C "Order-first"
-- [ ] `#menu`
+- [x] `#menu` — category rail, live search, 3-up ruled grid
 - [ ] `#builder`
-- [ ] `#product`
+- [x] `#product` — sticky photo, ruled size/base radios, topping chips, qty + add bar
 - [ ] `#cart`
 - [ ] `#checkout`
 - [ ] `#tracker`

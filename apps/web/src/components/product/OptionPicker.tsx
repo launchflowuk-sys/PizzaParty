@@ -46,45 +46,81 @@ export function useSelection(product: PickerProduct, allowedSizes?: string[]) {
   return { sizes, size, setSize, mods, toggle, sel };
 }
 
+const H3: React.CSSProperties = { fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, margin: "28px 0 4px" };
+const ROW: React.CSSProperties = { display: "flex", padding: "10px 0", borderTop: "1px solid var(--color-divider)" };
+const LIST: React.CSSProperties = { display: "grid", borderBottom: "2px solid var(--color-divider)" };
+
+/** Option picker, styled to the Product screen in `Farm Pizza.dc.html`: single-choice
+ *  groups are ruled radio rows, multi-choice groups are a row of toggle chips. The
+ *  selection and pricing logic in `useSelection` is unchanged. */
 export function OptionPicker({ product, state }: { product: PickerProduct; state: ReturnType<typeof useSelection> }) {
   const { sizes, size, setSize, mods, toggle } = state;
   return (
-    <div className="space-y-6">
+    <div>
       {sizes.length > 1 ? (
-        <fieldset>
-          <legend className="lf-label">Size</legend>
-          <div className="grid grid-cols-3 gap-2">
+        <fieldset style={{ border: 0, margin: 0, padding: 0 }}>
+          <legend style={{ ...H3, marginTop: 32, padding: 0 }}>Size</legend>
+          <div style={LIST}>
             {sizes.map((s) => (
-              <label key={s.key} className={`lf-card p-3 text-center cursor-pointer border-2 ${size === s.key ? "border-brand" : "border-transparent"} ${s.soldOut ? "opacity-40" : ""}`}>
-                <input type="radio" name={`size-${product.slug}`} className="sr-only" value={s.key} checked={size === s.key} disabled={s.soldOut} onChange={() => setSize(s.key)} />
-                <span className="block font-semibold text-sm">{s.name}</span>
-                <span className="block text-sm text-muted">{gbp(s.price)}</span>
+              <label key={s.key} className="radio" style={{ ...ROW, opacity: s.soldOut ? 0.45 : 1 }}>
+                <input type="radio" name={`size-${product.slug}`} value={s.key} checked={size === s.key} disabled={s.soldOut} onChange={() => setSize(s.key)} />
+                <span className="dot" />
+                <span style={{ flex: 1 }}>{s.name}</span>
+                <span style={{ color: "var(--color-neutral-700)" }}>{gbp(s.price)}</span>
               </label>
             ))}
           </div>
         </fieldset>
       ) : null}
-      {product.groups.map((g) => (
-        <fieldset key={g.key}>
-          <legend className="lf-label">
-            {g.name} <span className="font-normal text-muted">{g.minSelect > 0 ? "(required)" : g.maxSelect > 1 ? `(up to ${g.maxSelect})` : "(optional)"}</span>
-          </legend>
-          <div className="lf-card divide-y divide-line">
-            {g.modifiers.map((m) => {
-              const checked = mods.some((x) => x.group === g.key && x.modifier === m.key);
-              return (
-                <label key={m.key} className={`flex items-center justify-between gap-3 p-3 min-h-12 cursor-pointer ${m.soldOut ? "opacity-40" : ""}`}>
-                  <span className="flex items-center gap-3">
-                    <input type={g.maxSelect === 1 ? "radio" : "checkbox"} name={`${product.slug}-${g.key}`} checked={checked} disabled={m.soldOut} onChange={() => toggle(g, m.key)} className="accent-brand w-5 h-5" />
-                    <span>{m.name}</span>
-                  </span>
-                  <span className="text-sm text-muted">{m.price ? `+${gbp(m.price)}` : ""}</span>
-                </label>
-              );
-            })}
-          </div>
-        </fieldset>
-      ))}
+
+      {product.groups.map((g) =>
+        g.maxSelect === 1 ? (
+          <fieldset key={g.key} style={{ border: 0, margin: 0, padding: 0 }}>
+            <legend style={{ ...H3, padding: 0 }}>
+              {g.name}
+              {g.minSelect > 0 ? null : <span style={{ fontWeight: 400, fontSize: 13, color: "var(--color-neutral-600)" }}> (optional)</span>}
+            </legend>
+            <div style={LIST}>
+              {g.modifiers.map((m) => {
+                const checked = mods.some((x) => x.group === g.key && x.modifier === m.key);
+                return (
+                  <label key={m.key} className="radio" style={{ ...ROW, opacity: m.soldOut ? 0.45 : 1 }}>
+                    <input type="radio" name={`${product.slug}-${g.key}`} checked={checked} disabled={m.soldOut} onChange={() => toggle(g, m.key)} />
+                    <span className="dot" />
+                    <span style={{ flex: 1 }}>{m.name}</span>
+                    <span style={{ color: "var(--color-neutral-700)" }}>{m.price ? `+${gbp(m.price)}` : ""}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        ) : (
+          <fieldset key={g.key} style={{ border: 0, margin: 0, padding: 0 }}>
+            <legend style={{ ...H3, marginBottom: 10, padding: 0 }}>
+              {g.name}
+              <span style={{ fontWeight: 400, fontSize: 13, color: "var(--color-neutral-600)" }}> (up to {g.maxSelect})</span>
+            </legend>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {g.modifiers.map((m) => {
+                const checked = mods.some((x) => x.group === g.key && x.modifier === m.key);
+                return (
+                  <button
+                    key={m.key}
+                    type="button"
+                    className={`btn ${checked ? "btn-primary" : "btn-secondary"}`}
+                    aria-pressed={checked}
+                    disabled={m.soldOut}
+                    onClick={() => toggle(g, m.key)}
+                  >
+                    {m.name}
+                    {m.price ? <span style={{ fontWeight: 400, fontSize: 12, opacity: 0.75 }}>+{gbp(m.price)}</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
+        ),
+      )}
     </div>
   );
 }

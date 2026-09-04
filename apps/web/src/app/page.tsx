@@ -26,14 +26,8 @@ export default async function Home() {
 
       {/* hero */}
       <section
-        className="fp-wrap"
-        style={{
-          padding: "72px 32px 56px",
-          display: "grid",
-          gridTemplateColumns: "minmax(0,7fr) minmax(0,5fr)",
-          gap: 56,
-          alignItems: "center",
-        }}
+        className="fp-wrap fp-split-hero"
+        style={{ padding: "72px 32px 56px" }}
       >
         <div>
           <span className="fp-kicker" style={{ marginBottom: 20 }}>{towns}</span>
@@ -63,7 +57,7 @@ export default async function Home() {
       <div className="fp-rule" />
 
       {/* the numbers */}
-      <section className="fp-wrap" style={{ padding: "40px 32px", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 32 }}>
+      <section className="fp-wrap fp-stats" style={{ padding: "40px 32px" }}>
         {[
           [primary ? `${primary.deliveryMinutes} min` : "—", "Average delivery time"],
           [featured[0] ? gbpShort(featured[0].product.sizes[0]?.price ?? 0) : "—", `A ${featured[0]?.product.name ?? "pizza"}, always`],
@@ -90,7 +84,7 @@ export default async function Home() {
           </div>
           <Link href="/menu" style={{ fontSize: 14 }}>Full menu &rarr;</Link>
         </div>
-        <div className="fp-grid" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+        <div className="fp-grid fp-grid-4">
           {featured.map(({ product, category }) => (
             <div key={product.slug} className="fp-cell">
               <div className="fp-photo" style={{ aspectRatio: "4/3" }}>
@@ -121,10 +115,8 @@ export default async function Home() {
             {deals.map((d) => (
               <div
                 key={d.slug}
-                style={{
-                  display: "grid", gridTemplateColumns: "120px 1fr 2fr auto", gap: 32,
-                  alignItems: "center", padding: "20px 0", borderBottom: "2px solid var(--color-divider)",
-                }}
+                className="fp-dealrow"
+                style={{ padding: "20px 0", borderBottom: "2px solid var(--color-divider)" }}
               >
                 <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 32, letterSpacing: "-.02em", color: "var(--color-accent)" }}>
                   {gbpShort(d.price)}
