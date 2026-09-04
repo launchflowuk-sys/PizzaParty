@@ -2691,6 +2691,18 @@
       "fulfilment": [
         "delivery"
       ]
+    },
+    {
+      "code": "COMEBACK15",
+      "type": "percent",
+      "value": 15,
+      "minOrder": 12
+    },
+    {
+      "code": "TUESDAY20",
+      "type": "percent",
+      "value": 20,
+      "minOrder": 15
     }
   ]
 }

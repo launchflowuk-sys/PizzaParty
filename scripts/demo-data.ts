@@ -23,8 +23,9 @@ const DAYS = 270;
 const CUSTOMERS = 850;
 /** Days of proper trading volume at the end, so the dashboard is not a ghost town. */
 const RECENT_DAYS = 21;
-/** Ofcom reserves 07700 900000-900999 for fiction. Nothing here can ring a real phone. */
-const PHONE_PREFIX = "0770090";
+/** Ofcom reserves 07700 900000-900999 for fiction. Stored E.164, the way the
+ *  app normalises every real number, so demo customers and real orders join up. */
+const PHONE_PREFIX = "+44770090";
 
 if (!slug) { console.error("Usage: pnpm demo-data <slug> [--wipe]"); process.exit(1); }
 

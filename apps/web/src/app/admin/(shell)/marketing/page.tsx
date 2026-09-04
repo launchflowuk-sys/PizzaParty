@@ -2,7 +2,7 @@ import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
-import { TRIGGERS, automationStats, audienceSize, marketingTotals, commissionSaved, SMS_COST_PENCE } from "@/lib/marketing";
+import { TRIGGERS, automationStats, audienceSize, marketingTotals, commissionSaved, promoWarning, audienceKind, SMS_COST_PENCE } from "@/lib/marketing";
 import { saveAutomation, toggleAutomation, runAutomationNow } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -21,13 +21,16 @@ export default async function MarketingPage() {
   const [totals, saved, promos] = await Promise.all([
     marketingTotals(client.id),
     commissionSaved(client.id, monthStart),
-    prisma.promo.findMany({ where: { clientId: client.id, active: true }, select: { code: true } }),
+    prisma.promo.findMany({ where: { clientId: client.id, active: true }, select: { code: true, minOrder: true, firstOrderOnly: true, fulfilment: true } }),
   ]);
 
   const rows = await Promise.all(automations.map(async (a) => ({
     a,
     stats: await automationStats(a.id),
     waiting: await audienceSize({ clientId: client.id, trigger: a.trigger, days: a.days, cooldownDays: a.cooldownDays }),
+    // A code the recipients cannot use is the one failure this screen cannot
+    // show you any other way - the sends succeed, they just never convert.
+    note: promoWarning(promos.find((p) => p.code === a.promoCode), audienceKind(a.trigger)),
   })));
 
   const optedIn = await prisma.customer.count({ where: { clientId: client.id, marketingOptIn: true, phone: { not: "" } } });
@@ -89,13 +92,16 @@ export default async function MarketingPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map(({ a, stats, waiting }) => (
+              {rows.map(({ a, stats, waiting, note }) => (
                 <tr key={a.id}>
                   <td style={{ fontWeight: 600 }}>{a.name}</td>
                   <td>{TRIGGERS.find((t) => t.key === a.trigger)?.label ?? a.trigger}<br />
                     <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{a.days} days &middot; {a.channel.toUpperCase()}</span>
                   </td>
-                  <td style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13 }}>{a.promoCode || "—"}</td>
+                  <td style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13 }}>
+                    {a.promoCode || "—"}
+                    {note ? <><br /><span style={{ fontFamily: "inherit", fontSize: 11, color: "var(--color-accent-700)", fontWeight: 600 }}>{note}</span></> : null}
+                  </td>
                   <td style={{ textAlign: "right" }}>{waiting}</td>
                   <td style={{ textAlign: "right" }}>{stats.sent}</td>
                   <td style={{ textAlign: "right" }}>{stats.redeemed}</td>
@@ -147,7 +153,7 @@ export default async function MarketingPage() {
             </div>
             <div className="field">
               <label htmlFor="promoCode">Offer code</label>
-              <select id="promoCode" name="promoCode" className="input" defaultValue={promos[0]?.code ?? ""}>
+              <select id="promoCode" name="promoCode" className="input" defaultValue={promos.find((p) => !p.firstOrderOnly)?.code ?? ""}>
                 <option value="">No code (not measurable)</option>
                 {promos.map((p) => <option key={p.code} value={p.code}>{p.code}</option>)}
               </select>

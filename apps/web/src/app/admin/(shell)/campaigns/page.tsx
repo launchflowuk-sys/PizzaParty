@@ -4,7 +4,7 @@ import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
 import { SEGMENTS, segmentWhere, segmentLabel } from "@/lib/segments";
-import { campaignStats, SMS_COST_PENCE } from "@/lib/marketing";
+import { campaignStats, promoWarning, audienceKind, SMS_COST_PENCE } from "@/lib/marketing";
 import { sendCampaign } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -20,10 +20,18 @@ export default async function AdminCampaigns() {
       ...s,
       n: await prisma.customer.count({ where: { clientId: client.id, marketingOptIn: true, phone: { not: "" }, ...segmentWhere(s.key) } }),
     }))),
-    prisma.promo.findMany({ where: { clientId: client.id, active: true }, select: { code: true } }),
+    prisma.promo.findMany({ where: { clientId: client.id, active: true }, select: { code: true, minOrder: true, firstOrderOnly: true, fulfilment: true } }),
   ]);
 
   const rows = await Promise.all(past.map(async (c) => ({ c, stats: await campaignStats(c.id) })));
+
+  // Every campaign here goes to people who have ordered before, so a
+  // first-order-only code would be dead on arrival. Default to one that works
+  // and say plainly which of the others do not.
+  const notes = promos
+    .map((p) => ({ code: p.code, note: promoWarning(p, audienceKind("lapsed_60d")) }))
+    .filter((n) => n.note);
+  const usable = promos.filter((p) => !notes.some((n) => n.code === p.code));
 
   return (
     <>
@@ -61,7 +69,7 @@ export default async function AdminCampaigns() {
               </div>
               <div className="field">
                 <label htmlFor="promoCode">Offer code</label>
-                <select id="promoCode" name="promoCode" className="input" defaultValue={promos[0]?.code ?? ""}>
+                <select id="promoCode" name="promoCode" className="input" defaultValue={usable[0]?.code ?? ""}>
                   <option value="">No code (not measurable)</option>
                   {promos.map((p) => <option key={p.code} value={p.code}>{p.code}</option>)}
                 </select>
@@ -80,6 +88,14 @@ export default async function AdminCampaigns() {
               <strong>{"{name}"}</strong> becomes their first name, <strong>{"{shop}"}</strong> the shop
               name, <strong>{"{code}"}</strong> the offer code above.
             </p>
+            {notes.length ? (
+              <div style={{ border: "2px solid var(--color-accent-700)", padding: 12 }}>
+                <strong style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.06em" }}>Check the code</strong>
+                <ul style={{ margin: "6px 0 0", paddingLeft: 18, fontSize: 12, lineHeight: 1.6, color: "var(--color-neutral-700)" }}>
+                  {notes.map((n) => <li key={n.code}>{n.note}</li>)}
+                </ul>
+              </div>
+            ) : null}
             <button className="btn btn-primary" style={{ justifySelf: "start" }}>Send now</button>
           </form>
         </div>

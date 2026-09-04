@@ -16,8 +16,20 @@ const enc = new TextEncoder();
 const b64u = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 const unb64u = (s: string) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(s.length / 4) * 4, "=")), (c) => c.charCodeAt(0));
 
+/**
+ * The HMAC key behind every admin, staff and customer cookie.
+ *
+ * Checked here rather than at module load because this module is evaluated
+ * during `next build`, where no runtime secrets exist. An unset secret in
+ * production would mean a predictable signing key and forgeable admin
+ * sessions, so it fails the request instead of quietly signing with a
+ * placeholder. Local work falls back so the app still runs from a bare clone.
+ */
 async function key(): Promise<CryptoKey> {
-  return crypto.subtle.importKey("raw", enc.encode(env.sessionSecret), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
+  const secret = env.sessionSecret
+    || (env.isProd ? "" : "dev-insecure-secret-change-me");
+  if (!secret) throw new Error("SESSION_SECRET must be set in production");
+  return crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
 }
 
 export async function signToken(payload: Omit<Payload, "exp">, ttlSeconds = TTL[payload.role]): Promise<string> {

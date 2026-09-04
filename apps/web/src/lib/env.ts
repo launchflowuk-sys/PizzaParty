@@ -14,12 +14,11 @@ export const env = {
   kitchenPin: trim(process.env.KITCHEN_PIN),
   adminPassword: trim(process.env.ADMIN_PASSWORD),
   launchflowKey: trim(process.env.LAUNCHFLOW_KEY),
-  // Falls back to a known string for local work only. In production an unset
-  // secret would let anyone forge a signed admin cookie, so it is fatal there.
-  sessionSecret: trim(process.env.SESSION_SECRET)
-    || (process.env.NODE_ENV === "production"
-      ? (() => { throw new Error("SESSION_SECRET must be set in production"); })()
-      : "dev-insecure-secret-change-me"),
+  // Raw value. Deliberately not validated here: this module is evaluated during
+  // `next build`, which runs as production without runtime secrets, so throwing
+  // here would break the build rather than the deployment. lib/auth.ts checks it
+  // at the moment a cookie is signed or read, which is when it actually matters.
+  sessionSecret: trim(process.env.SESSION_SECRET),
   cronSecret: trim(process.env.CRON_SECRET),
   isProd: process.env.NODE_ENV === "production",
 };

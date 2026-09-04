@@ -34,6 +34,39 @@ export const TRIGGERS: { key: TriggerKey; label: string; help: string; defaultDa
     help: "Ordered within N days and opted in. Send by hand when the kitchen is quiet." },
 ];
 
+/**
+ * Whether an offer code can actually be used by the people about to receive it.
+ *
+ * Worth checking, because the failure is invisible and expensive: a first-order
+ * code sent to a win-back list means every recipient is told "not valid" at the
+ * till, and the shop pays for every one of those texts. Pricing silently drops
+ * a promo that does not apply, so nothing else in the system would catch it.
+ */
+export type PromoRule = {
+  code: string; minOrder: number; firstOrderOnly: boolean; fulfilment: string[];
+};
+
+export function promoWarning(promo: PromoRule | null | undefined, audience: "existing" | "new" | "mixed"): string {
+  if (!promo) return "";
+  if (promo.firstOrderOnly && audience !== "new") {
+    return `${promo.code} only works on a first order, so nobody on this list can use it. Pick another code.`;
+  }
+  if (promo.fulfilment.length === 1) {
+    return `${promo.code} only applies to ${promo.fulfilment[0]} orders.`;
+  }
+  if (promo.minOrder >= 2000) {
+    return `${promo.code} needs a basket of at least ${(promo.minOrder / 100).toFixed(2)} pounds.`;
+  }
+  return "";
+}
+
+/** Which kind of customer a segment or trigger describes. */
+export function audienceKind(key: string): "existing" | "new" | "mixed" {
+  if (key === "first_order_thanks") return "new";
+  if (key === "all_optin") return "mixed";
+  return "existing";
+}
+
 /** Merge fields a shop can use in the message body. */
 export function render(template: string, c: { name: string; phone: string }, code: string, shop: string) {
   const first = (c.name || "").trim().split(/\s+/)[0] || "there";

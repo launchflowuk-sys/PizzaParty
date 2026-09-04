@@ -273,18 +273,18 @@
       "trigger": "win_back",
       "days": 45,
       "cooldownDays": 60,
-      "promoCode": "WELCOME10",
+      "promoCode": "COMEBACK15",
       "maxPerRun": 200,
-      "body": "{shop}: we miss you {name}! {code} gets you 10% off your next order. Order direct at farm-pizza.com"
+      "body": "{shop}: we miss you {name}! {code} gets you 15% off your next order. Order direct at farm-pizza.com"
     },
     {
       "name": "Second order nudge",
       "trigger": "second_order",
       "days": 14,
       "cooldownDays": 45,
-      "promoCode": "WELCOME10",
+      "promoCode": "COMEBACK15",
       "maxPerRun": 150,
-      "body": "{name}, hope the first one landed well. {code} for 10% off your next {shop} order."
+      "body": "{name}, hope the first one landed well. {code} for 15% off your next {shop} order."
     },
     {
       "name": "Thank a new customer",
