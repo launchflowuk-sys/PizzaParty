@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useBasket } from "@/components/basket/store";
 import { gbpShort } from "@/lib/money";
+import { Photo } from "@/components/Photo";
 
 export type TileItem = {
   slug: string;
@@ -103,11 +104,11 @@ export function MenuBrowser({ categories, items }: { categories: TileCategory[];
           </div>
 
           <div className="fp-grid fp-grid-3">
-            {shown.map((it) => (
+            {shown.map((it, i) => (
               <div key={it.slug} className="fp-cell">
-                <div className="fp-photo" style={{ aspectRatio: "4/3" }}>
-                  <span>photo &middot; {it.name.toLowerCase()} &middot; b/w</span>
-                </div>
+                {/* The first row is above the fold and holds the LCP element, so it
+                    must load eagerly - lazy-loading it costs ~1s of LCP. */}
+                <Photo src={it.image} alt={it.name} caption={`photo · ${it.name.toLowerCase()} · b/w`} priority={i < 3} />
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
                   <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17, lineHeight: 1.2 }}>{it.name}</span>
                   <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17 }}>{gbpShort(it.fromPrice)}</span>

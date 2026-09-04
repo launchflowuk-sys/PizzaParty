@@ -11,9 +11,9 @@
   "brand": {
     "primary": "#C8322B",
     "secondary": "#111318",
-    "logo": "assets/logo.svg",
-    "og": "assets/og.svg",
-    "hero": "assets/hero.svg",
+    "logo": "assets/logo.png",
+    "og": "assets/og.jpg",
+    "hero": "assets/hero.jpg",
     "tagline": "Fresh pizza, fast delivery in Basildon & Grays"
   },
   "contact": {

@@ -16,6 +16,24 @@ literally would have made the product worse for this client.
 | Routes `/track/[orderNo]`, `/build`, `/rewards`, `/shops` | Not yet created | Existing app uses `/order/[id]`. Nav links to unbuilt routes are held back rather than shipped as 404s. |
 | Desktop-first at 1200px, no mobile design given | Added a responsive layer: desktop is pixel-identical, layouts collapse below 1000px / 700px / 440px | Converted faithfully, the storefront overflowed a 375px phone by 111px and the product screen kept two 127px columns. Most takeaway orders come from a phone. The prototypes contain no mobile design at all, so these breakpoints are invented - worth a designer's eye. |
 
+## Open decision — the primary button fails WCAG AA
+
+`.btn-primary` is accent `#ec3013` filled with ground `#f3f2f2` text: **3.76:1**. AA needs
+4.5:1 for normal-size text, and the button's 14px bold does not qualify as "large" (that
+needs 18.66px bold). The design system's own readme acknowledges the accent/ground pair is
+"tuned to at least 3:1 - enough for icons, large text and interface chrome, not for body
+copy" and prescribes `--color-accent-700` for small accent text - but the primary button
+inverts that pair and was not covered.
+
+This is why accessibility scores 96 rather than 100; it is inherited from the design
+system, not from the conversion. Handoff Phase 2 explicitly requires "WCAG AA contrast",
+so the two requirements conflict.
+
+Moving the fill to `--color-accent-700` (#ae1800) gives **6.41:1** and passes, at the cost
+of a visibly darker red on every primary button. That is a brand decision, so it has been
+left alone pending a call. A second, smaller one: bare links (e.g. the allergen link) are
+distinguished by colour alone and want an underline.
+
 ## Foundation
 
 - [x] Handoff copied to `docs/design_handoff_farm_pizza/`
@@ -84,7 +102,7 @@ head start on tenant theming — the Modernist tokens are the theming surface.
 - [ ] 2px section rules, 1px row rules, visible grid on menu tiles
 - [ ] Archivo only; headings 800 / −0.02em
 - [ ] Flush-left labels, including inside full-width buttons
-- [ ] Photography black and white via `.grayscale`
+- [x] Photography black and white via `.grayscale`
 - [ ] Red reserved for primary actions, specified numerals, one red field per page
 - [ ] Copy verbatim, UK spelling, £ with two decimals
 - [ ] Compared against the prototype side by side at 1280px

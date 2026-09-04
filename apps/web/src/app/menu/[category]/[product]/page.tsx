@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getConfig } from "@/lib/config";
+import { getConfig, assetUrl } from "@/lib/config";
 import { getMenu, productPath } from "@/lib/menu";
 import { toPicker } from "@/lib/picker";
 import { breadcrumbJsonLd, pageTitle, productJsonLd } from "@/lib/seo";
 import { gbpShort } from "@/lib/money";
 import { JsonLd } from "@/components/JsonLd";
+import { Photo } from "@/components/Photo";
 import { AddToBasket } from "@/components/product/AddToBasket";
 
 export const dynamic = "force-dynamic";
@@ -57,11 +58,14 @@ export default async function ProductPage({ params }: Params) {
       />
 
       <div style={{ position: "sticky", top: 104 }}>
-        <div className="grayscale" style={{ aspectRatio: "1", minWidth: 0, overflow: "hidden" }}>
-          <div className="fp-photo" style={{ width: "100%", height: "100%" }}>
-            <span>product photograph &middot; overhead &middot; b/w</span>
-          </div>
-        </div>
+        <Photo
+          src={assetUrl(p.image)}
+          alt={p.name}
+          caption="product photograph &middot; overhead &middot; b/w"
+          ratio="1/1"
+          priority
+          sizes="(max-width: 1000px) 100vw, 550px"
+        />
         <p style={{ margin: "12px 0 0", fontSize: 12, color: "var(--color-neutral-600)", lineHeight: 1.5 }}>
           {p.allergens.length ? <>Allergens: {p.allergens.join(", ")}. </> : null}
           The full allergen sheet is <Link href="/allergens">available here</Link> and at the counter.

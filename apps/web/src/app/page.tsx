@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { getConfig } from "@/lib/config";
+import { getConfig, assetUrl } from "@/lib/config";
 import { getMenu, getLocations, topSellers, productPath } from "@/lib/menu";
 import { availability } from "@/lib/availability";
 import { restaurantJsonLd } from "@/lib/seo";
 import { gbpShort } from "@/lib/money";
 import { JsonLd } from "@/components/JsonLd";
+import { Photo } from "@/components/Photo";
 
 export const dynamic = "force-dynamic";
 
@@ -47,11 +48,14 @@ export default async function Home() {
             <Link href="/menu" className="btn btn-ghost">Browse the menu &rarr;</Link>
           </div>
         </div>
-        <div className="grayscale" style={{ height: 440, minWidth: 0, overflow: "hidden" }}>
-          <div className="fp-photo" style={{ width: "100%", height: "100%" }}>
-            <span>hero photograph &middot; pizza on the pass &middot; b/w</span>
-          </div>
-        </div>
+        <Photo
+          src={assetUrl(cfg.brand.hero)}
+          alt={`${cfg.name} kitchen`}
+          caption="hero photograph &middot; pizza on the pass &middot; b/w"
+          height={440}
+          priority
+          sizes="(max-width: 1000px) 100vw, 450px"
+        />
       </section>
 
       <div className="fp-rule" />
@@ -85,11 +89,14 @@ export default async function Home() {
           <Link href="/menu" style={{ fontSize: 14 }}>Full menu &rarr;</Link>
         </div>
         <div className="fp-grid fp-grid-4">
-          {featured.map(({ product, category }) => (
+          {featured.map(({ product, category }, i) => (
             <div key={product.slug} className="fp-cell">
-              <div className="fp-photo" style={{ aspectRatio: "4/3" }}>
-                <span>photo &middot; {product.name.toLowerCase()} &middot; b/w</span>
-              </div>
+              <Photo
+                src={assetUrl(product.image)}
+                alt={product.name}
+                caption={`photo · ${product.name.toLowerCase()} · b/w`}
+                priority={i < 4}
+              />
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
                 <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17, lineHeight: 1.2 }}>{product.name}</span>
                 <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17 }}>{gbpShort(product.sizes[0]?.price ?? 0)}</span>

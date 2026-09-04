@@ -163,7 +163,8 @@
         "gluten",
         "milk"
       ],
-      "featured": true
+      "featured": true,
+      "image": "products/margherita.jpg"
     },
     {
       "slug": "pepperoni-feast",
@@ -203,7 +204,8 @@
         "gluten",
         "milk"
       ],
-      "featured": true
+      "featured": true,
+      "image": "products/pepperoni-feast.jpg"
     },
     {
       "slug": "bbq-chicken",
@@ -241,7 +243,8 @@
         "gluten",
         "milk"
       ],
-      "featured": true
+      "featured": true,
+      "image": "products/bbq-chicken.jpg"
     },
     {
       "slug": "veggie-supreme",
@@ -280,7 +283,8 @@
       "allergens": [
         "gluten",
         "milk"
-      ]
+      ],
+      "image": "products/veggie-supreme.jpg"
     },
     {
       "slug": "meat-feast",
@@ -319,7 +323,8 @@
       "allergens": [
         "gluten",
         "milk"
-      ]
+      ],
+      "image": "products/meat-feast.jpg"
     },
     {
       "slug": "garlic-bread",
@@ -336,7 +341,8 @@
       "allergens": [
         "gluten",
         "milk"
-      ]
+      ],
+      "image": "products/garlic-bread.jpg"
     },
     {
       "slug": "garlic-bread-cheese",
@@ -354,7 +360,8 @@
       "allergens": [
         "gluten",
         "milk"
-      ]
+      ],
+      "image": "products/garlic-bread-cheese.jpg"
     },
     {
       "slug": "chicken-wings",
@@ -377,7 +384,8 @@
         "dips"
       ],
       "tags": [],
-      "allergens": []
+      "allergens": [],
+      "image": "products/chicken-wings.jpg"
     },
     {
       "slug": "potato-wedges",
@@ -391,42 +399,48 @@
       "tags": [
         "vegan"
       ],
-      "allergens": []
+      "allergens": [],
+      "image": "products/potato-wedges.jpg"
     },
     {
       "slug": "coke-can",
       "category": "drinks",
       "name": "Coca-Cola 330ml",
       "price": 1.2,
-      "tags": []
+      "tags": [],
+      "image": "products/coke-can.jpg"
     },
     {
       "slug": "diet-coke-can",
       "category": "drinks",
       "name": "Diet Coke 330ml",
       "price": 1.2,
-      "tags": []
+      "tags": [],
+      "image": "products/diet-coke-can.jpg"
     },
     {
       "slug": "fanta-can",
       "category": "drinks",
       "name": "Fanta Orange 330ml",
       "price": 1.2,
-      "tags": []
+      "tags": [],
+      "image": "products/fanta-can.jpg"
     },
     {
       "slug": "coke-bottle",
       "category": "drinks",
       "name": "Coca-Cola 1.5L",
       "price": 3.0,
-      "tags": []
+      "tags": [],
+      "image": "products/coke-bottle.jpg"
     },
     {
       "slug": "water",
       "category": "drinks",
       "name": "Still Water 500ml",
       "price": 1.0,
-      "tags": []
+      "tags": [],
+      "image": "products/water.jpg"
     },
     {
       "slug": "chocolate-fudge-cake",
@@ -441,7 +455,8 @@
         "gluten",
         "milk",
         "eggs"
-      ]
+      ],
+      "image": "products/chocolate-fudge-cake.jpg"
     },
     {
       "slug": "ben-jerrys",
@@ -456,7 +471,8 @@
         "milk",
         "eggs",
         "gluten"
-      ]
+      ],
+      "image": "products/ben-jerrys.jpg"
     }
   ],
   "deals": [
