@@ -27,15 +27,15 @@ export function LoginForm() {
     router.refresh();
   }
   return stage === "phone" ? (
-    <form onSubmit={send} className="lf-card p-4 mt-4 space-y-3">
-      <div><label className="lf-label" htmlFor="phone">Mobile number</label><input id="phone" className="lf-input" type="tel" inputMode="tel" autoComplete="tel" required placeholder="07..." value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
-      <button className="lf-btn lf-btn-primary lf-btn-block" disabled={busy}>Text me a code</button>
-      {msg ? <p className="text-sm text-danger">{msg}</p> : null}
+    <form onSubmit={send} className=" p-4 mt-4 space-y-3">
+      <div><label  htmlFor="phone">Mobile number</label><input id="phone" className="input" type="tel" inputMode="tel" autoComplete="tel" required placeholder="07..." value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+      <button className="btn btn-primary btn-block" disabled={busy}>Text me a code</button>
+      {msg ? <p className="text-sm fp-error">{msg}</p> : null}
     </form>
   ) : (
-    <form onSubmit={verify} className="lf-card p-4 mt-4 space-y-3">
-      <div><label className="lf-label" htmlFor="code">6-digit code</label><input id="code" className="lf-input text-center text-2xl tracking-[.4em]" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} /></div>
-      <button className="lf-btn lf-btn-primary lf-btn-block" disabled={busy || code.length !== 6}>Log in</button>
+    <form onSubmit={verify} className=" p-4 mt-4 space-y-3">
+      <div><label  htmlFor="code">6-digit code</label><input id="code" className="input text-center text-2xl tracking-[.4em]" inputMode="numeric" autoComplete="one-time-code" maxLength={6} required value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} /></div>
+      <button className="btn btn-primary btn-block" disabled={busy || code.length !== 6}>Log in</button>
       <button type="button" className="text-sm underline text-muted" onClick={() => setStage("phone")}>Use a different number</button>
       {msg ? <p className="text-sm text-ink-soft">{msg}</p> : null}
     </form>

@@ -33,44 +33,81 @@ export default async function OrderPage({ params }: Params) {
   }
 
   const tz = order.location.timezone;
+  const mode = order.fulfilment === "delivery" ? "Delivery" : "Collection";
+
   return (
-    <div className="lf-container max-w-xl">
-      <p className="pt-6 text-sm text-muted">Order #{order.number} · {order.fulfilment} · {order.location.name}</p>
-      <h1 className="lf-h1 mt-1">{order.status === "pending_payment" ? "Confirming payment…" : `Thanks, ${order.customerName.split(" ")[0]}!`}</h1>
-      <OrderLive orderId={order.id} initial={{ status: order.status, label: STATUS_LABEL[order.status], etaAt: order.etaAt?.toISOString() ?? null, etaMinutes: order.etaMinutes, fulfilment: order.fulfilment, rejectReason: order.rejectReason, scheduledFor: order.scheduledFor?.toISOString() ?? null, tz }} />
+    <section className="fp-wrap" style={{ padding: "40px 32px 64px" }}>
+      <span className="fp-kicker" style={{ marginBottom: 12 }}>
+        Order #{order.number} &middot; {mode} &middot; {order.location.name}
+      </span>
 
-      <section className="lf-card mt-6 divide-y divide-line">
-        {order.items.map((i) => (
-          <div key={i.id} className="p-4 flex justify-between gap-3 text-sm">
-            <div>
-              <p className="font-semibold">{i.qty} × {i.name}{i.sizeName ? ` (${i.sizeName})` : ""}</p>
-              {i.modifiers.length ? <p className="text-muted">{i.modifiers.map((m) => m.name).join(", ")}</p> : null}
-              {i.components.map((c) => <p key={c.id} className="text-muted">• {c.name}{c.sizeName ? ` (${c.sizeName})` : ""}{c.modifiers.length ? ` +${c.modifiers.map((m) => m.name).join(", ")}` : ""}</p>)}
-              {i.notes ? <p className="text-muted italic">“{i.notes}”</p> : null}
+      <OrderLive
+        orderId={order.id}
+        initial={{ status: order.status, label: order.status === "pending_payment" ? "Confirming payment…" : STATUS_LABEL[order.status], etaAt: order.etaAt?.toISOString() ?? null, etaMinutes: order.etaMinutes, fulfilment: order.fulfilment, rejectReason: order.rejectReason, scheduledFor: order.scheduledFor?.toISOString() ?? null, tz }}
+      />
+
+      <div className="fp-split-checkout" style={{ marginTop: 48 }}>
+        <div>
+          {/* Where it's going */}
+          <div style={{ border: "2px solid var(--color-text)", padding: 24, display: "grid", gap: 8 }}>
+            <span style={{ fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--color-neutral-700)" }}>
+              {order.fulfilment === "delivery" ? "Delivering to" : "Collect from"}
+            </span>
+            <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 28, letterSpacing: "-.02em" }}>
+              {order.fulfilment === "delivery"
+                ? [order.deliveryLine1, order.deliveryCity, order.deliveryPostcode].filter(Boolean).join(", ")
+                : order.location.name}
             </div>
-            <p className="font-semibold">{gbp(i.lineTotal)}</p>
+            <p style={{ margin: 0, fontSize: 14, color: "var(--color-neutral-800)" }}>
+              {order.fulfilment === "delivery"
+                ? `From ${order.location.name}${order.location.address ? `, ${order.location.address}` : ""}.`
+                : `${order.location.address || ""}`}
+            </p>
+            {order.scheduledFor ? <p style={{ margin: 0, fontSize: 14 }}>Scheduled for {formatTime(order.scheduledFor, tz)}</p> : null}
+            {order.notes ? <p style={{ margin: 0, fontSize: 14, color: "var(--color-neutral-700)" }}>&ldquo;{order.notes}&rdquo;</p> : null}
           </div>
-        ))}
-        <div className="p-4 text-sm space-y-1">
-          <div className="flex justify-between"><span>Subtotal</span><span>{gbp(order.subtotal)}</span></div>
-          {order.deliveryFee ? <div className="flex justify-between"><span>Delivery</span><span>{gbp(order.deliveryFee)}</span></div> : null}
-          {order.discount ? <div className="flex justify-between text-success"><span>Discount {order.promoCode}</span><span>−{gbp(order.discount)}</span></div> : null}
-          <div className="flex justify-between font-extrabold text-base"><span>Total</span><span>{gbp(order.total)}</span></div>
-          <p className="text-muted">{order.paymentMethod === "cash" ? `Pay cash on ${order.fulfilment}` : order.payment?.status === "succeeded" ? "Paid by card" : "Card payment pending"}</p>
+
+          {cfg.contact.phone ? (
+            <p style={{ fontSize: 13, color: "var(--color-neutral-600)", marginTop: 16 }}>
+              Problem with your order? Call{" "}
+              <a href={`tel:${cfg.contact.phone.replace(/\s+/g, "")}`} style={{ textDecoration: "underline" }}>{cfg.contact.phone}</a>
+            </p>
+          ) : null}
+
+          <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
+            <ReorderButton orderId={order.id} />
+            <Link href="/menu" className="btn btn-secondary">Back to the menu</Link>
+          </div>
         </div>
-      </section>
 
-      <section className="lf-card mt-4 p-4 text-sm">
-        {order.fulfilment === "delivery" ? <p><span className="font-semibold">Deliver to:</span> {[order.deliveryLine1, order.deliveryLine2, order.deliveryCity, order.deliveryPostcode].filter(Boolean).join(", ")}</p> : <p><span className="font-semibold">Collect from:</span> {order.location.name}{order.location.address ? `, ${order.location.address}` : ""}</p>}
-        {order.scheduledFor ? <p className="mt-1"><span className="font-semibold">Scheduled for:</span> {formatTime(order.scheduledFor, tz)}</p> : null}
-        {order.notes ? <p className="mt-1"><span className="font-semibold">Notes:</span> {order.notes}</p> : null}
-        {cfg.contact.phone ? <p className="mt-2 text-muted">Problem with your order? Call <a className="text-brand font-semibold" href={`tel:${cfg.contact.phone.replace(/\s+/g, "")}`}>{cfg.contact.phone}</a></p> : null}
-      </section>
-
-      <div className="mt-6 flex gap-2">
-        <ReorderButton orderId={order.id} />
-        <Link href="/menu" className="lf-btn lf-btn-ghost">Back to menu</Link>
+        <aside style={{ border: "2px solid var(--color-text)", padding: 24, display: "grid", gap: 10, fontSize: 14 }}>
+          {order.items.map((i) => (
+            <div key={i.id} style={{ display: "grid", gap: 2, paddingBottom: 10, borderBottom: "1px solid var(--color-divider)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                <span style={{ fontWeight: 600 }}>{i.qty} × {i.name}{i.sizeName ? ` (${i.sizeName})` : ""}</span>
+                <span style={{ fontWeight: 600 }}>{gbp(i.lineTotal)}</span>
+              </div>
+              {i.modifiers.length ? <span style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>{i.modifiers.map((m) => m.name).join(", ")}</span> : null}
+              {i.components.map((c) => (
+                <span key={c.id} style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>
+                  • {c.name}{c.sizeName ? ` (${c.sizeName})` : ""}{c.modifiers.length ? ` +${c.modifiers.map((m) => m.name).join(", ")}` : ""}
+                </span>
+              ))}
+              {i.notes ? <span style={{ fontSize: 12, fontStyle: "italic", color: "var(--color-neutral-600)" }}>&ldquo;{i.notes}&rdquo;</span> : null}
+            </div>
+          ))}
+          <div style={{ display: "flex", justifyContent: "space-between" }}><span>Subtotal</span><span>{gbp(order.subtotal)}</span></div>
+          {order.deliveryFee ? <div style={{ display: "flex", justifyContent: "space-between" }}><span>Delivery</span><span>{gbp(order.deliveryFee)}</span></div> : null}
+          {order.discount ? <div style={{ display: "flex", justifyContent: "space-between", color: "var(--color-accent-700)" }}><span>{order.promoCode || "Discount"}</span><span>&minus;{gbp(order.discount)}</span></div> : null}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: "2px solid var(--color-divider)", paddingTop: 12 }}>
+            <span style={{ fontWeight: 600 }}>Total</span>
+            <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 28, letterSpacing: "-.02em" }}>{gbp(order.total)}</span>
+          </div>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-600)" }}>
+            {order.paymentMethod === "cash" ? `Pay cash on ${order.fulfilment}` : order.payment?.status === "succeeded" ? "Paid by card" : "Card payment pending"}
+          </p>
+        </aside>
       </div>
-    </div>
+    </section>
   );
 }

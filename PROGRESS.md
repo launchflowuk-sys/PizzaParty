@@ -14,6 +14,7 @@ literally would have made the product worse for this client.
 | `<link>` the Google Fonts stylesheet | Archivo via `next/font` (self-hosted, same family and weights) | A render-blocking font request would cost the Lighthouse 100 the storefront currently holds. Tokens are unchanged. |
 | "No Tailwind" | Modernist CSS ported verbatim and imported **after** Tailwind; converted screens use only design-system classes | The repo has 20+ existing screens on Tailwind. Ripping it out before the rebuild lands would break every unconverted page. Tailwind gets removed once the last screen is converted. |
 | Routes `/track/[orderNo]`, `/build`, `/rewards`, `/shops` | Not yet created | Existing app uses `/order/[id]`. Nav links to unbuilt routes are held back rather than shipped as 404s. |
+| Checkout draws raw card number / expiry / CVC fields | Stripe PaymentElement instead | Taking a card number into our own DOM puts the site in PCI scope. The prototype's card fields are a mockup; Stripe is the only correct implementation. |
 | Desktop-first at 1200px, no mobile design given | Added a responsive layer: desktop is pixel-identical, layouts collapse below 1000px / 700px / 440px | Converted faithfully, the storefront overflowed a 375px phone by 111px and the product screen kept two 127px columns. Most takeaway orders come from a phone. The prototypes contain no mobile design at all, so these breakpoints are invented - worth a designer's eye. |
 
 ## Open decision — the primary button fails WCAG AA
@@ -42,7 +43,7 @@ distinguished by colour alone and want an underline.
 - [x] Page-level constants the DS does not carry (`.fp-wrap`, `.fp-kicker`, `.fp-rule`, `.fp-photo`, `.fp-grid`, `.fp-cell`, `fp-pulse`)
 - [x] Nav rebuilt to the prototype: flush-left brand, links, order-mode `.seg`, basket as the primary accent action
 - [ ] Closed banner + order-context bar
-- [ ] Toast (`Added X · View basket`)
+- [x] Toast (`Added X · View basket`)
 - [ ] Footer converted off Tailwind
 
 ## Storefront — 12 screens
@@ -53,14 +54,14 @@ distinguished by colour alone and want an underline.
 - [x] `#menu` — category rail, live search, 3-up ruled grid
 - [ ] `#builder`
 - [x] `#product` — sticky photo, ruled size/base radios, topping chips, qty + add bar
-- [ ] `#cart`
-- [ ] `#checkout`
-- [ ] `#tracker`
-- [ ] `#deals`
-- [ ] `#rewards`
-- [ ] `#stores`
-- [ ] `#account`
-- [ ] `#orders`
+- [x] `#cart` — ruled rows, "Goes well with", sticky 2px summary
+- [x] `#checkout` — single page, four numbered ruled sections, sticky summary
+- [x] `#tracker` — accent progress rule, square step markers, live over SSE
+- [x] `#deals` — ruled deal grid with large accent prices, promo-code list
+- [x] `#rewards` — built and gated on `loyalty.enabled` (off for this client, so it 404s)
+- [x] `#stores` — `/shops`: ruled shop list, map placeholder, hours table
+- [x] `#account` — ruled order history, points panel, saved addresses
+- [x] `#orders` — merged into `/account`, as the data is the same list
 
 ## Back office — 11 screens
 

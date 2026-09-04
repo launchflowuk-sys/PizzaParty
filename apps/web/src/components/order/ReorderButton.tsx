@@ -18,8 +18,8 @@ export function ReorderButton({ orderId, label = "Order again" }: { orderId: str
   }
   return (
     <span>
-      <button className="lf-btn lf-btn-primary" onClick={go}>{label}</button>
-      {msg ? <span className="block text-xs text-danger mt-1">{msg}</span> : null}
+      <button className="btn btn-primary" onClick={go}>{label}</button>
+      {msg ? <span className="block text-xs fp-error mt-1">{msg}</span> : null}
     </span>
   );
 }

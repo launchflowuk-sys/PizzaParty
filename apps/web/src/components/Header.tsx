@@ -3,13 +3,13 @@ import { ModeSeg } from "./ModeSeg";
 import { BasketBadge } from "./basket/BasketBadge";
 import type { Fulfilment } from "@/lib/basket-types";
 
-/* The prototype nav also carries "Build your own", "Crust Club" and "Shops". Those
-   screens are not built yet, so they are held back rather than shipped as dead links -
-   see PROGRESS.md. Add each one here as its route lands. */
+/* The prototype nav also carries "Build your own" and "Crust Club"; those screens are
+   not built yet, so they are held back rather than shipped as dead links - see
+   PROGRESS.md. Add each one here as its route lands. */
 const LINKS = [
   { href: "/menu", label: "Menu" },
   { href: "/deals", label: "Deals" },
-  { href: "/contact", label: "Shops" },
+  { href: "/shops", label: "Shops" },
 ];
 
 /** Storefront nav. Ported from the `Farm Pizza.dc.html` prototype: brand flush left,

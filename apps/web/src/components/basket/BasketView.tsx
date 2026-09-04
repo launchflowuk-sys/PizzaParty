@@ -1,101 +1,168 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBasket } from "./store";
 import { useServerPrice } from "./useServerPrice";
 import { gbp } from "@/lib/money";
 
+type Upsell = { name: string; href: string; price: number; description?: string };
+
+/** Basket screen from `Farm Pizza.dc.html`: ruled line rows on the left under a
+ *  "Goes well with" grid, and a 2px-ruled summary that sticks on the right. */
 export function BasketView() {
-  const { lines, setQty, remove, fulfilment, setFulfilment, promoCode, setPromo, postcode } = useBasket();
+  const { lines, setQty, remove, fulfilment, promoCode, setPromo } = useBasket();
   const { data, loading } = useServerPrice();
   const [code, setCode] = useState(promoCode);
-  const [suggest, setSuggest] = useState<{ name: string; href: string; price: number }[] | null>(null);
 
   if (lines.length === 0) {
     return (
-      <div className="lf-card p-8 mt-6 text-center">
-        <p className="text-muted">Your basket is empty.</p>
-        <Link href="/menu" className="lf-btn lf-btn-primary mt-4">Browse the menu</Link>
-      </div>
+      <section className="fp-wrap" style={{ padding: "40px 32px 64px" }}>
+        <span className="fp-kicker" style={{ marginBottom: 12 }}>Basket</span>
+        <h1 className="fp-h1">Your basket is empty</h1>
+        <p style={{ fontSize: 15, color: "var(--color-neutral-800)", margin: "12px 0 24px" }}>
+          Nothing in here yet. Pick something from the menu and it will show up.
+        </p>
+        <div style={{ display: "flex", gap: 12 }}>
+          <Link href="/menu" className="btn btn-primary">See the menu</Link>
+          <Link href="/deals" className="btn btn-secondary">Deals</Link>
+        </div>
+      </section>
     );
   }
 
-  const canCheckout = data && data.errors.length === 0 && data.lines.length > 0 && !loading;
+  const count = lines.reduce((a, l) => a + l.qty, 0);
+  const canCheckout = !!data && data.errors.length === 0 && data.lines.length > 0 && !loading;
+  const feeName = fulfilment === "delivery" ? "Delivery" : "Collection";
 
   return (
-    <div className="mt-4 space-y-4">
-      <div className="lf-card divide-y divide-line">
-        {lines.map((l) => (
-          <div key={l.key} className="p-4 flex gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold">{l.name ?? l.product ?? l.deal}</p>
-              {l.detail ? <p className="text-sm text-muted">{l.detail}</p> : null}
-              {l.notes ? <p className="text-sm text-muted italic">“{l.notes}”</p> : null}
-              <div className="mt-2 flex items-center gap-2">
-                <button className="w-9 h-9 rounded-full border border-line" aria-label="Decrease" onClick={() => setQty(l.key, l.qty - 1)}>−</button>
-                <span className="w-6 text-center font-bold">{l.qty}</span>
-                <button className="w-9 h-9 rounded-full border border-line" aria-label="Increase" onClick={() => setQty(l.key, l.qty + 1)}>+</button>
-                <button className="ml-2 text-xs text-muted underline" onClick={() => remove(l.key)}>Remove</button>
+    <section className="fp-wrap" style={{ padding: "40px 32px 64px" }}>
+      <span className="fp-kicker" style={{ marginBottom: 12 }}>Basket</span>
+      <h1 className="fp-h1">{count} {count === 1 ? "item" : "items"}</h1>
+
+      <div className="fp-split-basket" style={{ marginTop: 28 }}>
+        <div>
+          <div style={{ borderTop: "2px solid var(--color-divider)" }}>
+            {lines.map((l) => (
+              <div key={l.key} className="fp-basketrow">
+                <div>
+                  <div style={{ fontWeight: 600 }}>{l.name ?? l.product ?? l.deal}</div>
+                  {l.detail ? <div style={{ fontSize: 13, color: "var(--color-neutral-600)", marginTop: 2 }}>{l.detail}</div> : null}
+                  {l.notes ? <div style={{ fontSize: 13, color: "var(--color-neutral-600)", fontStyle: "italic", marginTop: 2 }}>&ldquo;{l.notes}&rdquo;</div> : null}
+                  <button
+                    onClick={() => remove(l.key)}
+                    style={{ background: "none", border: 0, padding: "4px 0 0", font: "inherit", fontSize: 12, color: "var(--color-accent-700)", cursor: "pointer" }}
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="seg">
+                  <button className="seg-opt" aria-label={`Decrease ${l.name ?? "item"}`} onClick={() => setQty(l.key, l.qty - 1)}
+                    style={{ background: "none", border: 0, font: "inherit", cursor: "pointer", width: 36, justifyContent: "center" }}>&minus;</button>
+                  <span className="seg-opt" style={{ minWidth: 40, justifyContent: "center", fontWeight: 600 }}>{l.qty}</span>
+                  <button className="seg-opt" aria-label={`Increase ${l.name ?? "item"}`} onClick={() => setQty(l.key, l.qty + 1)}
+                    style={{ background: "none", border: 0, borderLeft: "1px solid var(--color-divider)", font: "inherit", cursor: "pointer", width: 36, justifyContent: "center" }}>+</button>
+                </div>
+                <div style={{ textAlign: "right", fontWeight: 600 }}>{l.lineTotal != null ? gbp(l.lineTotal) : "…"}</div>
               </div>
-            </div>
-            <p className="font-bold">{l.lineTotal != null ? gbp(l.lineTotal) : "…"}</p>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <div className="lf-card p-4">
-        <p className="lf-label">How do you want it?</p>
-        <div className="grid grid-cols-2 gap-2">
-          {(["delivery", "collection"] as const).map((f) => (
-            <button key={f} className={`lf-btn ${fulfilment === f ? "lf-btn-secondary" : "lf-btn-ghost"}`} onClick={() => setFulfilment(f)}>{f === "delivery" ? "Delivery" : "Collection"}</button>
-          ))}
+          <GoesWellWith />
         </div>
-        {fulfilment === "delivery" ? <p className="text-sm text-muted mt-2">{postcode ? `Delivering to ${postcode}${data?.location ? ` from ${data.location.name}` : ""}.` : "Enter your postcode at checkout."}</p> : null}
+
+        <aside
+          style={{
+            border: "2px solid var(--color-text)", padding: 24, display: "grid", gap: 10,
+            position: "sticky", top: 104, fontSize: 14,
+          }}
+        >
+          <div style={{ display: "flex", gap: 10, alignItems: "center", paddingBottom: 12, borderBottom: "1px solid var(--color-divider)", fontSize: 13 }}>
+            <span style={{ width: 8, height: 8, background: "var(--color-accent)", flex: "none" }} />
+            <span>{data?.location ? `${feeName} from ${data.location.name}` : feeName}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}><span>Subtotal</span><span>{data ? gbp(data.subtotal) : "…"}</span></div>
+          {fulfilment === "delivery" ? (
+            <div style={{ display: "flex", justifyContent: "space-between" }}><span>Delivery</span><span>{data ? gbp(data.deliveryFee) : "…"}</span></div>
+          ) : null}
+          {data?.discount ? (
+            <div style={{ display: "flex", justifyContent: "space-between", color: "var(--color-accent-700)" }}>
+              <span>{data.promoCode || "Discount"}</span><span>&minus;{gbp(data.discount)}</span>
+            </div>
+          ) : null}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: "2px solid var(--color-divider)", paddingTop: 12, marginTop: 4 }}>
+            <span style={{ fontWeight: 600 }}>Total</span>
+            <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 28, letterSpacing: "-.02em" }}>{data ? gbp(data.total) : "…"}</span>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <input className="input" aria-label="Promo code" placeholder="Promo code" value={code} onChange={(e) => setCode(e.target.value)} style={{ textTransform: "uppercase" }} />
+            <button className="btn btn-secondary" onClick={() => setPromo(code.trim().toUpperCase())}>Apply</button>
+          </div>
+          {data?.promoMessage ? <span style={{ fontSize: 12, color: "var(--color-accent-700)" }}>{data.promoMessage}</span> : null}
+
+          {data?.errors.length ? (
+            <div style={{ fontSize: 13, color: "var(--color-accent-700)" }}>
+              {data.errors.map((e) => <p key={e} style={{ margin: "4px 0 0" }}>{e}</p>)}
+            </div>
+          ) : null}
+
+          <Link
+            href="/checkout"
+            aria-disabled={!canCheckout}
+            tabIndex={canCheckout ? undefined : -1}
+            className="btn btn-primary btn-block"
+            style={{ padding: "12px 16px", pointerEvents: canCheckout ? undefined : "none", opacity: canCheckout ? 1 : 0.45 }}
+          >
+            Go to checkout &rarr;
+          </Link>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-600)", lineHeight: 1.5 }}>
+            Prices are checked again on the server at checkout.
+          </p>
+        </aside>
       </div>
-
-      <div className="lf-card p-4">
-        <label className="lf-label" htmlFor="promo">Promo code</label>
-        <div className="flex gap-2">
-          <input id="promo" className="lf-input uppercase" value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. WELCOME10" />
-          <button className="lf-btn lf-btn-ghost shrink-0" onClick={() => setPromo(code.trim().toUpperCase())}>Apply</button>
-        </div>
-        {data?.promoMessage ? <p className={`text-sm mt-2 ${data.promoCode ? "text-success" : "text-danger"}`}>{data.promoMessage}</p> : null}
-      </div>
-
-      {data?.errors.length ? <div className="lf-card p-4 border border-danger/40 text-danger text-sm">{data.errors.map((e) => <p key={e}>{e}</p>)}</div> : null}
-
-      <Upsells onLoad={setSuggest} items={suggest} />
-
-      <div className="lf-card p-4 text-sm space-y-1">
-        <div className="flex justify-between"><span>Subtotal</span><span>{data ? gbp(data.subtotal) : "…"}</span></div>
-        {fulfilment === "delivery" ? <div className="flex justify-between"><span>Delivery</span><span>{data ? gbp(data.deliveryFee) : "…"}</span></div> : null}
-        {data?.discount ? <div className="flex justify-between text-success"><span>Discount</span><span>−{gbp(data.discount)}</span></div> : null}
-        <div className="flex justify-between font-extrabold text-base pt-2 border-t border-line"><span>Total</span><span>{data ? gbp(data.total) : "…"}</span></div>
-      </div>
-
-      <div className="fixed inset-x-0 bottom-0 z-40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-surface/95 backdrop-blur border-t border-line">
-        <Link href="/checkout" aria-disabled={!canCheckout} className={`lf-btn lf-btn-primary lf-btn-block max-w-lg mx-auto justify-between px-5 ${canCheckout ? "" : "pointer-events-none opacity-50"}`}>
-          <span>Checkout</span><span>{data ? gbp(data.total) : ""}</span>
-        </Link>
-      </div>
-    </div>
+    </section>
   );
 }
 
-function Upsells({ items, onLoad }: { items: { name: string; href: string; price: number }[] | null; onLoad: (i: { name: string; href: string; price: number }[]) => void }) {
+/** "Goes well with" - a 4-up ruled grid of upsell suggestions. */
+function GoesWellWith() {
   const lines = useBasket((s) => s.lines);
-  if (items === null) {
-    fetch("/api/basket/upsells", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ products: lines.map((l) => l.product).filter(Boolean) }) })
-      .then((r) => r.json()).then((d) => onLoad(d.items ?? [])).catch(() => onLoad([]));
-    return null;
-  }
-  if (!items.length) return null;
+  const [items, setItems] = useState<Upsell[] | null>(null);
+
+  // Previously this fetched during render, which fires twice under StrictMode and
+  // cannot be cancelled. Moved into an effect with an abort guard.
+  useEffect(() => {
+    let cancelled = false;
+    const products = lines.map((l) => l.product).filter(Boolean);
+    fetch("/api/basket/upsells", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ products }),
+    })
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setItems(d.items ?? []); })
+      .catch(() => { if (!cancelled) setItems([]); });
+    return () => { cancelled = true; };
+    // Only re-run when the set of products changes, not on every quantity tweak.
+  }, [lines.map((l) => l.product).join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!items?.length) return null;
+
   return (
-    <div>
-      <p className="lf-label">Add something?</p>
-      <ul className="flex gap-2 overflow-x-auto hide-scrollbar">
-        {items.map((u) => <li key={u.href} className="shrink-0"><Link href={u.href} className="lf-card block px-3 py-2 text-sm"><span className="font-semibold">{u.name}</span> <span className="text-muted">{gbp(u.price)}</span></Link></li>)}
-      </ul>
+    <div style={{ marginTop: 36 }}>
+      <span className="fp-kicker" style={{ marginBottom: 12 }}>Goes well with</span>
+      <div className="fp-grid fp-grid-4">
+        {items.map((u) => (
+          <div key={u.href} className="fp-cell" style={{ padding: 12, display: "grid", gap: 6 }}>
+            <span style={{ fontWeight: 600, fontSize: 14 }}>{u.name}</span>
+            {u.description ? <span style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>{u.description}</span> : null}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+              <span style={{ fontWeight: 600 }}>{gbp(u.price)}</span>
+              <Link href={u.href} className="btn btn-secondary">Add</Link>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

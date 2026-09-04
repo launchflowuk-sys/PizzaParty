@@ -3,11 +3,8 @@ import { CheckoutFlow } from "@/components/checkout/CheckoutFlow";
 
 export const metadata: Metadata = { title: "Checkout", robots: { index: false } };
 
+/** Heading and container live inside CheckoutFlow so the empty-basket state can
+ *  carry its own heading, as in the prototype. */
 export default function CheckoutPage() {
-  return (
-    <div className="lf-container max-w-xl">
-      <h1 className="lf-h1 pt-6">Checkout</h1>
-      <CheckoutFlow />
-    </div>
-  );
+  return <CheckoutFlow />;
 }

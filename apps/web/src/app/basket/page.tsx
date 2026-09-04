@@ -3,11 +3,8 @@ import { BasketView } from "@/components/basket/BasketView";
 
 export const metadata: Metadata = { title: "Your basket", robots: { index: false } };
 
+/** The screen's heading and container live inside BasketView, because the empty
+ *  state and the filled state have different headings in the prototype. */
 export default function BasketPage() {
-  return (
-    <div className="lf-container max-w-2xl">
-      <h1 className="lf-h1 pt-6">Your basket</h1>
-      <BasketView />
-    </div>
-  );
+  return <BasketView />;
 }
