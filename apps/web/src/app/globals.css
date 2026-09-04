@@ -96,6 +96,26 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .fp-error { color: var(--color-accent-700); }
 .fp-ok { color: var(--color-accent-700); }
 
+/* Back office */
+.fp-admin { position: fixed; inset: 0; z-index: 50; overflow-y: auto; background: var(--color-bg); display: grid; grid-template-columns: 232px minmax(0,1fr); min-height: 100vh; }
+.fp-adminrail { border-right: 2px solid var(--color-divider); position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 20px 16px; background: var(--color-bg); box-sizing: border-box; overflow-y: auto; }
+.fp-adminhead { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 0 0 16px; border-bottom: 2px solid var(--color-divider); margin-bottom: 24px; }
+.fp-adminhead h1 { font-family: var(--font-heading); font-weight: 800; font-size: 32px; line-height: 1.05; letter-spacing: -.02em; margin: 0; }
+.fp-stats4 { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 2px solid var(--color-divider); border-left: 2px solid var(--color-divider); }
+.fp-statcell { border-right: 2px solid var(--color-divider); border-bottom: 2px solid var(--color-divider); padding: 20px; display: grid; gap: 6px; }
+.fp-statcell .n { font-family: var(--font-heading); font-weight: 800; font-size: 40px; line-height: 1; letter-spacing: -.02em; color: var(--color-accent); }
+.fp-statcell .l { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-neutral-700); }
+.fp-adminsplit { display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 32px; align-items: start; }
+
+@media (max-width: 1000px) {
+  .fp-admin { grid-template-columns: minmax(0,1fr); }
+  .fp-adminrail { position: static; height: auto; border-right: 0; border-bottom: 2px solid var(--color-divider); }
+  .fp-adminrail nav { flex-direction: row !important; flex-wrap: wrap; }
+  .fp-adminsplit { grid-template-columns: minmax(0,1fr); }
+  .fp-stats4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) { .fp-stats4 { grid-template-columns: minmax(0,1fr); } }
+
 @media (max-width: 440px) {
   .fp-grid-4, .fp-grid-3 { grid-template-columns: minmax(0,1fr); }
 }

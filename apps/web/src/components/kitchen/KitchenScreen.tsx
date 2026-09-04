@@ -14,6 +14,17 @@ const NEXT: Record<string, { label: string; to: string }[]> = {
 };
 const REASONS = ["Too busy", "Item unavailable", "Outside delivery area", "Closing soon", "Other"];
 
+/** Past this many minutes the ticket timer turns accent, as in the prototype. */
+const LATE_MINUTES = 20;
+
+/** The board's four columns, mapped onto the real order state machine. */
+const COLUMNS: { key: string; label: string; match: (o: O) => boolean }[] = [
+  { key: "new", label: "New", match: (o) => o.status === "placed" },
+  { key: "cooking", label: "In the oven", match: (o) => o.status === "accepted" || o.status === "preparing" },
+  { key: "ready", label: "Ready", match: (o) => o.status === "ready" },
+  { key: "out", label: "Out for delivery", match: (o) => o.status === "out_for_delivery" },
+];
+
 function beep(ctx: AudioContext) {
   const o = ctx.createOscillator(); const g = ctx.createGain();
   o.type = "square"; o.frequency.value = 880; g.gain.value = 0.15;
@@ -22,11 +33,12 @@ function beep(ctx: AudioContext) {
   o.stop(ctx.currentTime + 0.3);
 }
 
+/** Kitchen queue from `Farm Pizza Admin.dc.html`: a four-column ruled board of tickets,
+ *  oldest first. Controls are at least 44px tall so the board works on a wall tablet. */
 export function KitchenScreen() {
   const [orders, setOrders] = useState<O[]>([]);
   const [locs, setLocs] = useState<Loc[]>([]);
   const [sound, setSound] = useState(false);
-  const [tab, setTab] = useState<"new" | "active" | "done">("new");
   const [eta, setEta] = useState<Record<string, number>>({});
   const audio = useRef<AudioContext | null>(null);
   const known = useRef<Set<string>>(new Set());
@@ -60,89 +72,159 @@ export function KitchenScreen() {
     void load();
   }
 
-  const newOrders = orders.filter((o) => o.status === "placed");
-  const active = orders.filter((o) => ["accepted", "preparing", "ready", "out_for_delivery"].includes(o.status));
-  const done = orders.filter((o) => ["completed", "rejected", "cancelled"].includes(o.status)).reverse();
-  const list = tab === "new" ? newOrders : tab === "active" ? active : done;
-
   return (
-    <div className="p-3 sm:p-4 max-w-6xl mx-auto">
-      <header className="flex flex-wrap items-center gap-2 justify-between">
-        <h1 className="text-xl font-extrabold">Kitchen</h1>
-        <div className="flex flex-wrap gap-2 items-center">
+    <div style={{ padding: "16px 20px 40px" }}>
+      <header className="fp-adminhead">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>Kitchen queue</span>
+          <h1>Tickets</h1>
+        </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           {locs.map((l) => (
-            <div key={l.key} className={`lf-pill border ${l.paused ? "bg-warning/30 border-warning" : l.open ? "bg-success/15 border-success/40" : "bg-line border-line"}`}>
+            <span key={l.key} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+              <span
+                style={{
+                  width: 8, height: 8,
+                  background: l.paused ? "var(--color-neutral-500)" : l.open ? "var(--color-accent)" : "var(--color-neutral-400)",
+                  animation: !l.paused && l.open ? "fp-pulse 1.4s ease-in-out infinite" : undefined,
+                }}
+              />
               {l.name}: {l.paused ? `paused${l.pausedUntil ? ` until ${new Date(l.pausedUntil).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}` : ""}` : l.open ? "open" : "closed"}
-              {l.paused ? <button className="ml-1 underline" onClick={() => pause(l.key, 0)}>resume</button> : (
-                <select className="ml-1 bg-transparent" defaultValue="" onChange={(e) => { const m = Number(e.target.value); if (m) pause(l.key, m, "Busy"); e.target.value = ""; }} aria-label={`Pause ${l.name}`}>
-                  <option value="" disabled>pause…</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">1 hour</option><option value="240">Rest of day</option>
+              {l.paused ? (
+                <button className="btn btn-secondary" style={{ minHeight: 44 }} onClick={() => pause(l.key, 0)}>Resume</button>
+              ) : (
+                <select
+                  className="input" style={{ minHeight: 44, width: 120 }} defaultValue=""
+                  aria-label={`Pause ${l.name}`}
+                  onChange={(e) => { const m = Number(e.target.value); if (m) pause(l.key, m, "Busy"); e.target.value = ""; }}
+                >
+                  <option value="" disabled>Pause…</option>
+                  <option value="15">15 min</option><option value="30">30 min</option>
+                  <option value="60">1 hour</option><option value="240">Rest of day</option>
                 </select>
               )}
-            </div>
+            </span>
           ))}
-          <button className={`lf-btn ${sound ? "lf-btn-secondary" : "lf-btn-ghost"}`} onClick={() => { if (!audio.current) audio.current = new AudioContext(); void audio.current.resume(); setSound(true); beep(audio.current); }}>{sound ? "🔔 Sound on" : "🔕 Enable sound"}</button>
+          <button
+            className={sound ? "btn btn-secondary" : "btn btn-primary"}
+            style={{ minHeight: 44 }}
+            onClick={() => { if (!audio.current) audio.current = new AudioContext(); void audio.current.resume(); setSound(true); beep(audio.current); }}
+          >
+            {sound ? "Sound on" : "Enable sound"}
+          </button>
         </div>
       </header>
 
-      <nav className="mt-3 grid grid-cols-3 gap-2">
-        {([["new", `New (${newOrders.length})`], ["active", `In progress (${active.length})`], ["done", `Done (${done.length})`]] as const).map(([k, label]) => (
-          <button key={k} className={`lf-btn ${tab === k ? "lf-btn-secondary" : "lf-btn-ghost"} ${k === "new" && newOrders.length ? "ring-2 ring-brand" : ""}`} onClick={() => setTab(k)}>{label}</button>
-        ))}
-      </nav>
+      <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 16px" }}>
+        Oldest ticket first. Accent timers are past the {LATE_MINUTES}-minute promise.
+      </p>
 
-      <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {list.length === 0 ? <p className="text-muted p-6">Nothing here.</p> : null}
-        {list.map((o) => {
-          const age = Math.round((Date.now() - new Date(o.placedAt ?? o.createdAt).getTime()) / 60000);
-          const defaultEta = o.fulfilment === "delivery" ? (locs.find((l) => l.key === o.locationKey)?.deliveryMinutes ?? 35) : (locs.find((l) => l.key === o.locationKey)?.prepMinutes ?? 15);
+      <div className="fp-kitchen">
+        {COLUMNS.map((col) => {
+          const tickets = orders.filter(col.match);
           return (
-            <article key={o.id} className={`lf-card p-4 border-l-4 ${o.status === "placed" ? "border-brand" : o.fulfilment === "delivery" ? "border-ink" : "border-success"}`}>
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-2xl font-extrabold">#{o.number} <span className="text-sm font-bold uppercase text-muted">{o.fulfilment}</span></p>
-                  <p className="text-sm text-muted">{o.locationName} · {age} min ago · {o.paid ? "PAID" : o.paymentMethod === "cash" ? `CASH ${gbp(o.total)}` : "UNPAID"}</p>
-                  {o.scheduledFor ? <p className="text-sm font-bold text-warning">⏰ For {new Date(o.scheduledFor).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" })}</p> : null}
-                </div>
-                <p className="text-lg font-extrabold">{gbp(o.total)}</p>
+            <div key={col.key} className="fp-kitchencol">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "12px 14px", borderBottom: "2px solid var(--color-divider)" }}>
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16 }}>{col.label}</span>
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 22, color: "var(--color-accent)" }}>{tickets.length}</span>
               </div>
-              <ul className="mt-3 space-y-1 text-[15px]">
-                {o.items.map((i, idx) => (
-                  <li key={idx}>
-                    <span className="font-bold">{i.qty} × {i.name}</span>{i.size ? <span className="text-muted"> ({i.size})</span> : null}
-                    {i.modifiers.length ? <span className="block pl-4 text-ink-soft">+ {i.modifiers.join(", ")}</span> : null}
-                    {i.components.map((c, ci) => <span key={ci} className="block pl-4 text-ink-soft">• {c}</span>)}
-                    {i.notes ? <span className="block pl-4 text-danger font-semibold">“{i.notes}”</span> : null}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3 text-sm"><span className="font-semibold">{o.customerName}</span> · <a className="underline" href={`tel:${o.customerPhone}`}>{o.customerPhone}</a></p>
-              {o.address ? <p className="text-sm">{o.address}</p> : null}
-              {o.notes ? <p className="text-sm text-danger font-semibold mt-1">Note: {o.notes}</p> : null}
-              {o.rejectReason ? <p className="text-sm text-danger mt-1">Rejected: {o.rejectReason}</p> : null}
 
-              {o.status === "placed" ? (
-                <div className="mt-4 space-y-2">
-                  <div className="flex gap-2 items-center">
-                    <label className="text-sm font-semibold">ETA</label>
-                    <select className="lf-input flex-1" value={eta[o.id] ?? defaultEta} onChange={(e) => setEta((p) => ({ ...p, [o.id]: Number(e.target.value) }))}>
-                      {[10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90].map((m) => <option key={m} value={m}>{m} min</option>)}
-                    </select>
-                    <button className="lf-btn lf-btn-primary flex-1" onClick={() => act(o.id, "accepted", { etaMinutes: eta[o.id] ?? defaultEta })}>Accept</button>
-                  </div>
-                  <select className="lf-input" defaultValue="" onChange={(e) => { if (e.target.value && confirm(`Reject #${o.number}?`)) act(o.id, "rejected", { reason: e.target.value }); e.target.value = ""; }} aria-label="Reject with reason">
-                    <option value="" disabled>Reject…</option>{REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
-              ) : NEXT[o.status] ? (
-                <div className="mt-4 flex gap-2">
-                  {NEXT[o.status]!.filter((n) => !(n.to === "out_for_delivery" && o.fulfilment !== "delivery") && !(n.to === "completed" && n.label === "Collected" && o.fulfilment === "delivery")).map((n) => (
-                    <button key={n.to} className="lf-btn lf-btn-secondary flex-1" onClick={() => act(o.id, n.to)}>{n.label}</button>
-                  ))}
-                  {o.etaAt ? <span className="text-xs text-muted self-center">ETA {new Date(o.etaAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span> : null}
-                </div>
-              ) : null}
-              <details className="mt-3 text-xs text-muted"><summary>Print text</summary><pre className="whitespace-pre-wrap">{o.text}</pre></details>
-            </article>
+              <div style={{ display: "grid", gap: 10, padding: 10, alignContent: "start" }}>
+                {tickets.length === 0 ? (
+                  <div style={{ padding: "24px 12px", fontSize: 13, color: "var(--color-neutral-500)" }}>Nothing here.</div>
+                ) : null}
+
+                {tickets.map((o) => {
+                  const age = Math.round((Date.now() - new Date(o.placedAt ?? o.createdAt).getTime()) / 60000);
+                  const late = age >= LATE_MINUTES;
+                  const loc = locs.find((l) => l.key === o.locationKey);
+                  const defaultEta = o.fulfilment === "delivery" ? (loc?.deliveryMinutes ?? 35) : (loc?.prepMinutes ?? 15);
+                  const edge = o.status === "placed" ? "var(--color-accent)" : o.fulfilment === "delivery" ? "var(--color-text)" : "var(--color-neutral-500)";
+                  const next = (NEXT[o.status] ?? []).filter(
+                    (n) => !(n.to === "out_for_delivery" && o.fulfilment !== "delivery") && !(n.to === "completed" && n.label === "Collected" && o.fulfilment === "delivery"),
+                  );
+
+                  return (
+                    <article key={o.id} style={{ background: "var(--color-surface)", padding: 12, display: "grid", gap: 8, borderLeft: `4px solid ${edge}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                        <span style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13, fontWeight: 600 }}>#{o.number}</span>
+                        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16, color: late ? "var(--color-accent)" : "var(--color-text)" }}>
+                          {age} min
+                        </span>
+                      </div>
+
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 11 }}>
+                        <span className="tag tag-neutral">{o.fulfilment === "delivery" ? "Delivery" : "Collection"}</span>
+                        <span className="tag tag-neutral">{o.paid ? "Paid" : o.paymentMethod === "cash" ? `Cash ${gbp(o.total)}` : "Unpaid"}</span>
+                        {o.scheduledFor ? (
+                          <span className="tag tag-accent">
+                            For {new Date(o.scheduledFor).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div style={{ fontSize: 13, display: "grid", gap: 2 }}>
+                        {o.items.map((i, idx) => (
+                          <div key={idx} style={{ display: "grid", gridTemplateColumns: "22px 1fr", gap: 6 }}>
+                            <span style={{ fontWeight: 600 }}>{i.qty}×</span>
+                            <span>
+                              {i.name}{i.size ? ` (${i.size})` : ""}
+                              {i.modifiers.length ? <span style={{ display: "block", color: "var(--color-neutral-700)" }}>+ {i.modifiers.join(", ")}</span> : null}
+                              {i.components.map((c, ci) => <span key={ci} style={{ display: "block", color: "var(--color-neutral-700)" }}>• {c}</span>)}
+                              {i.notes ? <span style={{ display: "block", color: "var(--color-accent-700)", fontWeight: 600 }}>&ldquo;{i.notes}&rdquo;</span> : null}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>
+                        {o.customerName} &middot; <a href={`tel:${o.customerPhone}`}>{o.customerPhone}</a>
+                        {o.address ? <span style={{ display: "block" }}>{o.address}</span> : null}
+                        {o.notes ? <span style={{ display: "block", color: "var(--color-accent-700)", fontWeight: 600 }}>Note: {o.notes}</span> : null}
+                        {o.rejectReason ? <span style={{ display: "block", color: "var(--color-accent-700)" }}>Rejected: {o.rejectReason}</span> : null}
+                      </div>
+
+                      {o.status === "placed" ? (
+                        <div style={{ display: "grid", gap: 8 }}>
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <select
+                              className="input" style={{ minHeight: 44, flex: 1 }} aria-label={`ETA for order ${o.number}`}
+                              value={eta[o.id] ?? defaultEta}
+                              onChange={(e) => setEta((p) => ({ ...p, [o.id]: Number(e.target.value) }))}
+                            >
+                              {[10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90].map((m) => <option key={m} value={m}>{m} min</option>)}
+                            </select>
+                            <button className="btn btn-primary" style={{ minHeight: 44, flex: 1 }} onClick={() => act(o.id, "accepted", { etaMinutes: eta[o.id] ?? defaultEta })}>
+                              Accept
+                            </button>
+                          </div>
+                          <select
+                            className="input" style={{ minHeight: 44 }} defaultValue="" aria-label={`Reject order ${o.number}`}
+                            onChange={(e) => { if (e.target.value && confirm(`Reject #${o.number}?`)) act(o.id, "rejected", { reason: e.target.value }); e.target.value = ""; }}
+                          >
+                            <option value="" disabled>Reject…</option>
+                            {REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                          </select>
+                        </div>
+                      ) : next.length ? (
+                        <div style={{ display: "grid", gap: 8 }}>
+                          {next.map((n) => (
+                            <button key={n.to} className="btn btn-primary btn-block" style={{ minHeight: 44 }} onClick={() => act(o.id, n.to)}>
+                              {n.label}
+                            </button>
+                          ))}
+                          {o.etaAt ? (
+                            <span style={{ fontSize: 11, color: "var(--color-neutral-600)" }}>
+                              ETA {new Date(o.etaAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
       </div>

@@ -65,8 +65,8 @@ distinguished by colour alone and want an underline.
 
 ## Back office — 11 screens
 
-- [ ] `/admin/dashboard`
-- [ ] `/admin/kitchen`
+- [x] `/admin/dashboard` — ruled accent numerals, themed recent-orders table
+- [x] `/admin/kitchen` — four-column ruled ticket board, 44px targets for a wall tablet
 - [ ] `/admin/orders`
 - [ ] `/admin/menu`
 - [ ] `/admin/inventory`
@@ -85,7 +85,7 @@ all verified end to end), the kitchen status machine, SMS on placed/accepted/rea
 pre-order slots, promo codes, server-side repricing.
 
 - [ ] Live kitchen queue / tracker over SSE (currently request-response)
-- [ ] Kitchen usable on a wall tablet (44px targets, offline queue + retry)
+- [~] Kitchen wall tablet: 44px targets done; offline queue + retry still to do
 - [ ] Settings gate the storefront (hours, pause, radius, fees)
 - [ ] Crust Club points on paid orders
 - [ ] Reviews from order receipts
