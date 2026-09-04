@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @import "@launchflow/ui/preset.css";
+/* Modernist design system (docs/design_handoff_farm_pizza). Imported last so the system's
+   element and component rules win over Tailwind preflight. */
+@import "./modernist.css";
 @source "../../../../packages/ui/src";
 
 html { scroll-padding-top: 4.5rem; }
@@ -7,3 +10,14 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .hide-scrollbar { scrollbar-width: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* Page-level constants the prototypes use that the design system does not carry. */
+.fp-wrap { max-width: 1200px; margin: 0 auto; padding-inline: 32px; }
+.fp-kicker { display: block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-accent-700); }
+.fp-rule { height: 2px; background: var(--color-divider); }
+.fp-photo { background: repeating-linear-gradient(-45deg, var(--color-surface) 0 10px, var(--color-neutral-300) 10px 11px); display: flex; align-items: flex-end; padding: 8px; }
+.fp-photo span { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--color-neutral-700); }
+.fp-grid { display: grid; border-top: 2px solid var(--color-divider); border-left: 2px solid var(--color-divider); }
+.fp-cell { border-right: 2px solid var(--color-divider); border-bottom: 2px solid var(--color-divider); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.fp-cell:hover { background: var(--color-surface); }
+@keyframes fp-pulse { 0%,100% { box-shadow: 0 0 0 0 var(--color-accent-300); } 50% { box-shadow: 0 0 0 6px var(--color-accent-200); } }
