@@ -9,7 +9,12 @@ export default async function AdminDeals() {
   const deals = await prisma.deal.findMany({ where: { clientId: client.id }, orderBy: { sortOrder: "asc" }, include: { slots: { orderBy: { sortOrder: "asc" } } } });
   return (
     <div>
-      <h1 className="lf-h2">Deals</h1>
+      <header className="fp-adminhead">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
+          <h1>Deals</h1>
+        </div>
+      </header>
       <div className="mt-4 space-y-3">
         {deals.map((d) => (
           <form key={d.id} action={updateDeal} className="lf-card p-4 flex flex-wrap items-center gap-3">

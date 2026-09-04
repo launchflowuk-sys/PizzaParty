@@ -10,7 +10,12 @@ export default async function AdminPromos() {
   const promos = await prisma.promo.findMany({ where: { clientId: client.id }, orderBy: { code: "asc" } });
   return (
     <div>
-      <h1 className="lf-h2">Promo codes</h1>
+      <header className="fp-adminhead">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
+          <h1>Promotions</h1>
+        </div>
+      </header>
       <form action={upsertPromo} className="lf-card p-4 mt-4 grid gap-2 sm:grid-cols-3">
         <input name="code" placeholder="CODE" className="lf-input uppercase" required />
         <select name="type" className="lf-input"><option value="percent">% off</option><option value="fixed">£ off</option><option value="free_delivery">Free delivery</option></select>

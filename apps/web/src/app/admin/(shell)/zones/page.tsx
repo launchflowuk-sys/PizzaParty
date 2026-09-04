@@ -7,7 +7,12 @@ export default async function AdminZones() {
   const locations = await getLocations();
   return (
     <div>
-      <h1 className="lf-h2">Delivery zones</h1>
+      <header className="fp-adminhead">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
+          <h1>Delivery zones</h1>
+        </div>
+      </header>
       <p className="text-sm text-muted mt-1">Postcode districts, comma separated (e.g. SS13, SS14). A letters-only entry like RM covers the whole area.</p>
       {locations.map((l) => (
         <form key={l.id} action={updateZone} className="lf-card p-4 mt-4 grid gap-3 sm:grid-cols-2">

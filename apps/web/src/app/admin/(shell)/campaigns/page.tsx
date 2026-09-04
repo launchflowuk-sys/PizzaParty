@@ -13,7 +13,12 @@ export default async function AdminCampaigns() {
   ]);
   return (
     <div>
-      <h1 className="lf-h2">Campaigns</h1>
+      <header className="fp-adminhead">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
+          <h1>Campaigns</h1>
+        </div>
+      </header>
       <p className="text-sm text-muted mt-1">Sends only to customers who opted in. Use <code>{"{name}"}</code> for first name. SMS auto-appends “Reply STOP to opt out”.</p>
       <form action={sendCampaign} className="lf-card p-4 mt-4 grid gap-3">
         <div className="grid sm:grid-cols-2 gap-3">
@@ -25,7 +30,7 @@ export default async function AdminCampaigns() {
         <button className="lf-btn lf-btn-primary w-fit">Send now</button>
       </form>
       <h2 className="font-bold mt-8">Sent</h2>
-      <table className="w-full text-sm mt-2 lf-card"><tbody>{past.map((c) => (
+      <table className="table" style={{ width: "100%" }}><tbody>{past.map((c) => (
         <tr key={c.id} className="border-b border-line"><td className="p-2 whitespace-nowrap">{c.createdAt.toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</td><td className="p-2">{c.channel} · {c.segment}</td><td className="p-2 text-muted truncate max-w-md">{c.body}</td><td className="p-2 whitespace-nowrap">{c.sent} sent{c.failed ? `, ${c.failed} failed` : ""}</td></tr>
       ))}</tbody></table>
     </div>

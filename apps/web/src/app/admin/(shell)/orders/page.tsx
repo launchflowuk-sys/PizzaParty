@@ -21,14 +21,20 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
   const qs = new URLSearchParams(Object.entries(sp).filter(([, v]) => v) as [string, string][]).toString();
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="lf-h2">Orders <span className="text-muted text-base">({total})</span></h1><a href={`/api/admin/orders.csv?${qs}`} className="lf-btn lf-btn-ghost">Export CSV</a></div>
+      <header className="fp-adminhead">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office &middot; {total} order{total === 1 ? "" : "s"}</span>
+          <h1>Orders</h1>
+        </div>
+        <a href={`/api/admin/orders.csv?${qs}`} className="btn btn-secondary">Export CSV</a>
+      </header>
       <form className="lf-card p-3 mt-3 flex flex-wrap gap-2 text-sm">
         <select name="status" defaultValue={sp.status ?? ""} className="lf-input w-auto"><option value="">All statuses</option>{STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select>
         <input name="from" type="date" defaultValue={sp.from} className="lf-input w-auto" /><input name="to" type="date" defaultValue={sp.to} className="lf-input w-auto" />
         <input name="q" placeholder="Name, phone, postcode" defaultValue={sp.q} className="lf-input w-56" />
         <button className="lf-btn lf-btn-ghost">Filter</button>
       </form>
-      <div className="overflow-x-auto mt-3"><table className="w-full text-sm lf-card">
+      <div className="overflow-x-auto mt-3"><table className="table" style={{ width: "100%" }}>
         <thead><tr className="text-left border-b border-line"><th className="p-2">#</th><th className="p-2">When</th><th className="p-2">Customer</th><th className="p-2">Type</th><th className="p-2">Shop</th><th className="p-2">Status</th><th className="p-2 text-right">Total</th></tr></thead>
         <tbody>{orders.map((o) => (
           <tr key={o.id} className="border-b border-line"><td className="p-2 font-semibold"><Link href={`/order/${o.id}`}>#{o.number}</Link></td><td className="p-2 whitespace-nowrap">{o.createdAt.toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</td><td className="p-2">{o.customerName}<span className="block text-xs text-muted">{o.customerPhone}</span></td><td className="p-2">{o.fulfilment}<span className="block text-xs text-muted">{o.paymentMethod}</span></td><td className="p-2">{o.location.name}</td><td className="p-2">{STATUS_LABEL[o.status]}</td><td className="p-2 text-right">{gbp(o.total)}</td></tr>

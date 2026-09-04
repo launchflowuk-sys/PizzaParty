@@ -15,10 +15,15 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
   ]);
   return (
     <div>
-      <h1 className="lf-h2">Customers</h1>
+      <header className="fp-adminhead">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
+          <h1>Customers</h1>
+        </div>
+      </header>
       <div className="flex flex-wrap gap-2 mt-3 text-sm">{counts.map((s) => <a key={s.key} href={`?segment=${s.key}`} className={`lf-pill border ${sp.segment === s.key ? "bg-ink text-white" : "bg-surface border-line"}`}>{s.label}: {s.n} opted in</a>)}</div>
       <form className="mt-3 flex gap-2"><input name="q" placeholder="Search name, phone, email" defaultValue={sp.q} className="lf-input max-w-sm" /><button className="lf-btn lf-btn-ghost">Search</button></form>
-      <div className="overflow-x-auto mt-3"><table className="w-full text-sm lf-card">
+      <div className="overflow-x-auto mt-3"><table className="table" style={{ width: "100%" }}>
         <thead><tr className="text-left border-b border-line"><th className="p-2">Name</th><th className="p-2">Phone</th><th className="p-2">Orders</th><th className="p-2">Spent</th><th className="p-2">Last order</th><th className="p-2">Marketing</th></tr></thead>
         <tbody>{customers.map((c) => (
           <tr key={c.id} className="border-b border-line"><td className="p-2">{c.name || <span className="text-muted">—</span>}{c.email ? <span className="block text-xs text-muted">{c.email}</span> : null}</td><td className="p-2">{c.phone}</td><td className="p-2">{c.ordersCount}</td><td className="p-2">{gbp(c.totalSpent)}</td><td className="p-2">{c.lastOrderAt?.toLocaleDateString("en-GB") ?? ""}</td><td className="p-2">{c.marketingOptIn ? "✓" : ""}</td></tr>

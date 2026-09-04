@@ -9,7 +9,12 @@ export default async function AdminHours() {
   const locations = await getLocations();
   return (
     <div>
-      <h1 className="lf-h2">Opening hours & pause</h1>
+      <header className="fp-adminhead">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
+          <h1>Hours & pause</h1>
+        </div>
+      </header>
       <p className="text-sm text-muted mt-1">One range per day. Leave blank for closed. Closing after midnight is fine (e.g. 17:00 → 01:00).</p>
       {locations.map((l) => {
         const a = availability(l);

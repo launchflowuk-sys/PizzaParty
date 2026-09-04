@@ -42,9 +42,9 @@ distinguished by colour alone and want an underline.
 - [x] Archivo 400/600/800 wired through `next/font`
 - [x] Page-level constants the DS does not carry (`.fp-wrap`, `.fp-kicker`, `.fp-rule`, `.fp-photo`, `.fp-grid`, `.fp-cell`, `fp-pulse`)
 - [x] Nav rebuilt to the prototype: flush-left brand, links, order-mode `.seg`, basket as the primary accent action
-- [ ] Closed banner + order-context bar
+- [~] Closed/pause state shows on the dashboard and kitchen; storefront banner still to do
 - [x] Toast (`Added X · View basket`)
-- [ ] Footer converted off Tailwind
+- [x] Footer converted off Tailwind
 
 ## Storefront — 12 screens
 
@@ -67,16 +67,28 @@ distinguished by colour alone and want an underline.
 
 - [x] `/admin/dashboard` — ruled accent numerals, themed recent-orders table
 - [x] `/admin/kitchen` — four-column ruled ticket board, 44px targets for a wall tablet
-- [ ] `/admin/orders`
-- [ ] `/admin/menu`
-- [ ] `/admin/inventory`
-- [ ] `/admin/promos`
-- [ ] `/admin/customers`
-- [ ] `/admin/dispatch`
-- [ ] `/admin/staff`
-- [ ] `/admin/settings`
-- [ ] `/admin/reviews`
-- [ ] Sidebar filtered by role (Manager / Shift lead / Kitchen)
+- [x] `/admin/orders`
+- [x] `/admin/menu`
+- [ ] `/admin/inventory` — not built: no stock model in the schema
+- [x] `/admin/promos`
+- [x] `/admin/customers`
+- [ ] `/admin/dispatch` — not built: no driver model in the schema
+- [ ] `/admin/staff` — not built: single shared admin password, no staff/roles model
+- [x] `/admin/settings` — split across `/admin/hours` and `/admin/zones`
+- [ ] `/admin/reviews` — not built: no review model in the schema
+- [ ] Sidebar filtered by role — needs a staff/roles model first
+
+## Legacy class bridge
+
+Screens not hand-converted (allergens, contact, privacy, terms, locality pages, admin
+forms) keep their old `lf-*` classes, which are now **redefined in globals.css in terms of
+the Modernist tokens**. They pick up Archivo, the ruled treatment, the accent and zero
+radius without being rewritten. A global `*:not(.dot) { border-radius: 0 }` enforces the
+system's zero-radius rule over any leftover Tailwind rounding; the radio `.dot` is the one
+documented circular element and is exempt.
+
+This is a migration aid, not a second design system - delete each rule as its last user is
+hand-converted.
 
 ## Phase 2 — make it real
 

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import { getConfig } from "@/lib/config";
 import { getClientRow } from "@/lib/menu";
 import { prisma } from "@launchflow/db";
@@ -20,11 +19,10 @@ const NAV: { href: string; label: string }[] = [
   { href: "/admin/zones", label: "Delivery zones" },
 ];
 
+/** Wraps every back-office screen in the chrome. `/admin/login` sits outside this
+ *  route group on purpose, so the sign-in page does not render inside the shell -
+ *  the previous `x-invoke-path` header check no longer fires in current Next. */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const h = await headers();
-  const path = h.get("x-invoke-path") ?? "";
-  if (path.endsWith("/admin/login")) return children;
-
   const cfg = getConfig();
   const client = await getClientRow();
   const live = await prisma.order.count({

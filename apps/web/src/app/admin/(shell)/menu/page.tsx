@@ -13,7 +13,12 @@ export default async function AdminMenu() {
   ]);
   return (
     <div>
-      <h1 className="lf-h2">Menu</h1>
+      <header className="fp-adminhead">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
+          <h1>Menu & pricing</h1>
+        </div>
+      </header>
       <p className="text-sm text-muted mt-1">Inline price edits apply instantly. Structural changes (new items, categories, options) go in <code>config/{client.slug}/menu.json</code> then re-seed.</p>
       {categories.map((c) => (
         <section key={c.id} className="mt-6">
