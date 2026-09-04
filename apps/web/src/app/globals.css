@@ -15,8 +15,13 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .fp-wrap { max-width: 1200px; margin: 0 auto; padding-inline: 32px; }
 .fp-kicker { display: block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-accent-700); }
 .fp-rule { height: 2px; background: var(--color-divider); }
-.fp-photo { background: repeating-linear-gradient(-45deg, var(--color-surface) 0 10px, var(--color-neutral-300) 10px 11px); display: flex; align-items: flex-end; padding: 8px; }
-.fp-photo span { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--color-neutral-700); }
+/* No photo yet: a monogram tile, not an empty frame. The initials sit centred
+   on the surface tone with the caption tucked into the corner, so a menu that
+   is only half photographed still reads as designed. */
+.fp-photo { background: var(--color-surface); display: flex; align-items: center; justify-content: center; padding: 8px; position: relative; container-type: inline-size; }
+.fp-photo::after { content: ""; position: absolute; inset: 8px; border: 2px solid var(--color-neutral-300); pointer-events: none; }
+.fp-photo-mono { font-family: var(--font-heading, inherit); font-weight: 800; font-size: clamp(28px, 22cqw, 64px); letter-spacing: -0.04em; color: var(--color-neutral-300); line-height: 1; }
+.fp-photo-cap { position: absolute; left: 16px; bottom: 14px; font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--color-neutral-700); }
 .fp-grid { display: grid; border-top: 2px solid var(--color-divider); border-left: 2px solid var(--color-divider); }
 .fp-cell { border-right: 2px solid var(--color-divider); border-bottom: 2px solid var(--color-divider); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .fp-cell:hover { background: var(--color-surface); }
