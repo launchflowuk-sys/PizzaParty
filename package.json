@@ -1,0 +1,47 @@
+{
+  "name": "takeaway-ordering",
+  "private": true,
+  "version": "0.1.0",
+  "description": "LaunchFlow takeaway ordering template. One repo, config-driven per client.",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @launchflow/web dev",
+    "build": "pnpm --filter @launchflow/db generate && pnpm --filter @launchflow/web build",
+    "start": "pnpm --filter @launchflow/web start",
+    "lint": "pnpm --filter @launchflow/web lint",
+    "typecheck": "pnpm -r typecheck && tsc -p tsconfig.json --noEmit",
+    "db:generate": "pnpm --filter @launchflow/db generate",
+    "db:migrate": "pnpm --filter @launchflow/db migrate:deploy",
+    "db:migrate:dev": "pnpm --filter @launchflow/db migrate:dev",
+    "db:push": "pnpm --filter @launchflow/db push",
+    "seed": "tsx scripts/seed-client.ts",
+    "new-client": "tsx scripts/new-client.ts",
+    "validate-config": "tsx scripts/validate-config.ts",
+    "test": "tsx --test scripts/tests/*.test.ts",
+    "lhci": "lhci autorun"
+  },
+  "devDependencies": {
+    "@lhci/cli": "0.15.1",
+    "@types/node": "22.20.1",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "zod-to-json-schema": "3.25.2",
+    "zod": "3.25.76",
+    "wait-on": "9.1.0",
+    "@launchflow/config": "workspace:*",
+    "@launchflow/db": "workspace:*"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "sharp",
+      "esbuild",
+      "unrs-resolver"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+# Local/dev stack. Coolify: create one service per client from docker/Dockerfile, plus a managed Postgres.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: farm_pizza
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args: { CLIENT_SLUG: farm-pizza }
+    environment:
+      CLIENT_SLUG: farm-pizza
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/farm_pizza
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      KITCHEN_PIN: "1234"
+      ADMIN_PASSWORD: admin
+      LAUNCHFLOW_KEY: agency
+      SESSION_SECRET: dev-secret-change-me-0123456789abcdef
+      CRON_SECRET: dev-cron
+    ports: ["3000:3000"]
+    depends_on: [db]
+volumes:
+  pgdata: {}

@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "@launchflow/ui/preset.css";
+@source "../../../../packages/ui/src";
+
+html { scroll-padding-top: 4.5rem; }
+body { padding-bottom: env(safe-area-inset-bottom); }
+.hide-scrollbar { scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

@@ -1,0 +1,6 @@
+category,name,description,size,price,modifier_groups,tags,allergens,featured
+Pizzas,Margherita,Tomato sauce and mozzarella,Small 9",7.50,crust|extra-toppings,vegetarian|popular,gluten|milk,yes
+Pizzas,Margherita,Tomato sauce and mozzarella,Medium 12",10.50,crust|extra-toppings,vegetarian|popular,gluten|milk,yes
+Pizzas,Margherita,Tomato sauce and mozzarella,Large 15",13.50,crust|extra-toppings,vegetarian|popular,gluten|milk,yes
+Sides,Garlic Bread,Four slices with garlic butter,,3.50,dips,vegetarian,gluten|milk,
+Drinks,Coca-Cola 330ml,,,1.20,,,,

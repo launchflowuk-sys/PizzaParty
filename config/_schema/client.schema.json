@@ -1,0 +1,336 @@
+{
+  "$id": "https://launchflow.uk/schemas/client.json",
+  "$ref": "#/definitions/Client",
+  "definitions": {
+    "Client": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1
+        },
+        "legacyDomains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "brand": {
+          "type": "object",
+          "properties": {
+            "primary": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "secondary": {
+              "$ref": "#/definitions/Client/properties/brand/properties/primary"
+            },
+            "logo": {
+              "type": "string",
+              "default": "assets/logo.svg"
+            },
+            "og": {
+              "type": "string",
+              "default": "assets/og.jpg"
+            },
+            "hero": {
+              "type": "string",
+              "default": "assets/hero.jpg"
+            },
+            "tagline": {
+              "type": "string",
+              "default": ""
+            }
+          },
+          "required": [
+            "primary",
+            "secondary"
+          ],
+          "additionalProperties": false
+        },
+        "contact": {
+          "type": "object",
+          "properties": {
+            "phone": {
+              "type": "string",
+              "default": ""
+            },
+            "email": {
+              "type": "string",
+              "default": ""
+            },
+            "address": {
+              "type": "string",
+              "default": ""
+            },
+            "reviewUrl": {
+              "type": "string",
+              "default": ""
+            },
+            "social": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "default": {}
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        },
+        "locations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/Client/properties/slug"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "address": {
+                "type": "string",
+                "default": ""
+              },
+              "phone": {
+                "type": "string",
+                "default": ""
+              },
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              },
+              "timezone": {
+                "type": "string",
+                "default": "Europe/London"
+              },
+              "postcodePrefixes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                },
+                "default": []
+              },
+              "deliveryFee": {
+                "type": "number",
+                "minimum": 0,
+                "default": 0
+              },
+              "minOrder": {
+                "$ref": "#/definitions/Client/properties/locations/items/properties/deliveryFee",
+                "default": 0
+              },
+              "prepMinutes": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "default": 15
+              },
+              "deliveryMinutes": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "default": 35
+              },
+              "hours": {
+                "type": "object",
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "pattern": "^\\d{2}:\\d{2}$"
+                        },
+                        {
+                          "$ref": "#/definitions/Client/properties/locations/items/properties/hours/additionalProperties/anyOf/0/items/0"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2,
+                        "items": [
+                          {
+                            "$ref": "#/definitions/Client/properties/locations/items/properties/hours/additionalProperties/anyOf/0/items/0"
+                          },
+                          {
+                            "$ref": "#/definitions/Client/properties/locations/items/properties/hours/additionalProperties/anyOf/0/items/0"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "array",
+                      "minItems": 0,
+                      "maxItems": 0,
+                      "items": []
+                    }
+                  ]
+                },
+                "propertyNames": {
+                  "enum": [
+                    "mon",
+                    "tue",
+                    "wed",
+                    "thu",
+                    "fri",
+                    "sat",
+                    "sun"
+                  ]
+                },
+                "default": {}
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "fulfilment": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "delivery",
+              "collection"
+            ]
+          },
+          "minItems": 1,
+          "default": [
+            "delivery",
+            "collection"
+          ]
+        },
+        "payments": {
+          "type": "object",
+          "properties": {
+            "stripeAccountId": {
+              "type": "string",
+              "default": ""
+            },
+            "cashOnCollection": {
+              "type": "boolean",
+              "default": true
+            },
+            "cashOnDelivery": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        },
+        "seo": {
+          "type": "object",
+          "properties": {
+            "locality": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            },
+            "cuisine": {
+              "type": "string",
+              "minLength": 1
+            },
+            "primaryKeyword": {
+              "type": "string",
+              "minLength": 1
+            },
+            "titleTemplate": {
+              "type": "string",
+              "default": "{page} | {name} — Order Online"
+            },
+            "homeTitle": {
+              "type": "string",
+              "default": "{cuisine} Delivery in {locality} | {name} — Order Online"
+            },
+            "homeDescription": {
+              "type": "string",
+              "default": "Order {cuisine} online from {name} for fast delivery or collection in {locality}. Fresh, hot and straight to your door."
+            }
+          },
+          "required": [
+            "locality",
+            "cuisine",
+            "primaryKeyword"
+          ],
+          "additionalProperties": false
+        },
+        "notifications": {
+          "type": "object",
+          "properties": {
+            "kitchenEmail": {
+              "type": "string",
+              "default": ""
+            },
+            "kitchenSms": {
+              "type": "string",
+              "default": ""
+            },
+            "printerWebhook": {
+              "type": "string",
+              "default": ""
+            },
+            "reviewDelayMinutes": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "default": 45
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        },
+        "loyalty": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "pointsPerPound": {
+              "type": "number",
+              "default": 1
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        }
+      },
+      "required": [
+        "slug",
+        "name",
+        "domain",
+        "brand",
+        "locations",
+        "seo"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

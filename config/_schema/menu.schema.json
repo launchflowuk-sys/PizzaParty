@@ -1,0 +1,353 @@
+{
+  "$id": "https://launchflow.uk/schemas/menu.json",
+  "$ref": "#/definitions/Menu",
+  "definitions": {
+    "Menu": {
+      "type": "object",
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "default": ""
+              },
+              "image": {
+                "type": "string",
+                "default": ""
+              }
+            },
+            "required": [
+              "slug",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "modifierGroups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "min": {
+                "type": "integer",
+                "minimum": 0,
+                "default": 0
+              },
+              "max": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "default": 10
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "price": {
+                      "type": "number",
+                      "minimum": 0,
+                      "default": 0
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "options"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+              },
+              "category": {
+                "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "default": ""
+              },
+              "image": {
+                "type": "string",
+                "default": ""
+              },
+              "price": {
+                "$ref": "#/definitions/Menu/properties/modifierGroups/items/properties/options/items/properties/price"
+              },
+              "sizes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "price": {
+                      "$ref": "#/definitions/Menu/properties/modifierGroups/items/properties/options/items/properties/price"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "price"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
+              },
+              "modifierGroups": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+                },
+                "default": []
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "allergens": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "featured": {
+                "type": "boolean",
+                "default": false
+              },
+              "soldOut": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "slug",
+              "category",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "deals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "default": ""
+              },
+              "image": {
+                "type": "string",
+                "default": ""
+              },
+              "price": {
+                "$ref": "#/definitions/Menu/properties/modifierGroups/items/properties/options/items/properties/price"
+              },
+              "featured": {
+                "type": "boolean",
+                "default": false
+              },
+              "daysOfWeek": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                },
+                "default": []
+              },
+              "fulfilment": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "delivery",
+                    "collection"
+                  ]
+                },
+                "default": []
+              },
+              "slots": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "qty": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "default": 1
+                    },
+                    "categories": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+                      },
+                      "default": []
+                    },
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+                      },
+                      "default": []
+                    },
+                    "sizes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/Menu/properties/categories/items/properties/slug"
+                      },
+                      "default": []
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1
+              }
+            },
+            "required": [
+              "slug",
+              "name",
+              "price",
+              "slots"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "promos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 2
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "percent",
+                  "fixed",
+                  "free_delivery"
+                ]
+              },
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "default": 0
+              },
+              "minOrder": {
+                "$ref": "#/definitions/Menu/properties/modifierGroups/items/properties/options/items/properties/price",
+                "default": 0
+              },
+              "fulfilment": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "delivery",
+                    "collection"
+                  ]
+                },
+                "default": []
+              },
+              "firstOrderOnly": {
+                "type": "boolean",
+                "default": false
+              },
+              "maxUses": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "endsAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "categories",
+        "products"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

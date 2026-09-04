@@ -1,0 +1,28 @@
+{
+  "name": "@launchflow/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./seed": "./src/seed-client.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "push": "prisma db push",
+    "studio": "prisma studio",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "@launchflow/config": "workspace:*"
+  },
+  "devDependencies": {
+    "prisma": "6.19.3",
+    "typescript": "5.9.3",
+    "@types/node": "22.20.1"
+  }
+}

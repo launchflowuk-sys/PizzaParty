@@ -1,0 +1,75 @@
+{
+  "$schema": "../_schema/client.schema.json",
+  "slug": "farm-pizza",
+  "name": "Farm Pizza",
+  "domain": "farm-pizza.com",
+  "legacyDomains": ["order.farm-pizza.com"],
+  "brand": {
+    "primary": "#C8322B",
+    "secondary": "#111318",
+    "logo": "assets/logo.svg",
+    "og": "assets/og.svg",
+    "hero": "assets/hero.svg",
+    "tagline": "Fresh pizza, fast delivery in Basildon & Grays"
+  },
+  "contact": {
+    "phone": "",
+    "email": "",
+    "address": "",
+    "reviewUrl": "",
+    "social": {}
+  },
+  "locations": [
+    {
+      "id": "basildon",
+      "name": "Basildon",
+      "address": "",
+      "phone": "",
+      "timezone": "Europe/London",
+      "postcodePrefixes": ["SS13", "SS14", "SS15", "SS16"],
+      "deliveryFee": 2.5,
+      "minOrder": 12,
+      "prepMinutes": 15,
+      "deliveryMinutes": 35,
+      "hours": {
+        "mon": ["16:00", "23:00"],
+        "tue": ["16:00", "23:00"],
+        "wed": ["16:00", "23:00"],
+        "thu": ["16:00", "23:00"],
+        "fri": ["16:00", "23:30"],
+        "sat": ["16:00", "23:30"],
+        "sun": ["16:00", "23:00"]
+      }
+    },
+    {
+      "id": "grays",
+      "name": "Grays",
+      "address": "",
+      "phone": "",
+      "timezone": "Europe/London",
+      "postcodePrefixes": ["RM16", "RM17", "RM20"],
+      "deliveryFee": 2.5,
+      "minOrder": 12,
+      "prepMinutes": 15,
+      "deliveryMinutes": 35,
+      "hours": {
+        "mon": ["16:00", "23:00"],
+        "tue": ["16:00", "23:00"],
+        "wed": ["16:00", "23:00"],
+        "thu": ["16:00", "23:00"],
+        "fri": ["16:00", "23:30"],
+        "sat": ["16:00", "23:30"],
+        "sun": ["16:00", "23:00"]
+      }
+    }
+  ],
+  "fulfilment": ["delivery", "collection"],
+  "payments": { "stripeAccountId": "", "cashOnCollection": true, "cashOnDelivery": false },
+  "seo": {
+    "locality": ["Basildon", "Grays"],
+    "cuisine": "Pizza",
+    "primaryKeyword": "pizza delivery basildon"
+  },
+  "notifications": { "kitchenEmail": "", "kitchenSms": "", "printerWebhook": "", "reviewDelayMinutes": 45 },
+  "loyalty": { "enabled": false, "pointsPerPound": 1 }
+}

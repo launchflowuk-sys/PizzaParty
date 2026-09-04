@@ -1,0 +1,42 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres, POSTGRES_DB: ci }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CLIENT_SLUG: farm-pizza
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      SESSION_SECRET: ci-secret-0123456789abcdef0123456789abcdef
+      KITCHEN_PIN: "1234"
+      ADMIN_PASSWORD: ci
+      LAUNCHFLOW_KEY: ci
+      CRON_SECRET: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm validate-config
+      - run: pnpm db:generate
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm --filter @launchflow/db exec prisma migrate deploy
+      - run: pnpm seed farm-pizza
+      - run: pnpm build
+      - name: Lighthouse CI (mobile, fail < 90 on / and /menu)
+        run: |
+          (pnpm start &) && npx wait-on http://localhost:3000/api/health -t 60000
+          pnpm lhci

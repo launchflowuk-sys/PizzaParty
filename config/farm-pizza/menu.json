@@ -1,0 +1,227 @@
+{
+  "$schema": "../_schema/menu.schema.json",
+  "categories": [
+    { "slug": "pizzas", "name": "Pizzas", "description": "Hand-stretched dough, fresh toppings, baked to order." },
+    { "slug": "sides", "name": "Sides", "description": "Garlic bread, wings and more." },
+    { "slug": "drinks", "name": "Drinks", "description": "Cold cans and bottles." },
+    { "slug": "desserts", "name": "Desserts", "description": "Something sweet to finish." }
+  ],
+  "modifierGroups": [
+    {
+      "id": "extra-toppings",
+      "name": "Extra toppings",
+      "min": 0,
+      "max": 6,
+      "options": [
+        { "id": "extra-cheese", "name": "Extra cheese", "price": 1.5 },
+        { "id": "pepperoni", "name": "Pepperoni", "price": 1.5 },
+        { "id": "mushrooms", "name": "Mushrooms", "price": 1.0 },
+        { "id": "onions", "name": "Onions", "price": 1.0 },
+        { "id": "peppers", "name": "Peppers", "price": 1.0 },
+        { "id": "jalapenos", "name": "Jalapeños", "price": 1.0 },
+        { "id": "olives", "name": "Olives", "price": 1.0 },
+        { "id": "sweetcorn", "name": "Sweetcorn", "price": 1.0 },
+        { "id": "chicken", "name": "Chicken", "price": 1.5 }
+      ]
+    },
+    {
+      "id": "crust",
+      "name": "Crust",
+      "min": 1,
+      "max": 1,
+      "options": [
+        { "id": "classic", "name": "Classic", "price": 0 },
+        { "id": "thin", "name": "Thin & crispy", "price": 0 },
+        { "id": "stuffed", "name": "Stuffed crust", "price": 2.5 }
+      ]
+    },
+    {
+      "id": "dips",
+      "name": "Dips",
+      "min": 0,
+      "max": 4,
+      "options": [
+        { "id": "garlic-mayo", "name": "Garlic mayo", "price": 0.7 },
+        { "id": "bbq", "name": "BBQ", "price": 0.7 },
+        { "id": "chilli", "name": "Sweet chilli", "price": 0.7 }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "slug": "margherita",
+      "category": "pizzas",
+      "name": "Margherita",
+      "description": "Tomato sauce, mozzarella and fresh basil.",
+      "sizes": [
+        { "id": "small", "name": "Small 9\"", "price": 7.5 },
+        { "id": "medium", "name": "Medium 12\"", "price": 10.5 },
+        { "id": "large", "name": "Large 15\"", "price": 13.5 }
+      ],
+      "modifierGroups": ["crust", "extra-toppings"],
+      "tags": ["vegetarian", "popular"],
+      "allergens": ["gluten", "milk"],
+      "featured": true
+    },
+    {
+      "slug": "pepperoni-feast",
+      "category": "pizzas",
+      "name": "Pepperoni Feast",
+      "description": "Double pepperoni and extra mozzarella.",
+      "sizes": [
+        { "id": "small", "name": "Small 9\"", "price": 8.5 },
+        { "id": "medium", "name": "Medium 12\"", "price": 11.5 },
+        { "id": "large", "name": "Large 15\"", "price": 14.5 }
+      ],
+      "modifierGroups": ["crust", "extra-toppings"],
+      "tags": ["popular"],
+      "allergens": ["gluten", "milk"],
+      "featured": true
+    },
+    {
+      "slug": "bbq-chicken",
+      "category": "pizzas",
+      "name": "BBQ Chicken",
+      "description": "BBQ base, chicken, red onion, peppers and sweetcorn.",
+      "sizes": [
+        { "id": "small", "name": "Small 9\"", "price": 9.0 },
+        { "id": "medium", "name": "Medium 12\"", "price": 12.0 },
+        { "id": "large", "name": "Large 15\"", "price": 15.0 }
+      ],
+      "modifierGroups": ["crust", "extra-toppings"],
+      "tags": [],
+      "allergens": ["gluten", "milk"],
+      "featured": true
+    },
+    {
+      "slug": "veggie-supreme",
+      "category": "pizzas",
+      "name": "Veggie Supreme",
+      "description": "Mushrooms, peppers, onions, olives and sweetcorn.",
+      "sizes": [
+        { "id": "small", "name": "Small 9\"", "price": 8.5 },
+        { "id": "medium", "name": "Medium 12\"", "price": 11.5 },
+        { "id": "large", "name": "Large 15\"", "price": 14.5 }
+      ],
+      "modifierGroups": ["crust", "extra-toppings"],
+      "tags": ["vegetarian"],
+      "allergens": ["gluten", "milk"]
+    },
+    {
+      "slug": "meat-feast",
+      "category": "pizzas",
+      "name": "Meat Feast",
+      "description": "Pepperoni, ham, beef and chicken.",
+      "sizes": [
+        { "id": "small", "name": "Small 9\"", "price": 9.5 },
+        { "id": "medium", "name": "Medium 12\"", "price": 12.5 },
+        { "id": "large", "name": "Large 15\"", "price": 15.5 }
+      ],
+      "modifierGroups": ["crust", "extra-toppings"],
+      "tags": ["popular"],
+      "allergens": ["gluten", "milk"]
+    },
+    {
+      "slug": "garlic-bread",
+      "category": "sides",
+      "name": "Garlic Bread",
+      "description": "Four slices with garlic butter.",
+      "price": 3.5,
+      "modifierGroups": ["dips"],
+      "tags": ["vegetarian"],
+      "allergens": ["gluten", "milk"]
+    },
+    {
+      "slug": "garlic-bread-cheese",
+      "category": "sides",
+      "name": "Garlic Bread with Cheese",
+      "description": "Four slices, garlic butter and melted mozzarella.",
+      "price": 4.5,
+      "modifierGroups": ["dips"],
+      "tags": ["vegetarian", "popular"],
+      "allergens": ["gluten", "milk"]
+    },
+    {
+      "slug": "chicken-wings",
+      "category": "sides",
+      "name": "Chicken Wings",
+      "description": "Six oven-baked wings.",
+      "sizes": [
+        { "id": "6pc", "name": "6 pieces", "price": 5.5 },
+        { "id": "12pc", "name": "12 pieces", "price": 9.5 }
+      ],
+      "modifierGroups": ["dips"],
+      "tags": [],
+      "allergens": []
+    },
+    {
+      "slug": "potato-wedges",
+      "category": "sides",
+      "name": "Potato Wedges",
+      "description": "Seasoned wedges.",
+      "price": 3.5,
+      "modifierGroups": ["dips"],
+      "tags": ["vegan"],
+      "allergens": []
+    },
+    { "slug": "coke-can", "category": "drinks", "name": "Coca-Cola 330ml", "price": 1.2, "tags": [] },
+    { "slug": "diet-coke-can", "category": "drinks", "name": "Diet Coke 330ml", "price": 1.2, "tags": [] },
+    { "slug": "fanta-can", "category": "drinks", "name": "Fanta Orange 330ml", "price": 1.2, "tags": [] },
+    { "slug": "coke-bottle", "category": "drinks", "name": "Coca-Cola 1.5L", "price": 3.0, "tags": [] },
+    { "slug": "water", "category": "drinks", "name": "Still Water 500ml", "price": 1.0, "tags": [] },
+    {
+      "slug": "chocolate-fudge-cake",
+      "category": "desserts",
+      "name": "Chocolate Fudge Cake",
+      "description": "Rich and gooey.",
+      "price": 3.5,
+      "tags": ["vegetarian"],
+      "allergens": ["gluten", "milk", "eggs"]
+    },
+    {
+      "slug": "ben-jerrys",
+      "category": "desserts",
+      "name": "Ben & Jerry's 465ml",
+      "description": "Cookie Dough or Chocolate Fudge Brownie.",
+      "price": 5.5,
+      "tags": ["vegetarian"],
+      "allergens": ["milk", "eggs", "gluten"]
+    }
+  ],
+  "deals": [
+    {
+      "slug": "family-feast",
+      "name": "Family Feast",
+      "description": "2 large pizzas, 1 side and a 1.5L drink.",
+      "price": 27.99,
+      "featured": true,
+      "slots": [
+        { "name": "Large pizza", "qty": 2, "categories": ["pizzas"], "sizes": ["large"] },
+        { "name": "Side", "qty": 1, "categories": ["sides"] },
+        { "name": "1.5L drink", "qty": 1, "products": ["coke-bottle"] }
+      ]
+    },
+    {
+      "slug": "meal-for-one",
+      "name": "Meal for One",
+      "description": "Any small pizza, a side and a can.",
+      "price": 11.99,
+      "slots": [
+        { "name": "Small pizza", "qty": 1, "categories": ["pizzas"], "sizes": ["small"] },
+        { "name": "Side", "qty": 1, "products": ["garlic-bread", "potato-wedges"] },
+        { "name": "Can", "qty": 1, "products": ["coke-can", "diet-coke-can", "fanta-can"] }
+      ]
+    },
+    {
+      "slug": "two-medium",
+      "name": "2 Medium Pizzas",
+      "description": "Any two medium pizzas.",
+      "price": 18.99,
+      "slots": [{ "name": "Medium pizza", "qty": 2, "categories": ["pizzas"], "sizes": ["medium"] }]
+    }
+  ],
+  "promos": [
+    { "code": "WELCOME10", "type": "percent", "value": 10, "minOrder": 15, "firstOrderOnly": true },
+    { "code": "FREEDEL", "type": "free_delivery", "minOrder": 20, "fulfilment": ["delivery"] }
+  ]
+}
