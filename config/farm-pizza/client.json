@@ -3,7 +3,11 @@
   "slug": "farm-pizza",
   "name": "Farm Pizza",
   "domain": "farm-pizza.com",
-  "legacyDomains": ["order.farm-pizza.com"],
+  "legacyDomains": [
+    "order.farm-pizza.com",
+    "farm-pizza.uk",
+    "farmpizzatakeaway.co.uk"
+  ],
   "brand": {
     "primary": "#C8322B",
     "secondary": "#111318",
@@ -13,9 +17,9 @@
     "tagline": "Fresh pizza, fast delivery in Basildon & Grays"
   },
   "contact": {
-    "phone": "",
+    "phone": "01268 554034",
     "email": "",
-    "address": "",
+    "address": "467 Clay Hill Road, Basildon SS16 4EX",
     "reviewUrl": "",
     "social": {}
   },
@@ -23,53 +27,127 @@
     {
       "id": "basildon",
       "name": "Basildon",
-      "address": "",
-      "phone": "",
+      "address": "467 Clay Hill Road, Basildon SS16 4EX",
+      "phone": "01268 554034",
       "timezone": "Europe/London",
-      "postcodePrefixes": ["SS13", "SS14", "SS15", "SS16"],
+      "postcodePrefixes": [
+        "SS13",
+        "SS14",
+        "SS15",
+        "SS16",
+        "SS12",
+        "CM11"
+      ],
       "deliveryFee": 2.5,
       "minOrder": 12,
       "prepMinutes": 15,
       "deliveryMinutes": 35,
       "hours": {
-        "mon": ["16:00", "23:00"],
-        "tue": ["16:00", "23:00"],
-        "wed": ["16:00", "23:00"],
-        "thu": ["16:00", "23:00"],
-        "fri": ["16:00", "23:30"],
-        "sat": ["16:00", "23:30"],
-        "sun": ["16:00", "23:00"]
+        "mon": [
+          "12:00",
+          "23:00"
+        ],
+        "tue": [
+          "12:00",
+          "23:00"
+        ],
+        "wed": [
+          "12:00",
+          "23:00"
+        ],
+        "thu": [
+          "12:00",
+          "00:00"
+        ],
+        "fri": [
+          "12:00",
+          "23:00"
+        ],
+        "sat": [
+          "12:00",
+          "23:00"
+        ],
+        "sun": [
+          "12:00",
+          "23:00"
+        ]
       }
     },
     {
       "id": "grays",
       "name": "Grays",
-      "address": "",
-      "phone": "",
+      "address": "7 Derby Road, Grays RM17 6QD",
+      "phone": "01375 383877",
       "timezone": "Europe/London",
-      "postcodePrefixes": ["RM16", "RM17", "RM20"],
+      "postcodePrefixes": [
+        "RM15",
+        "RM16",
+        "RM17",
+        "RM18",
+        "RM19",
+        "RM20"
+      ],
       "deliveryFee": 2.5,
       "minOrder": 12,
       "prepMinutes": 15,
       "deliveryMinutes": 35,
       "hours": {
-        "mon": ["16:00", "23:00"],
-        "tue": ["16:00", "23:00"],
-        "wed": ["16:00", "23:00"],
-        "thu": ["16:00", "23:00"],
-        "fri": ["16:00", "23:30"],
-        "sat": ["16:00", "23:30"],
-        "sun": ["16:00", "23:00"]
+        "mon": [
+          "11:00",
+          "02:00"
+        ],
+        "tue": [
+          "11:00",
+          "02:00"
+        ],
+        "wed": [
+          "11:00",
+          "02:00"
+        ],
+        "thu": [
+          "11:00",
+          "02:00"
+        ],
+        "fri": [
+          "11:00",
+          "03:00"
+        ],
+        "sat": [
+          "11:00",
+          "03:00"
+        ],
+        "sun": [
+          "11:00",
+          "02:00"
+        ]
       }
     }
   ],
-  "fulfilment": ["delivery", "collection"],
-  "payments": { "stripeAccountId": "", "cashOnCollection": true, "cashOnDelivery": false },
+  "fulfilment": [
+    "delivery",
+    "collection"
+  ],
+  "payments": {
+    "stripeAccountId": "",
+    "cashOnCollection": true,
+    "cashOnDelivery": false
+  },
   "seo": {
-    "locality": ["Basildon", "Grays"],
+    "locality": [
+      "Basildon",
+      "Grays"
+    ],
     "cuisine": "Pizza",
     "primaryKeyword": "pizza delivery basildon"
   },
-  "notifications": { "kitchenEmail": "", "kitchenSms": "", "printerWebhook": "", "reviewDelayMinutes": 45 },
-  "loyalty": { "enabled": false, "pointsPerPound": 1 }
+  "notifications": {
+    "kitchenEmail": "",
+    "kitchenSms": "",
+    "printerWebhook": "",
+    "reviewDelayMinutes": 45
+  },
+  "loyalty": {
+    "enabled": false,
+    "pointsPerPound": 1
+  }
 }
