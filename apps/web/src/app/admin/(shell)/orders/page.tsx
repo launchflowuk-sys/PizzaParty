@@ -4,10 +4,13 @@ import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { STATUS_LABEL } from "@/lib/orders";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 const STATUSES = Object.keys(STATUS_LABEL) as OrderStatus[];
 
 export default async function AdminOrders({ searchParams }: { searchParams: Promise<{ status?: string; from?: string; to?: string; q?: string; page?: string }> }) {
+  await requireScreen("orders");
   const sp = await searchParams;
   const client = await getClientRow();
   const page = Math.max(1, Number(sp.page ?? 1));

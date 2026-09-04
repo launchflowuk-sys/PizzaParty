@@ -3,9 +3,12 @@ import { getClientRow } from "@/lib/menu";
 import { SEGMENTS, segmentWhere } from "@/lib/segments";
 import { sendCampaign } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminCampaigns() {
+  await requireScreen("campaigns");
   const client = await getClientRow();
   const [past, counts] = await Promise.all([
     prisma.campaign.findMany({ where: { clientId: client.id }, orderBy: { createdAt: "desc" }, take: 20 }),

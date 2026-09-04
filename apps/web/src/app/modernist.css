@@ -127,9 +127,14 @@ figcaption {
 }
 .btn svg { display: block; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-primary { background: var(--color-accent); color: var(--color-bg); }
-.btn-primary:hover { background: var(--color-accent-600); }
-.btn-primary:active { background: var(--color-accent-700); }
+/* WCAG AA. The system's own accent (#ec3013) against the ground gives 3.76:1 on the
+   button label, and AA wants 4.5:1 for text this size - the design system's readme
+   says as much about the accent/ground pair, but the primary button inverts it. The
+   fill uses the deep step instead: 6.41:1. Hover and pressed step down from there so
+   the interaction still reads. Everything else keeps the bright accent. */
+.btn-primary { background: var(--color-accent-700); color: var(--color-bg); }
+.btn-primary:hover { background: var(--color-accent-800); }
+.btn-primary:active { background: var(--color-accent-900); }
 .btn-secondary { border-color: var(--color-divider); }
 .btn-secondary:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
 .btn-secondary:active { background: color-mix(in srgb, var(--color-text) 14%, transparent); }

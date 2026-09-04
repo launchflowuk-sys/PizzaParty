@@ -2,10 +2,13 @@ import { getLocations } from "@/lib/menu";
 import { availability } from "@/lib/availability";
 import { pauseLocation, updateHours } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default async function AdminHours() {
+  await requireScreen("hours");
   const locations = await getLocations();
   return (
     <div>

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { stripeEnabled, getStripe } from "@/lib/stripe";
 import { LaunchflowActions } from "@/components/admin/LaunchflowActions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 async function check(url: string) {
@@ -13,6 +15,7 @@ async function check(url: string) {
 }
 
 export default async function LaunchflowPage() {
+  await requireScreen("launchflow");
   const agency = await requireRole("agency");
   if (!agency) return <p className="text-danger">Agency key required. <Link className="underline" href="/admin/login?next=/admin/launchflow">Log in with the LaunchFlow key</Link>.</p>;
   const cfg = getConfig();

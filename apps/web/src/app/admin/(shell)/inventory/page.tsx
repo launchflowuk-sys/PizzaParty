@@ -2,11 +2,14 @@ import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { reorderStock, reorderAllBelowPar } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 /** Inventory from `Farm Pizza Admin.dc.html`: four ruled counters over a themed
  *  table with a level bar per line. Par is what a busy night needs. */
 export default async function InventoryPage() {
+  await requireScreen("inventory");
   const client = await getClientRow();
   const items = await prisma.stockItem.findMany({ where: { clientId: client.id }, orderBy: { sortOrder: "asc" } });
 

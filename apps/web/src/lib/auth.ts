@@ -8,7 +8,9 @@ export type Role = "kitchen" | "admin" | "agency" | "customer";
 export const COOKIE: Record<Role, string> = { kitchen: "lf_kitchen", admin: "lf_admin", agency: "lf_agency", customer: "lf_customer" };
 const TTL: Record<Role, number> = { kitchen: 60 * 60 * 24 * 30, admin: 60 * 60 * 12, agency: 60 * 60 * 4, customer: 60 * 60 * 24 * 90 };
 
-type Payload = { role: Role; sub: string; exp: number; loc?: string };
+/** `sr` is the staff role for admin sessions; `nm` their display name. Absent on a
+ *  shared-password session, which is treated as a manager. */
+type Payload = { role: Role; sub: string; exp: number; loc?: string; sr?: string; nm?: string };
 
 const enc = new TextEncoder();
 const b64u = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");

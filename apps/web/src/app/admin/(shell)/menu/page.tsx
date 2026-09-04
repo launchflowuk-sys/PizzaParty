@@ -3,9 +3,12 @@ import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { moveProduct, toggleModifier, toggleProduct, updateProductText, updateSizePrice } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminMenu() {
+  await requireScreen("menu");
   const client = await getClientRow();
   const [categories, groups] = await Promise.all([
     prisma.category.findMany({ where: { clientId: client.id }, orderBy: { sortOrder: "asc" }, include: { products: { orderBy: { sortOrder: "asc" }, include: { sizes: { orderBy: { sortOrder: "asc" } } } } } }),

@@ -5,11 +5,14 @@ import { gbp } from "@/lib/money";
 import { STATUS_LABEL } from "@/lib/orders";
 import { availability } from "@/lib/availability";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 /** Dashboard from `Farm Pizza Admin.dc.html`: a ruled row of accent numerals over a
  *  themed table of recent orders. */
 export default async function AdminHome() {
+  await requireScreen("dashboard");
   const client = await getClientRow();
   const start = new Date(); start.setHours(0, 0, 0, 0);
   const week = new Date(Date.now() - 7 * 86400_000);

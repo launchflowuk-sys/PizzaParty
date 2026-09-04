@@ -17,23 +17,16 @@ literally would have made the product worse for this client.
 | Checkout draws raw card number / expiry / CVC fields | Stripe PaymentElement instead | Taking a card number into our own DOM puts the site in PCI scope. The prototype's card fields are a mockup; Stripe is the only correct implementation. |
 | Desktop-first at 1200px, no mobile design given | Added a responsive layer: desktop is pixel-identical, layouts collapse below 1000px / 700px / 440px | Converted faithfully, the storefront overflowed a 375px phone by 111px and the product screen kept two 127px columns. Most takeaway orders come from a phone. The prototypes contain no mobile design at all, so these breakpoints are invented - worth a designer's eye. |
 
-## Open decision — the primary button fails WCAG AA
+## Resolved — the primary button now passes WCAG AA
 
-`.btn-primary` is accent `#ec3013` filled with ground `#f3f2f2` text: **3.76:1**. AA needs
-4.5:1 for normal-size text, and the button's 14px bold does not qualify as "large" (that
-needs 18.66px bold). The design system's own readme acknowledges the accent/ground pair is
-"tuned to at least 3:1 - enough for icons, large text and interface chrome, not for body
-copy" and prescribes `--color-accent-700` for small accent text - but the primary button
-inverts that pair and was not covered.
+`.btn-primary` was accent `#ec3013` under ground `#f3f2f2` text: **3.76:1**, where AA wants
+4.5:1 and the button's 14px bold does not count as "large". The fill now uses the deep step
+`--color-accent-700`: **6.41:1**. Hover and pressed step down to accent-800 (9.59:1) and
+accent-900 (13.01:1). Everything else keeps the bright accent, so the page still reads as
+the same design - only the filled button is darker.
 
-This is why accessibility scores 96 rather than 100; it is inherited from the design
-system, not from the conversion. Handoff Phase 2 explicitly requires "WCAG AA contrast",
-so the two requirements conflict.
-
-Moving the fill to `--color-accent-700` (#ae1800) gives **6.41:1** and passes, at the cost
-of a visibly darker red on every primary button. That is a brand decision, so it has been
-left alone pending a call. A second, smaller one: bare links (e.g. the allergen link) are
-distinguished by colour alone and want an underline.
+The design system's own readme called this out for small accent *text* and prescribed
+accent-700; the primary button inverts that pair and had not been covered.
 
 ## Foundation
 
@@ -76,7 +69,7 @@ distinguished by colour alone and want an underline.
 - [x] `/admin/staff` — staff table with role editing, clock on/off, permission matrix
 - [x] `/admin/settings` — split across `/admin/hours` and `/admin/zones`
 - [x] `/admin/reviews` — rating breakdown, review list, reply inline
-- [~] Sidebar role filtering — the permission matrix exists on /admin/staff, but nothing is enforced: the back office has one shared password, so there is no signed-in person to check a role against. Needs per-user sign-in.
+- [x] Sidebar filtered by role, and enforced — staff sign in with their own PIN
 
 ## Legacy class bridge
 

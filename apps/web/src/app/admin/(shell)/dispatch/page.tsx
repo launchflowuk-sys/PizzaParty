@@ -3,6 +3,8 @@ import { getClientRow, getLocations } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { assignDriver, setDriverStatus } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 const STATUS_LABEL: Record<string, string> = { available: "Available", on_delivery: "On delivery", off: "Off shift" };
@@ -11,6 +13,7 @@ const STATUS_LABEL: Record<string, string> = { available: "Available", on_delive
  *  left, orders waiting on the pass on the right. Assigning a driver marks them out
  *  and starts their return clock. */
 export default async function DispatchPage() {
+  await requireScreen("dispatch");
   const client = await getClientRow();
   const [drivers, ready, locations] = await Promise.all([
     prisma.driver.findMany({ where: { clientId: client.id, active: true }, orderBy: { sortOrder: "asc" } }),

@@ -531,6 +531,8 @@ model Staff {
   id        String  @id @default(cuid())
   clientId  String
   name      String
+  /// SHA-256 of "<clientId>:<pin>". Empty means this person cannot sign in yet.
+  pinHash   String  @default("")
   /// manager | shift_lead | kitchen | driver | front_of_house
   role      String  @default("kitchen")
   phone     String  @default("")

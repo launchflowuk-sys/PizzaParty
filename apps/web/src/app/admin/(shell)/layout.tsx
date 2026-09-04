@@ -2,30 +2,36 @@ import Link from "next/link";
 import { getConfig } from "@/lib/config";
 import { getClientRow } from "@/lib/menu";
 import { prisma } from "@launchflow/db";
+import { currentStaff } from "@/lib/session";
+import { can, ROLE_LABEL, type Screen } from "@/lib/permissions";
+import { redirect } from "next/navigation";
 
 /** Back-office nav, in the prototype's order. The square bullet before each label is
  *  the prototype's marker. */
-const NAV: { href: string; label: string }[] = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/kitchen", label: "Kitchen queue" },
-  { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/dispatch", label: "Dispatch" },
-  { href: "/admin/menu", label: "Menu & pricing" },
-  { href: "/admin/deals", label: "Deals" },
-  { href: "/admin/promos", label: "Promotions" },
-  { href: "/admin/inventory", label: "Inventory" },
-  { href: "/admin/customers", label: "Customers" },
-  { href: "/admin/campaigns", label: "Campaigns" },
-  { href: "/admin/reviews", label: "Reviews" },
-  { href: "/admin/staff", label: "Staff" },
-  { href: "/admin/hours", label: "Hours & pause" },
-  { href: "/admin/zones", label: "Delivery zones" },
+const NAV: { href: string; label: string; screen: Screen }[] = [
+  { screen: "dashboard", href: "/admin", label: "Dashboard" },
+  { screen: "kitchen", href: "/kitchen", label: "Kitchen queue" },
+  { screen: "orders", href: "/admin/orders", label: "Orders" },
+  { screen: "dispatch", href: "/admin/dispatch", label: "Dispatch" },
+  { screen: "menu", href: "/admin/menu", label: "Menu & pricing" },
+  { screen: "deals", href: "/admin/deals", label: "Deals" },
+  { screen: "promos", href: "/admin/promos", label: "Promotions" },
+  { screen: "inventory", href: "/admin/inventory", label: "Inventory" },
+  { screen: "customers", href: "/admin/customers", label: "Customers" },
+  { screen: "campaigns", href: "/admin/campaigns", label: "Campaigns" },
+  { screen: "reviews", href: "/admin/reviews", label: "Reviews" },
+  { screen: "staff", href: "/admin/staff", label: "Staff" },
+  { screen: "hours", href: "/admin/hours", label: "Hours & pause" },
+  { screen: "zones", href: "/admin/zones", label: "Delivery zones" },
 ];
 
 /** Wraps every back-office screen in the chrome. `/admin/login` sits outside this
  *  route group on purpose, so the sign-in page does not render inside the shell -
  *  the previous `x-invoke-path` header check no longer fires in current Next. */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const staff = await currentStaff();
+  if (!staff) redirect("/admin/login");
+
   const cfg = getConfig();
   const client = await getClientRow();
   const live = await prisma.order.count({
@@ -43,7 +49,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
 
         <nav className="nav" style={{ flexDirection: "column", alignItems: "stretch", gap: 0, padding: 0, borderBottom: "2px solid var(--color-divider)" }}>
-          {NAV.map((n) => (
+          {NAV.filter((n) => can(staff.role, n.screen)).map((n) => (
             <Link
               key={n.href}
               href={n.href}
@@ -57,6 +63,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </nav>
 
         <div style={{ marginTop: "auto", fontSize: 12, color: "var(--color-neutral-700)", lineHeight: 1.5 }}>
+          <div style={{ fontWeight: 600, color: "var(--color-text)" }}>{staff.name}</div>
+          <div style={{ marginBottom: 8 }}>{ROLE_LABEL[staff.role]}</div>
           <Link href="/" style={{ fontSize: 12 }}>Open the storefront &rarr;</Link>
           <br />
           <Link href="/admin/launchflow" style={{ fontSize: 12 }}>LaunchFlow &rarr;</Link>

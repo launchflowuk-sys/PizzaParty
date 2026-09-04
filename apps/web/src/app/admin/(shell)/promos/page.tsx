@@ -3,9 +3,12 @@ import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { togglePromo, upsertPromo } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminPromos() {
+  await requireScreen("promos");
   const client = await getClientRow();
   const promos = await prisma.promo.findMany({ where: { clientId: client.id }, orderBy: { code: "asc" } });
   return (

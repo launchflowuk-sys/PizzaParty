@@ -3,9 +3,12 @@ import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { SEGMENTS, segmentWhere } from "@/lib/segments";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminCustomers({ searchParams }: { searchParams: Promise<{ q?: string; segment?: string }> }) {
+  await requireScreen("customers");
   const sp = await searchParams;
   const client = await getClientRow();
   const where = { clientId: client.id, ordersCount: { gt: 0 }, ...(sp.segment ? segmentWhere(sp.segment) : {}), ...(sp.q ? { OR: [{ name: { contains: sp.q, mode: "insensitive" as const } }, { phone: { contains: sp.q } }, { email: { contains: sp.q, mode: "insensitive" as const } }] } : {}) };

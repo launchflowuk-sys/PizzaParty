@@ -2,11 +2,14 @@ import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { replyToReview } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 /** Reviews from `Farm Pizza Admin.dc.html`: a rating summary rail on the left and a
  *  ruled list of reviews on the right, each replyable. */
 export default async function ReviewsPage() {
+  await requireScreen("reviews");
   const client = await getClientRow();
   const reviews = await prisma.review.findMany({ where: { clientId: client.id }, orderBy: { createdAt: "desc" }, take: 50 });
 

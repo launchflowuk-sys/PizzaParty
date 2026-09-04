@@ -2,9 +2,12 @@ import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { updateDeal } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminDeals() {
+  await requireScreen("deals");
   const client = await getClientRow();
   const deals = await prisma.deal.findMany({ where: { clientId: client.id }, orderBy: { sortOrder: "asc" }, include: { slots: { orderBy: { sortOrder: "asc" } } } });
   return (

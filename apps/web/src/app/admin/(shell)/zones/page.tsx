@@ -1,9 +1,12 @@
 import { getLocations } from "@/lib/menu";
 import { updateZone } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminZones() {
+  await requireScreen("zones");
   const locations = await getLocations();
   return (
     <div>

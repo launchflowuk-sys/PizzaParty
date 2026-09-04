@@ -2,33 +2,13 @@ import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { setStaffRole, toggleShift } from "../actions";
 
+import { requireScreen } from "@/lib/session";
+import { can, ROLE_LABEL, SCREENS, SCREEN_LABEL, STAFF_ROLES } from "@/lib/permissions";
+
 export const dynamic = "force-dynamic";
 
-const ROLES: [string, string][] = [
-  ["manager", "Manager"],
-  ["shift_lead", "Shift lead"],
-  ["kitchen", "Kitchen"],
-  ["driver", "Driver"],
-  ["front_of_house", "Front of house"],
-];
-
-/** Which screens each role can reach. The sidebar does not yet read this - there is
- *  one shared admin password, so there is no signed-in role to filter by. It is the
- *  matrix the prototype specifies, ready for per-user sign-in. */
-const PERMISSIONS: { label: string; roles: string[] }[] = [
-  { label: "Kitchen queue", roles: ["manager", "shift_lead", "kitchen"] },
-  { label: "Orders", roles: ["manager", "shift_lead"] },
-  { label: "Menu & pricing", roles: ["manager"] },
-  { label: "Deals & promotions", roles: ["manager"] },
-  { label: "Inventory", roles: ["manager", "shift_lead"] },
-  { label: "Dispatch", roles: ["manager", "shift_lead"] },
-  { label: "Customers", roles: ["manager"] },
-  { label: "Campaigns", roles: ["manager"] },
-  { label: "Hours & pause", roles: ["manager", "shift_lead"] },
-  { label: "Staff", roles: ["manager"] },
-];
-
 export default async function StaffPage() {
+  await requireScreen("staff");
   const client = await getClientRow();
   const staff = await prisma.staff.findMany({ where: { clientId: client.id, active: true }, orderBy: { sortOrder: "asc" } });
   const onShift = staff.filter((s) => s.onShift).length;
@@ -70,7 +50,7 @@ export default async function StaffPage() {
                             style={{ width: "auto", minHeight: 30, padding: "3px 8px" }}
                             // Submitting on change keeps this a one-tap edit, as the prototype has it.
                           >
-                            {ROLES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                            {STAFF_ROLES.map((v) => <option key={v} value={v}>{ROLE_LABEL[v]}</option>)}
                           </select>
                           <button className="btn btn-ghost" style={{ fontSize: 12 }}>Save</button>
                         </form>
@@ -96,29 +76,30 @@ export default async function StaffPage() {
         <div>
           <h3 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, margin: "0 0 4px" }}>Role permissions</h3>
           <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 12px" }}>
-            What each role is meant to reach. Not yet enforced: the back office uses one shared
-            password, so there is no signed-in person to check a role against.
+            Enforced. This is the same matrix the sidebar and every page guard read, so a
+            square that is empty here means that role cannot open the screen, cannot see it
+            in the sidebar, and is redirected if they type the URL.
           </p>
           <div style={{ overflowX: "auto" }}>
             <table className="table" style={{ width: "100%", fontSize: 13 }}>
               <thead>
                 <tr>
                   <th>Permission</th>
-                  {ROLES.map(([v, l]) => <th key={v} style={{ textAlign: "center" }}>{l}</th>)}
+                  {STAFF_ROLES.map((v) => <th key={v} style={{ textAlign: "center" }}>{ROLE_LABEL[v]}</th>)}
                 </tr>
               </thead>
               <tbody>
-                {PERMISSIONS.map((p) => (
-                  <tr key={p.label}>
-                    <td>{p.label}</td>
-                    {ROLES.map(([v]) => (
+                {SCREENS.map((sc) => (
+                  <tr key={sc}>
+                    <td>{SCREEN_LABEL[sc]}</td>
+                    {STAFF_ROLES.map((v) => (
                       <td key={v} style={{ textAlign: "center" }}>
                         <span
-                          aria-label={p.roles.includes(v) ? "granted" : "not granted"}
+                          aria-label={can(v, sc) ? `${ROLE_LABEL[v]} can reach ${SCREEN_LABEL[sc]}` : `${ROLE_LABEL[v]} cannot reach ${SCREEN_LABEL[sc]}`}
                           style={{
                             display: "inline-block", width: 16, height: 16,
                             border: "2px solid var(--color-accent)",
-                            background: p.roles.includes(v) ? "var(--color-accent)" : "transparent",
+                            background: can(v, sc) ? "var(--color-accent)" : "transparent",
                           }}
                         />
                       </td>

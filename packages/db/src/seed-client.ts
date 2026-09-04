@@ -163,7 +163,7 @@ export async function seedClient(slug: string, opts: { reset?: boolean } = {}) {
 type OpsFile = {
   stock?: { name: string; unit?: string; onHand?: number; par?: number; supplier?: string; onOrder?: boolean }[];
   drivers?: { name: string; phone?: string; vehicle?: string; status?: string }[];
-  staff?: { name: string; role?: string; phone?: string; email?: string; hoursWeek?: number; onShift?: boolean }[];
+  staff?: { name: string; role?: string; phone?: string; email?: string; hoursWeek?: number; onShift?: boolean; pin?: string }[];
   reviews?: { customerName: string; rating: number; body?: string; source?: string; reply?: string; daysAgo?: number }[];
 };
 
@@ -186,7 +186,9 @@ async function seedOps(clientId: string, slug: string) {
     await prisma.driver.upsert({ where: { clientId_name: { clientId, name: d.name } }, create: { clientId, name: d.name, ...data }, update: data });
   }
   for (const [i, st] of (ops.staff ?? []).entries()) {
-    const data = { role: st.role ?? "kitchen", phone: st.phone ?? "", email: st.email ?? "", hoursWeek: st.hoursWeek ?? 0, onShift: st.onShift ?? false, active: true, sortOrder: i };
+    // PINs are stored only as a salted hash; the plain value never reaches the database.
+    const pinHash = st.pin ? createHash("sha256").update(`${clientId}:${st.pin}`).digest("base64url") : "";
+    const data = { role: st.role ?? "kitchen", phone: st.phone ?? "", email: st.email ?? "", hoursWeek: st.hoursWeek ?? 0, onShift: st.onShift ?? false, active: true, sortOrder: i, ...(pinHash ? { pinHash } : {}) };
     await prisma.staff.upsert({ where: { clientId_name: { clientId, name: st.name } }, create: { clientId, name: st.name, ...data }, update: data });
   }
   // Reviews carry no natural key, so they are only seeded into an empty table -
