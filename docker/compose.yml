@@ -18,6 +18,11 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       args: { CLIENT_SLUG: farm-pizza }
+    # Optional local secrets (Stripe/Resend/Twilio). Values in `environment:`
+    # below always win, so DATABASE_URL etc. stay container-correct.
+    env_file:
+      - path: ../.env
+        required: false
     environment:
       CLIENT_SLUG: farm-pizza
       DATABASE_URL: postgresql://postgres:postgres@db:5432/farm_pizza
