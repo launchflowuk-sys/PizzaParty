@@ -28,7 +28,7 @@ export default async function StaffPage() {
       <div className="fp-adminsplit">
         <div>
           {staff.length === 0 ? (
-            <p style={{ color: "var(--color-neutral-600)", fontSize: 14 }}>
+            <p style={{ color: "var(--color-neutral-700)", fontSize: 14 }}>
               No staff yet. Add them to <code>config/{client.slug}/ops.json</code> and re-seed.
             </p>
           ) : (

@@ -31,7 +31,7 @@ export default async function ReviewsPage() {
       </header>
 
       {n === 0 ? (
-        <p style={{ color: "var(--color-neutral-600)", fontSize: 14 }}>
+        <p style={{ color: "var(--color-neutral-700)", fontSize: 14 }}>
           No reviews yet. Seed some in <code>config/{client.slug}/ops.json</code>, or wire review
           requests to order receipts.
         </p>
@@ -52,7 +52,7 @@ export default async function ReviewsPage() {
                   <div style={{ height: 10, background: "var(--color-surface)" }}>
                     <div style={{ height: "100%", background: "var(--color-accent)", width: `${n ? (c.n / n) * 100 : 0}%` }} />
                   </div>
-                  <span style={{ textAlign: "right", color: "var(--color-neutral-600)" }}>{c.n}</span>
+                  <span style={{ textAlign: "right", color: "var(--color-neutral-700)" }}>{c.n}</span>
                 </div>
               ))}
             </div>
@@ -68,7 +68,7 @@ export default async function ReviewsPage() {
                       {r.customerName}
                       <span style={{ color: "var(--color-accent)", marginLeft: 10 }}>{"★".repeat(r.rating)}<span style={{ color: "var(--color-neutral-400)" }}>{"★".repeat(5 - r.rating)}</span></span>
                     </span>
-                    <span style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>
+                    <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>
                       {r.source === "google" ? "Google" : "Direct"} · {new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(r.createdAt)}
                     </span>
                   </div>

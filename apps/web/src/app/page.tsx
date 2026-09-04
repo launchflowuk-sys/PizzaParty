@@ -102,7 +102,7 @@ export default async function Home() {
                 <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17 }}>{gbpShort(product.sizes[0]?.price ?? 0)}</span>
               </div>
               <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: "var(--color-neutral-700)", flex: 1 }}>{product.description}</p>
-              <span style={{ fontSize: 11, color: "var(--color-neutral-600)" }}>
+              <span style={{ fontSize: 11, color: "var(--color-neutral-700)" }}>
                 {product.sizes.length > 1 ? `${product.sizes.length} sizes from ${product.sizes[0]?.name}` : product.sizes[0]?.name}
               </span>
               <div style={{ display: "flex", gap: 8 }}>

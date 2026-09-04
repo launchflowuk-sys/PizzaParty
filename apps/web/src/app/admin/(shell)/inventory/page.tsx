@@ -52,7 +52,7 @@ export default async function InventoryPage() {
       </p>
 
       {items.length === 0 ? (
-        <p style={{ color: "var(--color-neutral-600)", fontSize: 14 }}>
+        <p style={{ color: "var(--color-neutral-700)", fontSize: 14 }}>
           No stock lines yet. Add them to <code>config/{client.slug}/ops.json</code> and re-seed.
         </p>
       ) : (

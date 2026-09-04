@@ -68,7 +68,7 @@ export default async function OrderPage({ params }: Params) {
           </div>
 
           {cfg.contact.phone ? (
-            <p style={{ fontSize: 13, color: "var(--color-neutral-600)", marginTop: 16 }}>
+            <p style={{ fontSize: 13, color: "var(--color-neutral-700)", marginTop: 16 }}>
               Problem with your order? Call{" "}
               <a href={`tel:${cfg.contact.phone.replace(/\s+/g, "")}`} style={{ textDecoration: "underline" }}>{cfg.contact.phone}</a>
             </p>
@@ -87,13 +87,13 @@ export default async function OrderPage({ params }: Params) {
                 <span style={{ fontWeight: 600 }}>{i.qty} × {i.name}{i.sizeName ? ` (${i.sizeName})` : ""}</span>
                 <span style={{ fontWeight: 600 }}>{gbp(i.lineTotal)}</span>
               </div>
-              {i.modifiers.length ? <span style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>{i.modifiers.map((m) => m.name).join(", ")}</span> : null}
+              {i.modifiers.length ? <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{i.modifiers.map((m) => m.name).join(", ")}</span> : null}
               {i.components.map((c) => (
-                <span key={c.id} style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>
+                <span key={c.id} style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>
                   • {c.name}{c.sizeName ? ` (${c.sizeName})` : ""}{c.modifiers.length ? ` +${c.modifiers.map((m) => m.name).join(", ")}` : ""}
                 </span>
               ))}
-              {i.notes ? <span style={{ fontSize: 12, fontStyle: "italic", color: "var(--color-neutral-600)" }}>&ldquo;{i.notes}&rdquo;</span> : null}
+              {i.notes ? <span style={{ fontSize: 12, fontStyle: "italic", color: "var(--color-neutral-700)" }}>&ldquo;{i.notes}&rdquo;</span> : null}
             </div>
           ))}
           <div style={{ display: "flex", justifyContent: "space-between" }}><span>Subtotal</span><span>{gbp(order.subtotal)}</span></div>
@@ -103,7 +103,7 @@ export default async function OrderPage({ params }: Params) {
             <span style={{ fontWeight: 600 }}>Total</span>
             <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 28, letterSpacing: "-.02em" }}>{gbp(order.total)}</span>
           </div>
-          <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-600)" }}>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-700)" }}>
             {order.paymentMethod === "cash" ? `Pay cash on ${order.fulfilment}` : order.payment?.status === "succeeded" ? "Paid by card" : "Card payment pending"}
           </p>
         </aside>

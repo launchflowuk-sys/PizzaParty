@@ -78,7 +78,7 @@ export function OptionPicker({ product, state }: { product: PickerProduct; state
           <fieldset key={g.key} style={{ border: 0, margin: 0, padding: 0 }}>
             <legend style={{ ...H3, padding: 0 }}>
               {g.name}
-              {g.minSelect > 0 ? null : <span style={{ fontWeight: 400, fontSize: 13, color: "var(--color-neutral-600)" }}> (optional)</span>}
+              {g.minSelect > 0 ? null : <span style={{ fontWeight: 400, fontSize: 13, color: "var(--color-neutral-700)" }}> (optional)</span>}
             </legend>
             <div style={LIST}>
               {g.modifiers.map((m) => {
@@ -98,7 +98,7 @@ export function OptionPicker({ product, state }: { product: PickerProduct; state
           <fieldset key={g.key} style={{ border: 0, margin: 0, padding: 0 }}>
             <legend style={{ ...H3, marginBottom: 10, padding: 0 }}>
               {g.name}
-              <span style={{ fontWeight: 400, fontSize: 13, color: "var(--color-neutral-600)" }}> (up to {g.maxSelect})</span>
+              <span style={{ fontWeight: 400, fontSize: 13, color: "var(--color-neutral-700)" }}> (up to {g.maxSelect})</span>
             </legend>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {g.modifiers.map((m) => {

@@ -46,7 +46,7 @@ export function AdminLoginForm({ next }: { next: string }) {
       </button>
       {err ? <p role="alert" style={{ margin: 0, fontSize: 13, color: "var(--color-accent-700)" }}>{err}</p> : null}
       {!isAgency ? (
-        <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-600)", lineHeight: 1.5 }}>
+        <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-700)", lineHeight: 1.5 }}>
           Staff sign in with their own PIN, which decides what they can reach. The shop
           password gives full manager access.
         </p>

@@ -53,7 +53,7 @@ export default async function AccountPage() {
         <div>
           <span className="fp-kicker" style={{ marginBottom: 12 }}>Past orders</span>
           {orders.length === 0 ? (
-            <p style={{ color: "var(--color-neutral-600)", fontSize: 14 }}>
+            <p style={{ color: "var(--color-neutral-700)", fontSize: 14 }}>
               No orders yet. <Link href="/menu">Start one</Link>.
             </p>
           ) : (
@@ -64,7 +64,7 @@ export default async function AccountPage() {
                     <div style={{ fontWeight: 600 }}>
                       #{o.number} &middot; {new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(o.createdAt)}
                     </div>
-                    <div style={{ fontSize: 13, color: "var(--color-neutral-600)", marginTop: 2 }}>
+                    <div style={{ fontSize: 13, color: "var(--color-neutral-700)", marginTop: 2 }}>
                       {o.items.map((i) => `${i.qty}× ${i.name}`).join(", ")}
                     </div>
                   </div>
@@ -102,7 +102,7 @@ export default async function AccountPage() {
                 ))}
               </div>
             ) : (
-              <p style={{ fontSize: 14, color: "var(--color-neutral-600)", margin: 0 }}>
+              <p style={{ fontSize: 14, color: "var(--color-neutral-700)", margin: 0 }}>
                 Addresses are saved automatically when you order.
               </p>
             )}

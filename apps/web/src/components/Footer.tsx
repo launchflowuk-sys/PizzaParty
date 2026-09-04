@@ -34,7 +34,7 @@ export function Footer({ name, phone, address, localities }: { name: string; pho
       </div>
 
       <div style={{ borderTop: "1px solid var(--color-divider)" }}>
-        <div className="fp-wrap" style={{ padding: "16px 32px", fontSize: 12, color: "var(--color-neutral-600)", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <div className="fp-wrap" style={{ padding: "16px 32px", fontSize: 12, color: "var(--color-neutral-700)", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <span>&copy; {new Date().getFullYear()} {name}. Prices include VAT.</span>
           <span>Powered by LaunchFlow</span>
         </div>

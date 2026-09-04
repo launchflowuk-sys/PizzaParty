@@ -126,6 +126,13 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .fp-footer a:hover { color: var(--color-accent); }
 @media (max-width: 700px) { .fp-footer { grid-template-columns: minmax(0,1fr); gap: 24px; } }
 
+
+/* A link must not be distinguished by colour alone. Buttons, tags and nav items opt
+   out because their shape already marks them. */
+a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
+.nav a, .fp-footer a, .fp-adminrail a { text-decoration: none; }
+.nav a:hover, .fp-footer a:hover, .fp-adminrail a:hover { text-decoration: underline; }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Legacy class bridge.
 

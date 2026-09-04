@@ -177,7 +177,7 @@ export function KitchenScreen() {
                         ))}
                       </div>
 
-                      <div style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>
+                      <div style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>
                         {o.customerName} &middot; <a href={`tel:${o.customerPhone}`}>{o.customerPhone}</a>
                         {o.address ? <span style={{ display: "block" }}>{o.address}</span> : null}
                         {o.notes ? <span style={{ display: "block", color: "var(--color-accent-700)", fontWeight: 600 }}>Note: {o.notes}</span> : null}
@@ -214,7 +214,7 @@ export function KitchenScreen() {
                             </button>
                           ))}
                           {o.etaAt ? (
-                            <span style={{ fontSize: 11, color: "var(--color-neutral-600)" }}>
+                            <span style={{ fontSize: 11, color: "var(--color-neutral-700)" }}>
                               ETA {new Date(o.etaAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                             </span>
                           ) : null}

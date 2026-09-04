@@ -65,7 +65,7 @@ export default async function DealsPage() {
               <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 22, lineHeight: 1.1 }}>{d.name}</span>
               <p style={{ margin: 0, fontSize: 14, color: "var(--color-neutral-800)", flex: 1 }}>{d.description}</p>
               {d.slots.length ? (
-                <span style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>
+                <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>
                   {d.slots.map((s) => `${s.qty} × ${s.name}`).join(" · ")}
                 </span>
               ) : null}
@@ -76,7 +76,7 @@ export default async function DealsPage() {
           ))}
         </div>
       ) : (
-        <p style={{ color: "var(--color-neutral-600)" }}>No deals running right now. Check back soon.</p>
+        <p style={{ color: "var(--color-neutral-700)" }}>No deals running right now. Check back soon.</p>
       )}
 
       {promos.length ? (
@@ -87,7 +87,7 @@ export default async function DealsPage() {
               <div key={p.code} className="fp-coderow">
                 <span style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 15, fontWeight: 600 }}>{p.code}</span>
                 <span style={{ fontSize: 14 }}>{describe(p)}</span>
-                <span style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>{conditions(p)}</span>
+                <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{conditions(p)}</span>
                 <ApplyCode code={p.code} />
               </div>
             ))}

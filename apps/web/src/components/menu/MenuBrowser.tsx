@@ -76,11 +76,11 @@ export function MenuBrowser({ categories, items }: { categories: TileCategory[];
                 }}
               >
                 <span>{c.name}</span>
-                <span style={{ fontFamily: "var(--font-body)", fontWeight: 400, fontSize: 12, color: "var(--color-neutral-600)" }}>{c.count}</span>
+                <span style={{ fontFamily: "var(--font-body)", fontWeight: 400, fontSize: 12, color: "var(--color-neutral-700)" }}>{c.count}</span>
               </button>
             ))}
           </div>
-          <p style={{ fontSize: 12, color: "var(--color-neutral-600)", margin: "16px 0 0", lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: "var(--color-neutral-700)", margin: "16px 0 0", lineHeight: 1.5 }}>
             V vegetarian &middot; VG vegan. Allergen information is available on request.
           </p>
           <Link href="/allergens" className="btn btn-secondary btn-block" style={{ marginTop: 16 }}>
@@ -118,7 +118,7 @@ export function MenuBrowser({ categories, items }: { categories: TileCategory[];
                   {it.tags.filter((t) => TAG_LABEL[t]).map((t) => (
                     <span key={t} className="tag tag-neutral">{TAG_LABEL[t]}</span>
                   ))}
-                  <span style={{ fontSize: 11, color: "var(--color-neutral-600)" }}>{it.sizeNote}</span>
+                  <span style={{ fontSize: 11, color: "var(--color-neutral-700)" }}>{it.sizeNote}</span>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   {it.soldOut ? (
@@ -139,7 +139,7 @@ export function MenuBrowser({ categories, items }: { categories: TileCategory[];
           </div>
 
           {shown.length === 0 ? (
-            <p style={{ margin: "24px 0 0", color: "var(--color-neutral-600)" }}>
+            <p style={{ margin: "24px 0 0", color: "var(--color-neutral-700)" }}>
               Nothing matches &ldquo;{query}&rdquo;. Try a topping, or clear the search.
             </p>
           ) : null}

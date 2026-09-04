@@ -43,7 +43,7 @@ export default async function ShopsPage() {
               <div key={l.id} style={{ padding: "20px 16px", borderBottom: "2px solid var(--color-divider)", display: "grid", gap: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
                   <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 22, letterSpacing: "-.015em" }}>{l.name}</span>
-                  <span style={{ fontSize: 13, color: "var(--color-neutral-600)" }}>{gbp(l.deliveryFee)} delivery</span>
+                  <span style={{ fontSize: 13, color: "var(--color-neutral-700)" }}>{gbp(l.deliveryFee)} delivery</span>
                 </div>
                 <div style={{ fontSize: 14 }}>{l.address}</div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 13, flexWrap: "wrap" }}>
@@ -51,7 +51,7 @@ export default async function ShopsPage() {
                     {a.open ? `Open${closes ? ` · closes ${closes}` : ""}` : "Closed"}
                   </span>
                   <span className="tag tag-neutral">Collection ~{l.prepMinutes} min</span>
-                  <span style={{ color: "var(--color-neutral-600)" }}>Delivery ~{l.deliveryMinutes} min</span>
+                  <span style={{ color: "var(--color-neutral-700)" }}>Delivery ~{l.deliveryMinutes} min</span>
                 </div>
                 <div style={{ display: "flex", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
                   <Link href="/menu" className="btn btn-primary">Order from here</Link>
@@ -98,13 +98,13 @@ export default async function ShopsPage() {
                     ["Delivery", `${gbp(l.deliveryFee)} · ${gbp(l.minOrder)} minimum`],
                   ].map(([k, v]) => (
                     <div key={k} style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 8, padding: "8px 0", borderBottom: "1px solid var(--color-divider)" }}>
-                      <span style={{ color: "var(--color-neutral-600)" }}>{k}</span>
+                      <span style={{ color: "var(--color-neutral-700)" }}>{k}</span>
                       <span>{v}</span>
                     </div>
                   ))}
                   {formatHours(l.hours).map((h) => (
                     <div key={h.day} style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: 8, padding: "8px 0", borderBottom: "1px solid var(--color-divider)" }}>
-                      <span style={{ color: "var(--color-neutral-600)" }}>{h.day.slice(0, 3)}</span>
+                      <span style={{ color: "var(--color-neutral-700)" }}>{h.day.slice(0, 3)}</span>
                       <span>{h.text}</span>
                     </div>
                   ))}
@@ -112,7 +112,7 @@ export default async function ShopsPage() {
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 12, color: "var(--color-neutral-600)", marginTop: 16 }}>
+          <p style={{ fontSize: 12, color: "var(--color-neutral-700)", marginTop: 16 }}>
             Times shown are for {new Intl.DateTimeFormat("en-GB", { dateStyle: "full" }).format(now)}.
           </p>
         </div>

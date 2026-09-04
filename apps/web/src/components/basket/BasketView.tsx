@@ -46,8 +46,8 @@ export function BasketView() {
               <div key={l.key} className="fp-basketrow">
                 <div>
                   <div style={{ fontWeight: 600 }}>{l.name ?? l.product ?? l.deal}</div>
-                  {l.detail ? <div style={{ fontSize: 13, color: "var(--color-neutral-600)", marginTop: 2 }}>{l.detail}</div> : null}
-                  {l.notes ? <div style={{ fontSize: 13, color: "var(--color-neutral-600)", fontStyle: "italic", marginTop: 2 }}>&ldquo;{l.notes}&rdquo;</div> : null}
+                  {l.detail ? <div style={{ fontSize: 13, color: "var(--color-neutral-700)", marginTop: 2 }}>{l.detail}</div> : null}
+                  {l.notes ? <div style={{ fontSize: 13, color: "var(--color-neutral-700)", fontStyle: "italic", marginTop: 2 }}>&ldquo;{l.notes}&rdquo;</div> : null}
                   <button
                     onClick={() => remove(l.key)}
                     style={{ background: "none", border: 0, padding: "4px 0 0", font: "inherit", fontSize: 12, color: "var(--color-accent-700)", cursor: "pointer" }}
@@ -115,7 +115,7 @@ export function BasketView() {
           >
             Go to checkout &rarr;
           </Link>
-          <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-600)", lineHeight: 1.5 }}>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-700)", lineHeight: 1.5 }}>
             Prices are checked again on the server at checkout.
           </p>
         </aside>
@@ -155,7 +155,7 @@ function GoesWellWith() {
         {items.map((u) => (
           <div key={u.href} className="fp-cell" style={{ padding: 12, display: "grid", gap: 6 }}>
             <span style={{ fontWeight: 600, fontSize: 14 }}>{u.name}</span>
-            {u.description ? <span style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>{u.description}</span> : null}
+            {u.description ? <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{u.description}</span> : null}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
               <span style={{ fontWeight: 600 }}>{gbp(u.price)}</span>
               <Link href={u.href} className="btn btn-secondary">Add</Link>

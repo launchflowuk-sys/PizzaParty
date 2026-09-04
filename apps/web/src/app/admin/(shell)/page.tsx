@@ -87,7 +87,7 @@ export default async function AdminHome() {
             </table>
           </div>
         ) : (
-          <p style={{ color: "var(--color-neutral-600)", fontSize: 14 }}>No orders yet.</p>
+          <p style={{ color: "var(--color-neutral-700)", fontSize: 14 }}>No orders yet.</p>
         )}
       </div>
     </>

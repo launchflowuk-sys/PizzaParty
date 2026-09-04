@@ -70,7 +70,7 @@ export default async function DispatchPage() {
 
           <h3 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, margin: "24px 0 8px" }}>Drivers</h3>
           {drivers.length === 0 ? (
-            <p style={{ color: "var(--color-neutral-600)", fontSize: 14 }}>
+            <p style={{ color: "var(--color-neutral-700)", fontSize: 14 }}>
               No drivers yet. Add them to <code>config/{client.slug}/ops.json</code> and re-seed.
             </p>
           ) : (
@@ -111,7 +111,7 @@ export default async function DispatchPage() {
         <div style={{ border: "2px solid var(--color-text)", padding: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
             <h3 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, margin: 0 }}>Ready to go</h3>
-            <span style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>{ready.length} waiting</span>
+            <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{ready.length} waiting</span>
           </div>
           <div style={{ fontSize: 13 }}>
             {ready.length === 0 ? (
@@ -122,7 +122,7 @@ export default async function DispatchPage() {
                 <div key={o.id} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", padding: "10px 0", borderTop: "1px solid var(--color-divider)" }}>
                   <div>
                     <div style={{ fontWeight: 600 }}>#{o.number} · {o.customerName}</div>
-                    <div style={{ color: "var(--color-neutral-600)" }}>
+                    <div style={{ color: "var(--color-neutral-700)" }}>
                       {o.items.map((i) => `${i.qty}× ${i.name}`).join(", ")} · {gbp(o.total)} · waiting {waited} min
                     </div>
                   </div>

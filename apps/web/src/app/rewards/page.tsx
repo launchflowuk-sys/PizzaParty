@@ -71,12 +71,12 @@ export default async function RewardsPage() {
           </h1>
           <div style={{ fontSize: 15, marginTop: 12 }}>
             points, {customer.name?.split(" ")[0] || "there"}.{" "}
-            <span style={{ color: "var(--color-neutral-600)" }}>{toNext} more and the next medium is free.</span>
+            <span style={{ color: "var(--color-neutral-700)" }}>{toNext} more and the next medium is free.</span>
           </div>
           <div style={{ height: 4, background: "var(--color-neutral-300)", marginTop: 20, position: "relative" }}>
             <div style={{ position: "absolute", inset: "0 auto 0 0", background: "var(--color-accent)", width: `${pct}%` }} />
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--color-neutral-600)", marginTop: 6 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--color-neutral-700)", marginTop: 6 }}>
             <span>0</span><span>{NEXT_REWARD} · free medium pizza</span>
           </div>
         </div>
@@ -91,8 +91,8 @@ export default async function RewardsPage() {
             ))}
           </div>
           <div style={{ display: "flex", gap: 24, marginTop: 20, fontSize: 13, flexWrap: "wrap" }}>
-            <span><span style={{ color: "var(--color-neutral-600)" }}>Rate</span> &nbsp;{cfg.loyalty.pointsPerPound} pt / £1</span>
-            <span><span style={{ color: "var(--color-neutral-600)" }}>Member since</span> &nbsp;{new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(customer.createdAt)}</span>
+            <span><span style={{ color: "var(--color-neutral-700)" }}>Rate</span> &nbsp;{cfg.loyalty.pointsPerPound} pt / £1</span>
+            <span><span style={{ color: "var(--color-neutral-700)" }}>Member since</span> &nbsp;{new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(customer.createdAt)}</span>
           </div>
         </div>
       </div>
@@ -104,7 +104,7 @@ export default async function RewardsPage() {
             {ledger.map((e) => (
               <div key={e.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 24, alignItems: "center", padding: "14px 0", borderBottom: "1px solid var(--color-divider)" }}>
                 <span style={{ fontSize: 14 }}>{e.reason}</span>
-                <span style={{ fontSize: 12, color: "var(--color-neutral-600)" }}>
+                <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>
                   {new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(e.createdAt)}
                 </span>
                 <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, color: e.delta >= 0 ? "var(--color-accent)" : "var(--color-neutral-700)" }}>
@@ -114,7 +114,7 @@ export default async function RewardsPage() {
             ))}
           </div>
         ) : (
-          <p style={{ fontSize: 14, color: "var(--color-neutral-600)" }}>
+          <p style={{ fontSize: 14, color: "var(--color-neutral-700)" }}>
             No points yet. They land the moment an order is paid.
           </p>
         )}

@@ -64,7 +64,7 @@ export function OrderLive({ orderId, initial }: { orderId: string; initial: Live
                       animation: live ? "fp-pulse 1.4s ease-in-out infinite" : undefined,
                     }}
                   />
-                  <div style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, color: done ? "var(--color-text)" : "var(--color-neutral-600)" }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3, color: done ? "var(--color-text)" : "var(--color-neutral-700)" }}>
                     {LABEL[st]}
                   </div>
                 </li>

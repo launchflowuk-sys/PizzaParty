@@ -16,7 +16,7 @@ type Ctx = {
 
 const ROW: React.CSSProperties = { borderTop: "2px solid var(--color-divider)", padding: "24px 0", display: "grid", gridTemplateColumns: "160px 1fr", gap: 24 };
 const H3: React.CSSProperties = { fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, margin: 0 };
-const NOTE: React.CSSProperties = { margin: 0, fontSize: 13, color: "var(--color-neutral-600)" };
+const NOTE: React.CSSProperties = { margin: 0, fontSize: 13, color: "var(--color-neutral-700)" };
 
 /** Checkout from `Farm Pizza.dc.html`: one page, four ruled numbered sections, with
  *  the order summary sticking alongside. The prototype draws raw card number, expiry
@@ -64,7 +64,7 @@ export function CheckoutFlow() {
       </section>
     );
   }
-  if (!ctx) return <section className="fp-wrap" style={{ padding: "40px 32px" }}><p aria-busy style={{ color: "var(--color-neutral-600)" }}>Loading checkout…</p></section>;
+  if (!ctx) return <section className="fp-wrap" style={{ padding: "40px 32px" }}><p aria-busy style={{ color: "var(--color-neutral-700)" }}>Loading checkout…</p></section>;
 
   async function placeOrder(paymentMethod: "card" | "cash") {
     setBusy(true); setError("");
