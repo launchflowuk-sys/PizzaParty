@@ -203,6 +203,20 @@ export async function automationStats(automationId: string) {
   };
 }
 
+/** Same figures for a one-off campaign. */
+export async function campaignStats(campaignId: string) {
+  const [agg, redeemed] = await Promise.all([
+    prisma.marketingSend.aggregate({
+      where: { campaignId, status: "sent" },
+      _count: true, _sum: { costPence: true, revenuePence: true },
+    }),
+    prisma.marketingSend.count({ where: { campaignId, redeemedOrderId: { not: "" } } }),
+  ]);
+  const spend = agg._sum.costPence ?? 0;
+  const revenue = agg._sum.revenuePence ?? 0;
+  return { sent: agg._count, redeemed, spendPence: spend, revenuePence: revenue, netPence: revenue - spend };
+}
+
 /** Whole-account totals for the dashboard. */
 export async function marketingTotals(clientId: string) {
   const agg = await prisma.marketingSend.aggregate({

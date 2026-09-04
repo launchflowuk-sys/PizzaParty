@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: farm_pizza
-    ports: ["5432:5432"]
+    ports: ["${DB_PORT:-5432}:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d farm_pizza"]
@@ -24,15 +24,16 @@ services:
       - path: ../.env
         required: false
     environment:
+      # Only values that must be container-correct live here. Secrets are
+      # deliberately absent: anything in `environment:` beats `env_file:`, so
+      # putting a password here would silently override ../.env and pin the
+      # stack to it - which is exactly how an admin panel ends up on "admin".
       CLIENT_SLUG: farm-pizza
       DATABASE_URL: postgresql://postgres:postgres@db:5432/farm_pizza
-      NEXT_PUBLIC_SITE_URL: http://localhost:3000
-      KITCHEN_PIN: "1234"
-      ADMIN_PASSWORD: admin
-      LAUNCHFLOW_KEY: agency
-      SESSION_SECRET: dev-secret-change-me-0123456789abcdef
-      CRON_SECRET: dev-cron
-    ports: ["3000:3000"]
+      # Falls back to the container's own address, but ../.env wins - point it
+      # at the tunnel or domain when the stack is reachable from outside.
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    ports: ["${WEB_PORT:-3000}:3000"]
     depends_on:
       db:
         condition: service_healthy

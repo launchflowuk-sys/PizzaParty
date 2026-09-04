@@ -14,7 +14,12 @@ export const env = {
   kitchenPin: trim(process.env.KITCHEN_PIN),
   adminPassword: trim(process.env.ADMIN_PASSWORD),
   launchflowKey: trim(process.env.LAUNCHFLOW_KEY),
-  sessionSecret: trim(process.env.SESSION_SECRET) || "dev-insecure-secret-change-me",
+  // Falls back to a known string for local work only. In production an unset
+  // secret would let anyone forge a signed admin cookie, so it is fatal there.
+  sessionSecret: trim(process.env.SESSION_SECRET)
+    || (process.env.NODE_ENV === "production"
+      ? (() => { throw new Error("SESSION_SECRET must be set in production"); })()
+      : "dev-insecure-secret-change-me"),
   cronSecret: trim(process.env.CRON_SECRET),
   isProd: process.env.NODE_ENV === "production",
 };

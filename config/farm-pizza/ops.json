@@ -1,5 +1,5 @@
 {
-  "_comment": "Back-office operational data: stock, drivers, staff and reviews. This is build-stage sample data so /admin/inventory, /admin/dispatch, /admin/staff and /admin/reviews run on real rows. Replace with the shop's own before launch. Staff PINs here are build-stage placeholders (1111, 2222, …) and are stored only as a salted hash; replace them before launch.",
+  "_comment": "Back-office operational data: stock, drivers, staff and reviews. This is build-stage sample data so /admin/inventory, /admin/dispatch, /admin/staff and /admin/reviews run on real rows. Replace with the shop's own before launch. Staff PINs here are build-stage placeholders (1111, 2222, …) and are stored only as a salted hash; replace them before launch. Automations seed PAUSED; the owner turns each on when he is ready.",
   "stock": [
     {
       "name": "00 flour",
@@ -265,6 +265,44 @@
       "body": "Good pizza, but the app said 30 minutes and it was closer to 50.",
       "source": "direct",
       "daysAgo": 14
+    }
+  ],
+  "automations": [
+    {
+      "name": "Win back after 45 days",
+      "trigger": "win_back",
+      "days": 45,
+      "cooldownDays": 60,
+      "promoCode": "WELCOME10",
+      "maxPerRun": 200,
+      "body": "{shop}: we miss you {name}! {code} gets you 10% off your next order. Order direct at farm-pizza.com"
+    },
+    {
+      "name": "Second order nudge",
+      "trigger": "second_order",
+      "days": 14,
+      "cooldownDays": 45,
+      "promoCode": "WELCOME10",
+      "maxPerRun": 150,
+      "body": "{name}, hope the first one landed well. {code} for 10% off your next {shop} order."
+    },
+    {
+      "name": "Thank a new customer",
+      "trigger": "first_order_thanks",
+      "days": 1,
+      "cooldownDays": 30,
+      "promoCode": "",
+      "maxPerRun": 100,
+      "body": "Thanks for your first order, {name}. Any problems, call the shop - we'd rather fix it than lose you. {shop}"
+    },
+    {
+      "name": "Quiet night filler",
+      "trigger": "quiet_night",
+      "days": 30,
+      "cooldownDays": 14,
+      "promoCode": "FREEDEL",
+      "maxPerRun": 250,
+      "body": "{name}, kitchen's quiet tonight at {shop}. {code} - free delivery for the next two hours."
     }
   ]
 }

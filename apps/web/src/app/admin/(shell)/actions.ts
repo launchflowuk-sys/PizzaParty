@@ -120,23 +120,71 @@ export async function updateZone(fd: FormData) {
 }
 
 /* ---------- Campaigns ---------- */
+
+/**
+ * Send a one-off campaign to a segment.
+ *
+ * Unlike an automation this fires once, when the owner says so - "we've got a
+ * new garlic bread", "the shop is shut Tuesday". It is measured the same way:
+ * every recipient gets a MarketingSend row carrying the offer code, so when one
+ * of them orders with that code the money lands against this campaign rather
+ * than disappearing into general takings.
+ */
 export async function sendCampaign(fd: FormData) {
   const client = await guard("campaigns");
-  const channel = str(fd, "channel") as "sms" | "email";
+  const channel = str(fd, "channel") === "email" ? "email" : "sms";
   const segment = str(fd, "segment");
-  const body = str(fd, "body"); const subject = str(fd, "subject");
+  const body = str(fd, "body");
+  const subject = str(fd, "subject");
+  const promoCode = str(fd, "promoCode").toUpperCase();
   if (!body) return;
+
   const { segmentWhere } = await import("@/lib/segments");
-  const customers = await prisma.customer.findMany({ where: { clientId: client.id, marketingOptIn: true, ...segmentWhere(segment), ...(channel === "email" ? { email: { not: "" } } : {}) }, take: 2000 });
+  const { SMS_COST_PENCE, EMAIL_COST_PENCE, render } = await import("@/lib/marketing");
   const { sendSms, sendEmail, escapeHtml } = await import("@/lib/notify");
+
+  const customers = await prisma.customer.findMany({
+    where: {
+      clientId: client.id,
+      marketingOptIn: true,
+      ...segmentWhere(segment),
+      ...(channel === "email" ? { email: { not: "" } } : { phone: { not: "" } }),
+    },
+    take: 2000,
+    select: { id: true, name: true, phone: true, email: true },
+  });
+
+  const campaign = await prisma.campaign.create({
+    data: { clientId: client.id, channel, segment, promoCode, subject, body, sent: 0, failed: 0 },
+  });
+
+  const unit = channel === "sms" ? SMS_COST_PENCE : EMAIL_COST_PENCE;
   let sent = 0, failed = 0;
   for (const c of customers) {
-    const text = body.replace(/\{name\}/g, c.name.split(" ")[0] || "there");
-    const r = channel === "sms" ? await sendSms(c.phone, `${text} Reply STOP to opt out.`) : await sendEmail(c.email, subject || "News from us", `<p>${escapeHtml(text).replace(/\n/g, "<br>")}</p>`);
-    if (r.ok) sent++; else failed++;
+    const text = render(body, { name: c.name, phone: c.phone }, promoCode, client.name);
+    let ok = false, error = "";
+    try {
+      const r = channel === "sms"
+        ? await sendSms(c.phone, `${text}\n\nReply STOP to opt out`)
+        : await sendEmail(c.email, subject || client.name, `<p>${escapeHtml(text).replace(/\n/g, "<br>")}</p>`);
+      ok = r.ok; error = r.error ?? "";
+    } catch (e) {
+      error = (e as Error).message;
+    }
+
+    await prisma.marketingSend.create({
+      data: {
+        clientId: client.id, campaignId: campaign.id, customerId: c.id, channel,
+        promoCode, costPence: ok ? unit : 0,
+        status: ok ? "sent" : "failed", error: error.slice(0, 300),
+      },
+    });
+    if (ok) sent++; else failed++;
   }
-  await prisma.campaign.create({ data: { clientId: client.id, channel, segment, subject, body, sent, failed } });
+
+  await prisma.campaign.update({ where: { id: campaign.id }, data: { sent, failed } });
   revalidatePath("/admin/campaigns");
+  revalidatePath("/admin/marketing");
 }
 
 /* ─── Inventory ─────────────────────────────────────────────────────────── */

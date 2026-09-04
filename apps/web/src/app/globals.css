@@ -342,3 +342,9 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
 /* Zero radius is non-negotiable in this system. The radio `.dot` is its single
    documented circular element, so it is the only exemption. */
 *:not(.dot) { border-radius: 0 !important; }
+
+/* Campaign composer sits beside the list of who is in each group on a wide
+   screen, and stacks under it on a phone. */
+@media (min-width: 900px) {
+  .fp-campaign-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+}

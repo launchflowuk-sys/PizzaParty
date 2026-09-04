@@ -1,41 +1,146 @@
+import Link from "next/link";
 import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
-import { SEGMENTS, segmentWhere } from "@/lib/segments";
-import { sendCampaign } from "../actions";
-
+import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
+import { SEGMENTS, segmentWhere, segmentLabel } from "@/lib/segments";
+import { campaignStats, SMS_COST_PENCE } from "@/lib/marketing";
+import { sendCampaign } from "../actions";
 
 export const dynamic = "force-dynamic";
 
+/** One-off sends: a new item, a closure, a quiet Tuesday. Measured like everything else. */
 export default async function AdminCampaigns() {
   await requireScreen("campaigns");
   const client = await getClientRow();
-  const [past, counts] = await Promise.all([
+
+  const [past, counts, promos] = await Promise.all([
     prisma.campaign.findMany({ where: { clientId: client.id }, orderBy: { createdAt: "desc" }, take: 20 }),
-    Promise.all(SEGMENTS.map(async (s) => ({ ...s, n: await prisma.customer.count({ where: { clientId: client.id, marketingOptIn: true, ...segmentWhere(s.key) } }) }))),
+    Promise.all(SEGMENTS.map(async (s) => ({
+      ...s,
+      n: await prisma.customer.count({ where: { clientId: client.id, marketingOptIn: true, phone: { not: "" }, ...segmentWhere(s.key) } }),
+    }))),
+    prisma.promo.findMany({ where: { clientId: client.id, active: true }, select: { code: true } }),
   ]);
+
+  const rows = await Promise.all(past.map(async (c) => ({ c, stats: await campaignStats(c.id) })));
+
   return (
-    <div>
+    <>
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
           <h1>Campaigns</h1>
         </div>
       </header>
-      <p className="text-sm text-muted mt-1">Sends only to customers who opted in. Use <code>{"{name}"}</code> for first name. SMS auto-appends “Reply STOP to opt out”.</p>
-      <form action={sendCampaign} className="lf-card p-4 mt-4 grid gap-3">
-        <div className="grid sm:grid-cols-2 gap-3">
-          <label className="text-sm">Channel<select name="channel" className="lf-input mt-1"><option value="sms">SMS</option><option value="email">Email</option></select></label>
-          <label className="text-sm">Segment<select name="segment" className="lf-input mt-1">{counts.map((s) => <option key={s.key} value={s.key}>{s.label} ({s.n})</option>)}</select></label>
+
+      <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 24px", maxWidth: "78ch" }}>
+        A campaign goes out once, to the group you pick. Only customers who opted in are
+        ever contacted, and every text carries &ldquo;Reply STOP to opt out&rdquo; &mdash; both
+        are the law, not settings. Attach an offer code and you will see on the{" "}
+        <Link href="/admin/marketing">Marketing</Link> screen exactly what the send earned back.
+      </p>
+
+      <div style={{ display: "grid", gap: 24, gridTemplateColumns: "minmax(0, 1fr)", alignItems: "start" }} className="fp-campaign-grid">
+        <div style={{ border: "2px solid var(--color-text)", padding: 24 }}>
+          <span className="fp-kicker" style={{ marginBottom: 12 }}>New campaign</span>
+          <form action={sendCampaign} style={{ display: "grid", gap: 12 }}>
+            <div className="fp-fields">
+              <div className="field">
+                <label htmlFor="channel">Channel</label>
+                <select id="channel" name="channel" className="input" defaultValue="sms">
+                  <option value="sms">SMS &mdash; {gbp(SMS_COST_PENCE)} each</option>
+                  <option value="email">Email &mdash; free</option>
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="segment">Send to</label>
+                <select id="segment" name="segment" className="input" defaultValue="lapsed_60d">
+                  {counts.map((s) => <option key={s.key} value={s.key}>{s.label} ({s.n})</option>)}
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="promoCode">Offer code</label>
+                <select id="promoCode" name="promoCode" className="input" defaultValue={promos[0]?.code ?? ""}>
+                  <option value="">No code (not measurable)</option>
+                  {promos.map((p) => <option key={p.code} value={p.code}>{p.code}</option>)}
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="subject">Subject (email only)</label>
+                <input id="subject" name="subject" className="input" maxLength={80} placeholder={`News from ${client.name}`} />
+              </div>
+            </div>
+            <div className="field">
+              <label htmlFor="body">Message</label>
+              <textarea id="body" name="body" className="input" required rows={4} style={{ padding: 10, resize: "vertical" }}
+                defaultValue={`{name}, it's {shop}. Tonight only: {code} for 20% off. Order direct and we keep the lot.`} />
+            </div>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-700)", lineHeight: 1.5 }}>
+              <strong>{"{name}"}</strong> becomes their first name, <strong>{"{shop}"}</strong> the shop
+              name, <strong>{"{code}"}</strong> the offer code above.
+            </p>
+            <button className="btn btn-primary" style={{ justifySelf: "start" }}>Send now</button>
+          </form>
         </div>
-        <label className="text-sm">Subject (email only)<input name="subject" className="lf-input mt-1" /></label>
-        <label className="text-sm">Message<textarea name="body" required rows={4} className="lf-input mt-1 py-2" defaultValue={`Hi {name}, it's ${client.name}. Tonight only: 20% off with code TONIGHT20 at ${client.domain}`} /></label>
-        <button className="lf-btn lf-btn-primary w-fit">Send now</button>
-      </form>
-      <h2 className="font-bold mt-8">Sent</h2>
-      <table className="table" style={{ width: "100%" }}><tbody>{past.map((c) => (
-        <tr key={c.id} className="border-b border-line"><td className="p-2 whitespace-nowrap">{c.createdAt.toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</td><td className="p-2">{c.channel} · {c.segment}</td><td className="p-2 text-muted truncate max-w-md">{c.body}</td><td className="p-2 whitespace-nowrap">{c.sent} sent{c.failed ? `, ${c.failed} failed` : ""}</td></tr>
-      ))}</tbody></table>
-    </div>
+
+        <div style={{ border: "2px solid var(--color-neutral-300)", padding: 24 }}>
+          <span className="fp-kicker" style={{ marginBottom: 12 }}>Your list</span>
+          <table className="table" style={{ width: "100%" }}>
+            <tbody>
+              {counts.map((s) => (
+                <tr key={s.key}>
+                  <td>
+                    <Link href={`/admin/customers?segment=${s.key}`} style={{ fontWeight: 600 }}>{s.label}</Link>
+                    <br />
+                    <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{s.help}</span>
+                  </td>
+                  <td style={{ textAlign: "right", whiteSpace: "nowrap", verticalAlign: "top" }}>
+                    <strong>{s.n}</strong>
+                    <br />
+                    <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{gbp(s.n * SMS_COST_PENCE)}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <span className="fp-kicker" style={{ margin: "32px 0 12px", display: "block" }}>Sent</span>
+      {rows.length === 0 ? (
+        <p style={{ fontSize: 14, color: "var(--color-neutral-700)" }}>Nothing sent yet.</p>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table className="table" style={{ width: "100%" }}>
+            <thead>
+              <tr>
+                <th>When</th><th>Sent to</th><th>Message</th><th>Code</th>
+                <th style={{ textAlign: "right" }}>Sent</th>
+                <th style={{ textAlign: "right" }}>Orders</th>
+                <th style={{ textAlign: "right" }}>Cost</th>
+                <th style={{ textAlign: "right" }}>Earned</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(({ c, stats }) => (
+                <tr key={c.id}>
+                  <td style={{ whiteSpace: "nowrap" }}>{c.createdAt.toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</td>
+                  <td>{segmentLabel(c.segment)}<br /><span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{c.channel.toUpperCase()}</span></td>
+                  <td style={{ maxWidth: 320, fontSize: 13, color: "var(--color-neutral-700)" }}>{c.body}</td>
+                  <td style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13 }}>{c.promoCode || "—"}</td>
+                  <td style={{ textAlign: "right" }}>{stats.sent}{c.failed ? <><br /><span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{c.failed} failed</span></> : null}</td>
+                  <td style={{ textAlign: "right" }}>{stats.redeemed}</td>
+                  <td style={{ textAlign: "right" }}>{gbp(stats.spendPence)}</td>
+                  <td style={{ textAlign: "right", fontWeight: 600, color: stats.revenuePence ? "var(--color-accent-700)" : undefined }}>
+                    {gbp(stats.revenuePence)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
   );
 }

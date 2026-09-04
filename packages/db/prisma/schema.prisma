@@ -478,7 +478,9 @@ model Campaign {
   id        String   @id @default(cuid())
   clientId  String
   channel   String // sms | email
-  segment   String // ordered_30d | lapsed_60d | all_optin
+  segment   String // see lib/segments.ts
+  /// Offer code carried by every message, so the campaign's revenue is measured.
+  promoCode String   @default("")
   subject   String   @default("")
   body      String
   sent      Int      @default(0)

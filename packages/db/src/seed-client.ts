@@ -165,6 +165,7 @@ type OpsFile = {
   drivers?: { name: string; phone?: string; vehicle?: string; status?: string }[];
   staff?: { name: string; role?: string; phone?: string; email?: string; hoursWeek?: number; onShift?: boolean; pin?: string }[];
   reviews?: { customerName: string; rating: number; body?: string; source?: string; reply?: string; daysAgo?: number }[];
+  automations?: { name: string; trigger: string; days?: number; cooldownDays?: number; promoCode?: string; maxPerRun?: number; body?: string; channel?: string }[];
 };
 
 /**
@@ -174,7 +175,7 @@ type OpsFile = {
  */
 async function seedOps(clientId: string, slug: string) {
   const file = join(clientDir(slug), "ops.json");
-  if (!existsSync(file)) return { stock: 0, drivers: 0, staff: 0, reviews: 0 };
+  if (!existsSync(file)) return { stock: 0, drivers: 0, staff: 0, reviews: 0, automations: 0 };
   const ops = JSON.parse(readFileSync(file, "utf8")) as OpsFile;
 
   for (const [i, it] of (ops.stock ?? []).entries()) {
@@ -203,7 +204,20 @@ async function seedOps(clientId: string, slug: string) {
     });
   }
 
-  return { stock: (ops.stock ?? []).length, drivers: (ops.drivers ?? []).length, staff: (ops.staff ?? []).length, reviews: (ops.reviews ?? []).length };
+  for (const a of ops.automations ?? []) {
+    // Seeded paused on purpose: re-seeding must never switch on something that
+    // texts the customer list.
+    const data = { trigger: a.trigger, channel: a.channel ?? "sms", days: a.days ?? 30,
+      cooldownDays: a.cooldownDays ?? 30, promoCode: (a.promoCode ?? "").toUpperCase(),
+      maxPerRun: a.maxPerRun ?? 200, body: a.body ?? "" };
+    await prisma.automation.upsert({
+      where: { clientId_name: { clientId, name: a.name } },
+      create: { clientId, name: a.name, active: false, ...data },
+      update: data,
+    });
+  }
+
+  return { stock: (ops.stock ?? []).length, drivers: (ops.drivers ?? []).length, staff: (ops.staff ?? []).length, reviews: (ops.reviews ?? []).length, automations: (ops.automations ?? []).length };
 }
 
 function clientData(c: ClientConfig, configHash: string) {

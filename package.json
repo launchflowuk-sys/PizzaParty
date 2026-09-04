@@ -18,6 +18,7 @@
     "db:migrate:dev": "pnpm --filter @launchflow/db migrate:dev",
     "db:push": "pnpm --filter @launchflow/db push",
     "seed": "tsx scripts/seed-client.ts",
+    "demo-data": "tsx scripts/demo-data.ts",
     "new-client": "tsx scripts/new-client.ts",
     "validate-config": "tsx scripts/validate-config.ts",
     "test": "tsx --test scripts/tests/*.test.ts",

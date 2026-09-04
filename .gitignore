@@ -16,3 +16,4 @@ packages/db/generated
 /IMAGESPEC.md
 /Farm logo.png
 /Logo.png
+docker/.env
