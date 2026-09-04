@@ -1,0 +1,21 @@
+# Normalise all text to LF in the repo and in the working tree.
+# Without this, core.autocrlf=true on Windows checks out docker/entrypoint.sh
+# with CRLF, which Docker copies into the image verbatim and the container
+# then fails to start: exec ./entrypoint.sh: no such file or directory
+# (the kernel looks for an interpreter literally named /bin/sh\r).
+* text=auto eol=lf
+
+# Scripts and anything executed inside a container must always be LF.
+*.sh text eol=lf
+docker/entrypoint.sh text eol=lf
+
+# Never touch binary assets.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
