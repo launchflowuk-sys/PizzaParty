@@ -29,16 +29,20 @@ export function Header({ name, logo, fulfilment }: { name: string; logo: string;
           brand mark keeps its own colour. */}
       <Link href="/" className="nav-brand" aria-label={`${name} home`} style={{ display: "flex", alignItems: "center", marginRight: "auto" }}>
         {logo ? (
-          <Image src={logo} alt={name} width={44} height={44} priority style={{ height: 44, width: "auto" }} unoptimized={logo.endsWith(".svg")} />
+          <Image src={logo} alt={name} width={128} height={128} priority className="fp-logo" unoptimized={logo.endsWith(".svg")} />
         ) : (
           name.toUpperCase()
         )}
       </Link>
-      {LINKS.map((l) => (
-        <Link key={l.href} href={l.href} style={{ whiteSpace: "nowrap" }}>{l.label}</Link>
-      ))}
+      {/* Grouped so the mobile layout can place links and the mode control as their
+          own rows instead of letting everything reflow into a crush. */}
+      <div className="nav-links">
+        {LINKS.map((l) => (
+          <Link key={l.href} href={l.href} style={{ whiteSpace: "nowrap" }}>{l.label}</Link>
+        ))}
+        <Link href="/account" style={{ whiteSpace: "nowrap" }}>Account</Link>
+      </div>
       <ModeSeg fulfilment={fulfilment} />
-      <Link href="/account" style={{ whiteSpace: "nowrap" }}>Account</Link>
       <BasketBadge />
     </nav>
   );

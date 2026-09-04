@@ -41,6 +41,10 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   .fp-split-rail { grid-template-columns: minmax(0,1fr); gap: 24px; }
   /* The category rail and the product photograph stop sticking once stacked. */
   .fp-split-rail > aside, .fp-split-half > div:first-child { position: static !important; }
+  /* Explicit class - the selector above misses this one, because the section's
+     first child is a JSON-LD script rather than the photo. A sticky photograph on
+     a phone means the rest of the page scrolls underneath it. */
+  .fp-product-media { position: static !important; }
   .fp-stats { grid-template-columns: repeat(2, 1fr); gap: 24px; }
   .fp-dealrow { grid-template-columns: 90px 1fr; row-gap: 12px; }
   .fp-dealrow > p { grid-column: 1 / -1; }
@@ -49,10 +53,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 @media (max-width: 700px) {
   .fp-wrap { padding-inline: 16px; }
   .fp-grid-4, .fp-grid-3 { grid-template-columns: repeat(2, 1fr); }
-  /* Wrap rather than overflow; the nav is a single flex row at desktop width. */
-  .nav { flex-wrap: wrap; row-gap: 8px; padding-inline: 16px !important; }
-  .nav .nav-brand { margin-right: 0; }
-  .nav .seg { order: 10; }
+  /* Nav's mobile layout is handled in the nav block above. */
 }
 
 /* Basket */
@@ -108,11 +109,36 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .fp-adminsplit { display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 32px; align-items: start; }
 
 @media (max-width: 1000px) {
-  .fp-admin { grid-template-columns: minmax(0,1fr); }
-  .fp-adminrail { position: static; height: auto; border-right: 0; border-bottom: 2px solid var(--color-divider); }
-  .fp-adminrail nav { flex-direction: row !important; flex-wrap: wrap; }
+  /* The fixed full-viewport overlay plus a 100vh sticky rail collapsed the nav to a
+     sliver on a phone. On mobile the back office is a normal scrolling document and
+     the rail becomes a horizontal strip that scrolls on its own. */
+  .fp-admin { position: static; inset: auto; grid-template-columns: minmax(0,1fr); min-height: 100dvh; }
+  .fp-adminrail {
+    position: sticky; top: 0; z-index: 20; height: auto;
+    border-right: 0; border-bottom: 2px solid var(--color-divider);
+    padding: 12px 16px; overflow: visible;
+  }
+  .fp-adminrail nav {
+    flex-direction: row !important; flex-wrap: nowrap;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    border-bottom: 0 !important; gap: 4px;
+    scrollbar-width: none;
+  }
+  .fp-adminrail nav::-webkit-scrollbar { display: none; }
+  .fp-adminrail nav a {
+    border-top: 0 !important; padding: 10px 12px !important;
+    min-height: 44px; flex: 0 0 auto;
+    border: 1px solid var(--color-divider);
+  }
+  /* The square bullet and the storefront links are noise in a scrolling strip. */
+  .fp-adminrail nav a > span:first-child { display: none; }
+  .fp-adminrail > div:last-child { display: none; }
+  .fp-adminhead { flex-wrap: wrap; gap: 12px; }
   .fp-adminsplit { grid-template-columns: minmax(0,1fr); }
   .fp-stats4 { grid-template-columns: repeat(2, 1fr); }
+  .fp-admin main { padding: 16px !important; }
+  /* Tables are the one thing allowed to scroll sideways, inside their own box. */
+  .fp-admin table { display: block; overflow-x: auto; white-space: nowrap; }
 }
 @media (max-width: 560px) { .fp-stats4 { grid-template-columns: minmax(0,1fr); } }
 
@@ -130,8 +156,140 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 /* A link must not be distinguished by colour alone. Buttons, tags and nav items opt
    out because their shape already marks them. */
 a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
-.nav a, .fp-footer a, .fp-adminrail a { text-decoration: none; }
-.nav a:hover, .fp-footer a:hover, .fp-adminrail a:hover { text-decoration: underline; }
+.nav a:not(._), .fp-footer a:not(._), .fp-adminrail a:not(._) { text-decoration: none; }
+.nav a:not(._):hover, .fp-footer a:not(._):hover, .fp-adminrail a:not(._):hover { text-decoration: underline; }
+
+
+
+
+/* Allergen note reads as its own block, so it can never collide with the
+   heading that follows it. */
+.fp-allergens {
+  margin: 12px 0 0; font-size: 12px; line-height: 1.5;
+  color: var(--color-neutral-700);
+  background: var(--color-surface);
+  border-left: 4px solid var(--color-accent-700);
+  padding: 10px 12px;
+}
+
+@media (max-width: 1000px) {
+  /* Room for the sticky basket bar, so it never covers the last option. */
+  .fp-split-half, .fp-split-basket, .fp-split-checkout { padding-bottom: 96px !important; }
+  .fp-product-media > div { max-height: 46vh; }
+}
+
+/* ── Hero ───────────────────────────────────────────────────────────────────
+   Desktop keeps the prototype exactly: 7fr copy beside 5fr photograph, 76px
+   display type.
+
+   On a phone that order is wrong for a takeaway. The job above the fold is to
+   make someone hungry and then give them one obvious way to order, so the
+   photograph comes first and runs edge to edge, the headline drops to a size
+   that fits a phone rather than shouting over it, and the two actions sit
+   directly under the copy where a thumb already is. */
+.fp-hero-title {
+  font-family: var(--font-heading); font-weight: 800; font-size: 76px;
+  line-height: 1.02; letter-spacing: -.02em; margin: 0 0 24px; margin-left: -.05em;
+}
+
+@media (max-width: 1000px) {
+  .fp-split-hero { padding-top: 0 !important; padding-bottom: 32px !important; gap: 20px; }
+  /* Photograph above the fold, copy under it. */
+  .fp-hero-photo { order: -1; }
+  /* Edge to edge - a gutter round food shrinks it. */
+  .fp-hero-photo > div {
+    margin-inline: -16px; width: calc(100% + 32px);
+    height: 46vh !important; max-height: 380px; min-height: 240px;
+  }
+  .fp-hero-title {
+    font-size: clamp(32px, 9vw, 44px);
+    line-height: 1.05; margin: 0 0 12px; margin-left: -.02em;
+  }
+  .fp-hero-copy .fp-kicker { margin-bottom: 10px !important; }
+  .fp-hero-copy p { font-size: 15px !important; margin-bottom: 18px !important; }
+  /* Both actions on one row, each big enough to hit. */
+  .fp-hero-copy > div:last-child { display: grid !important; grid-template-columns: 1fr auto; gap: 10px !important; }
+  .fp-hero-copy > div:last-child > a { min-height: 48px; justify-content: center; }
+  .fp-hero-copy > div:last-child > a:first-child { justify-content: flex-start; }
+
+  /* The four numerals read as a tight 2x2 rather than a long stack. */
+  .fp-stats { grid-template-columns: 1fr 1fr; gap: 20px 16px; }
+  .fp-stats > div > div:first-child { font-size: 32px !important; }
+  .fp-stats > div > div:last-child { font-size: 11px !important; margin-top: 6px !important; }
+}
+
+@media (max-width: 700px) {
+  .fp-hero-photo > div { margin-inline: -16px; width: calc(100% + 32px); }
+}
+
+
+/* ── Menu rail on a phone ───────────────────────────────────────────────────
+   Stacked, the category rail put four full-width rows, a paragraph and a
+   button between the customer and any food. It becomes a sticky horizontal
+   chip strip instead, so the first pizza is visible immediately. */
+@media (max-width: 1000px) {
+  .fp-split-rail > aside {
+    position: sticky; top: 0; z-index: 15;
+    background: var(--color-bg);
+    padding: 8px 0 10px; margin-bottom: 4px;
+    border-bottom: 2px solid var(--color-divider);
+  }
+  .fp-split-rail > aside > .fp-kicker { display: none; }
+  .fp-split-rail > aside > div:first-of-type {
+    display: flex !important; gap: 8px;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    border-bottom: 0 !important; scrollbar-width: none;
+  }
+  .fp-split-rail > aside > div:first-of-type::-webkit-scrollbar { display: none; }
+  .fp-split-rail > aside > div:first-of-type > button {
+    border-top: 0 !important; flex: 0 0 auto;
+    border: 1px solid var(--color-divider) !important;
+    padding: 9px 14px !important; font-size: 15px !important;
+    min-height: 44px;
+  }
+  /* The count beside each category is noise at chip size. */
+  .fp-split-rail > aside > div:first-of-type > button > span:last-child { display: none; }
+  /* Allergen note and sheet move below the food rather than ahead of it. */
+  .fp-split-rail > aside > p,
+  .fp-split-rail > aside > a { display: none; }
+  /* Title and search share a row instead of stacking. */
+  .fp-split-rail > div > div:first-child { flex-wrap: wrap; gap: 12px !important; margin-bottom: 16px !important; }
+  .fp-split-rail > div > div:first-child > h1 { font-size: 30px !important; }
+  .fp-split-rail > div > div:first-child > input { max-width: none !important; flex: 1 1 100%; min-height: 44px; }
+}
+
+
+/* Brand mark. It is a circular badge, so it needs real size to read at all - at
+   44px the farmhouse and the ring text turned to mush. `flex:none` and a fixed
+   aspect stop the nav grid from squeezing it out of round. */
+.fp-logo { height: 56px; width: 56px; flex: none; object-fit: contain; }
+@media (max-width: 760px) { .fp-logo { height: 60px; width: 60px; } }
+
+/* ── Nav ────────────────────────────────────────────────────────────────────
+   Desktop is the prototype's single flush row. Below 760px it becomes three
+   rows with real breathing space: the mark and the basket, then the links,
+   then the order-mode control full width - rather than everything reflowing
+   into one crush. */
+.nav-links { display: flex; align-items: center; gap: var(--space-4); }
+
+@media (max-width: 760px) {
+  .nav {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "brand . basket" "links links links" "seg seg seg";
+    row-gap: 14px;
+    column-gap: 12px;
+    padding: 14px 16px !important;
+    align-items: center;
+  }
+  .nav > .nav-brand { grid-area: brand; margin-right: 0; flex: none; }
+  .nav > a[href="/basket"] { grid-area: basket; }
+  .nav > .nav-links { grid-area: links; justify-content: space-between; gap: var(--space-2); }
+  .nav > .seg { grid-area: seg; width: 100%; }
+  .nav > .seg .seg-opt { flex: 1; justify-content: center; min-height: 44px; }
+  /* The basket is the primary action - keep it comfortably tappable. */
+  .nav > a[href="/basket"] { min-height: 44px; }
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Legacy class bridge.

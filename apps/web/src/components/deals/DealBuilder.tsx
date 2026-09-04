@@ -13,22 +13,42 @@ export type BuilderDeal = {
 
 type Pick = { product: PickerProduct; size: string; modifiers: BasketComponent["modifiers"]; extra: number; label: string };
 
+/** One step of the deal: choose the product, then its options. */
 function SlotPicker({ deal, slotIndex, n, onPick }: { deal: BuilderDeal; slotIndex: number; n: number; onPick: (p: Pick) => void }) {
   const slot = deal.slots[slotIndex]!;
   const [chosen, setChosen] = useState<PickerProduct | null>(slot.options.length === 1 ? slot.options[0]! : null);
+
   return (
-    <div className="lf-card p-4">
-      <p className="font-bold">{slot.name} {slot.qty > 1 ? `(${n + 1} of ${slot.qty})` : ""}</p>
+    <div style={{ border: "2px solid var(--color-text)", padding: 20, marginTop: 20 }}>
+      <span className="fp-kicker" style={{ marginBottom: 10 }}>
+        {slot.name}{slot.qty > 1 ? ` · ${n + 1} of ${slot.qty}` : ""}
+      </span>
+
       {!chosen ? (
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="fp-grid fp-grid-3" style={{ marginTop: 4 }}>
           {slot.options.map((o) => (
-            <li key={o.slug}>
-              <button className="w-full text-left p-3 rounded-xl border border-line hover:border-brand disabled:opacity-40" disabled={o.soldOut} onClick={() => setChosen(o)}>{o.name}{o.soldOut ? " (sold out)" : ""}</button>
-            </li>
+            <button
+              key={o.slug}
+              className="fp-cell"
+              disabled={o.soldOut}
+              onClick={() => setChosen(o)}
+              style={{
+                textAlign: "left", background: "none", font: "inherit", cursor: o.soldOut ? "not-allowed" : "pointer",
+                opacity: o.soldOut ? 0.45 : 1, minHeight: 64, justifyContent: "center", gap: 4,
+              }}
+            >
+              <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16 }}>{o.name}</span>
+              {o.soldOut ? <span style={{ fontSize: 12, color: "var(--color-accent-700)" }}>Sold out</span> : null}
+            </button>
           ))}
-        </ul>
+        </div>
       ) : (
-        <ChosenOptions product={chosen} sizeKeys={slot.sizeKeys} onBack={slot.options.length > 1 ? () => setChosen(null) : undefined} onPick={onPick} />
+        <ChosenOptions
+          product={chosen}
+          sizeKeys={slot.sizeKeys}
+          onBack={slot.options.length > 1 ? () => setChosen(null) : undefined}
+          onPick={onPick}
+        />
       )}
     </div>
   );
@@ -38,17 +58,31 @@ function ChosenOptions({ product, sizeKeys, onBack, onPick }: { product: PickerP
   const state = useSelection(product, sizeKeys);
   const base = state.sizes.find((s) => s.key === state.sel.size)?.price ?? 0;
   const extra = state.sel.unitPrice - base;
+
   return (
-    <div className="mt-3">
-      <div className="flex items-center justify-between"><p className="font-semibold">{product.name}</p>{onBack ? <button className="text-sm text-brand underline" onClick={onBack}>Change</button> : null}</div>
-      <div className="mt-3"><OptionPicker product={product} state={state} /></div>
-      <button className="lf-btn lf-btn-secondary mt-4" disabled={!state.sel.valid} onClick={() => onPick({ product, size: state.sel.size, modifiers: state.sel.modifiers, extra, label: `${product.name}${state.sel.detail ? ` (${state.sel.detail})` : ""}` })}>
-        Confirm{extra ? ` (+${gbp(extra)})` : ""}
+    <div>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
+        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 22, letterSpacing: "-.015em" }}>{product.name}</span>
+        {onBack ? <button className="btn btn-ghost" onClick={onBack}>Change</button> : null}
+      </div>
+
+      <OptionPicker product={product} state={state} />
+
+      <button
+        className="btn btn-primary btn-block"
+        style={{ marginTop: 20, minHeight: 48, justifyContent: "space-between", padding: "12px 16px" }}
+        disabled={!state.sel.valid}
+        onClick={() => onPick({ product, size: state.sel.size, modifiers: state.sel.modifiers, extra, label: `${product.name}${state.sel.detail ? ` (${state.sel.detail})` : ""}` })}
+      >
+        <span>Confirm this one</span>
+        <span>{extra ? `+${gbp(extra)}` : "included"}</span>
       </button>
     </div>
   );
 }
 
+/** Deal builder. Ruled progress list of what the deal contains, the current step
+ *  underneath, and a running total pinned to the bottom. */
 export function DealBuilder({ deal }: { deal: BuilderDeal }) {
   const add = useBasket((s) => s.add);
   const router = useRouter();
@@ -57,6 +91,7 @@ export function DealBuilder({ deal }: { deal: BuilderDeal }) {
   const next = flat.find((x) => !x.p);
   const extra = flat.reduce((a, x) => a + (x.p?.extra ?? 0), 0);
   const total = deal.price + extra;
+  const donecount = flat.filter((x) => x.p).length;
 
   function done() {
     const components: BasketComponent[] = flat.map((x) => ({ slot: x.slot, product: x.p!.product.slug, size: x.p!.size, modifiers: x.p!.modifiers }));
@@ -65,21 +100,70 @@ export function DealBuilder({ deal }: { deal: BuilderDeal }) {
   }
 
   return (
-    <div className="space-y-4">
-      <ol className="space-y-2">
-        {flat.map((x) => (
-          <li key={`${x.slot}-${x.n}`} className={`flex items-center justify-between p-3 rounded-xl border ${x.p ? "border-success/40 bg-success/5" : next && next.slot === x.slot && next.n === x.n ? "border-brand" : "border-line"}`}>
-            <span className="text-sm"><span className="font-semibold">{deal.slots[x.slot]!.name}</span>{x.p ? `: ${x.p.label}` : ""}</span>
-            {x.p ? <button className="text-xs underline" onClick={() => setPicks((prev) => prev.map((arr, s) => (s === x.slot ? arr.map((p, i) => (i === x.n ? null : p)) : arr)))}>change</button> : null}
-          </li>
-        ))}
+    <div style={{ paddingBottom: 96 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+        <span className="fp-kicker">What&rsquo;s in it</span>
+        <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{donecount} of {flat.length} chosen</span>
+      </div>
+
+      <ol style={{ listStyle: "none", margin: 0, padding: 0, borderTop: "2px solid var(--color-divider)" }}>
+        {flat.map((x) => {
+          const isNext = !!next && next.slot === x.slot && next.n === x.n;
+          return (
+            <li
+              key={`${x.slot}-${x.n}`}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                padding: "12px 0", borderBottom: "1px solid var(--color-divider)",
+                borderLeft: isNext ? "4px solid var(--color-accent-700)" : "4px solid transparent",
+                paddingLeft: 12,
+              }}
+            >
+              <span style={{ fontSize: 14 }}>
+                <span style={{ fontWeight: 600 }}>{deal.slots[x.slot]!.name}</span>
+                {x.p ? <span style={{ color: "var(--color-neutral-700)" }}> — {x.p.label}</span> : null}
+              </span>
+              {x.p ? (
+                <button
+                  className="btn btn-ghost"
+                  style={{ fontSize: 12 }}
+                  onClick={() => setPicks((prev) => prev.map((arr, s) => (s === x.slot ? arr.map((p, i) => (i === x.n ? null : p)) : arr)))}
+                >
+                  Change
+                </button>
+              ) : (
+                <span className={isNext ? "tag tag-accent" : "tag tag-neutral"}>{isNext ? "Choosing" : "To choose"}</span>
+              )}
+            </li>
+          );
+        })}
       </ol>
+
       {next ? (
-        <SlotPicker key={`${next.slot}-${next.n}`} deal={deal} slotIndex={next.slot} n={next.n} onPick={(p) => setPicks((prev) => prev.map((arr, s) => (s === next.slot ? arr.map((v, i) => (i === next.n ? p : v)) : arr)))} />
+        <SlotPicker
+          key={`${next.slot}-${next.n}`}
+          deal={deal}
+          slotIndex={next.slot}
+          n={next.n}
+          onPick={(p) => setPicks((prev) => prev.map((arr, s) => (s === next.slot ? arr.map((v, i) => (i === next.n ? p : v)) : arr)))}
+        />
       ) : null}
-      <div className="fixed inset-x-0 bottom-0 z-40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-surface/95 backdrop-blur border-t border-line">
-        <button className="lf-btn lf-btn-primary lf-btn-block max-w-lg mx-auto justify-between px-5" disabled={!!next} onClick={done}>
-          <span>{next ? `Choose ${deal.slots[next.slot]!.name.toLowerCase()}` : "Add deal to basket"}</span><span>{gbp(total)}</span>
+
+      <div
+        style={{
+          position: "fixed", insetInline: 0, bottom: 0, zIndex: 40,
+          background: "var(--color-bg)", borderTop: "2px solid var(--color-divider)",
+          padding: "12px 16px calc(12px + env(safe-area-inset-bottom))",
+        }}
+      >
+        <button
+          className="btn btn-primary btn-block"
+          style={{ maxWidth: 640, margin: "0 auto", justifyContent: "space-between", padding: "12px 16px", minHeight: 48 }}
+          disabled={!!next}
+          onClick={done}
+        >
+          <span>{next ? `Choose your ${deal.slots[next.slot]!.name.toLowerCase()}` : "Add deal to basket"}</span>
+          <span>{gbp(total)}</span>
         </button>
       </div>
     </div>

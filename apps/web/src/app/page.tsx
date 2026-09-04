@@ -30,14 +30,9 @@ export default async function Home() {
         className="fp-wrap fp-split-hero"
         style={{ padding: "72px 32px 56px" }}
       >
-        <div>
+        <div className="fp-hero-copy">
           <span className="fp-kicker" style={{ marginBottom: 20 }}>{towns}</span>
-          <h1
-            style={{
-              fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 76,
-              lineHeight: 1.02, letterSpacing: "-.02em", margin: "0 0 24px", marginLeft: "-.05em",
-            }}
-          >
+          <h1 className="fp-hero-title">
             Real pizza.<br />From a real farm.
           </h1>
           <p style={{ fontSize: 17, lineHeight: 1.65, maxWidth: "50ch", margin: "0 0 28px", color: "var(--color-neutral-800)" }}>
@@ -45,17 +40,19 @@ export default async function Home() {
           </p>
           <div style={{ display: "flex", gap: 12 }}>
             <Link href="/menu" className="btn btn-primary">See the menu</Link>
-            <Link href="/menu" className="btn btn-ghost">Browse the menu &rarr;</Link>
+            <Link href="/deals" className="btn btn-ghost">Tonight&rsquo;s deals &rarr;</Link>
           </div>
         </div>
-        <Photo
-          src={assetUrl(cfg.brand.hero)}
-          alt={`${cfg.name} kitchen`}
-          caption="hero photograph &middot; pizza on the pass &middot; b/w"
-          height={440}
-          priority
-          sizes="(max-width: 1000px) 100vw, 450px"
-        />
+        <div className="fp-hero-photo">
+          <Photo
+            src={assetUrl(cfg.brand.hero)}
+            alt={`${cfg.name} kitchen`}
+            caption="hero photograph &middot; pizza on the pass &middot; b/w"
+            height={440}
+            priority
+            sizes="(max-width: 1000px) 100vw, 450px"
+          />
+        </div>
       </section>
 
       <div className="fp-rule" />

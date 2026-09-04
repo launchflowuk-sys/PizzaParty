@@ -57,7 +57,7 @@ export default async function ProductPage({ params }: Params) {
         ]}
       />
 
-      <div style={{ position: "sticky", top: 104 }}>
+      <div className="fp-product-media" style={{ position: "sticky", top: 104 }}>
         <Photo
           src={assetUrl(p.image)}
           alt={p.name}
@@ -66,8 +66,8 @@ export default async function ProductPage({ params }: Params) {
           priority
           sizes="(max-width: 1000px) 100vw, 550px"
         />
-        <p style={{ margin: "12px 0 0", fontSize: 12, color: "var(--color-neutral-700)", lineHeight: 1.5 }}>
-          {p.allergens.length ? <>Allergens: {p.allergens.join(", ")}. </> : null}
+        <p className="fp-allergens">
+          {p.allergens.length ? <><strong>Allergens:</strong> {p.allergens.join(", ")}. </> : null}
           The full allergen sheet is <Link href="/allergens">available here</Link> and at the counter.
         </p>
       </div>
