@@ -3,18 +3,21 @@ import { getConfig } from "@/lib/config";
 import { getClientRow } from "@/lib/menu";
 import { prisma } from "@launchflow/db";
 
-/** Back-office nav. `mark` is the square bullet the prototype puts before each label;
- *  it fills accent for the current screen. Screens the prototype has but this build
- *  does not yet (inventory, dispatch, staff, reviews) are absent rather than dead. */
+/** Back-office nav, in the prototype's order. The square bullet before each label is
+ *  the prototype's marker. */
 const NAV: { href: string; label: string }[] = [
   { href: "/admin", label: "Dashboard" },
   { href: "/kitchen", label: "Kitchen queue" },
   { href: "/admin/orders", label: "Orders" },
+  { href: "/admin/dispatch", label: "Dispatch" },
   { href: "/admin/menu", label: "Menu & pricing" },
   { href: "/admin/deals", label: "Deals" },
   { href: "/admin/promos", label: "Promotions" },
+  { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/customers", label: "Customers" },
   { href: "/admin/campaigns", label: "Campaigns" },
+  { href: "/admin/reviews", label: "Reviews" },
+  { href: "/admin/staff", label: "Staff" },
   { href: "/admin/hours", label: "Hours & pause" },
   { href: "/admin/zones", label: "Delivery zones" },
 ];

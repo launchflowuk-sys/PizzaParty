@@ -3,14 +3,14 @@
  * Used by scripts/seed-client.ts (CLI), docker entrypoint, and /admin/launchflow "reseed".
  */
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { prisma } from "./index";
 import { clientDir, dayKeys, loadClientConfig, loadMenuConfig, toPence, type ClientConfig } from "@launchflow/config";
 
 function hashConfig(slug: string): string {
   const h = createHash("sha256");
-  for (const f of ["client.json", "menu.json"]) {
+  for (const f of ["client.json", "menu.json", "ops.json"]) {
     try { h.update(readFileSync(join(clientDir(slug), f))); } catch { /* optional */ }
   }
   return h.digest("hex").slice(0, 16);
@@ -155,7 +155,53 @@ export async function seedClient(slug: string, opts: { reset?: boolean } = {}) {
     });
   }
 
-  return { clientId: c.id, configHash, counts: { locations: client.locations.length, categories: menu.categories.length, products: menu.products.length, deals: menu.deals.length, promos: menu.promos.length } };
+  const ops = await seedOps(c.id, slug);
+
+  return { clientId: c.id, configHash, counts: { locations: client.locations.length, categories: menu.categories.length, products: menu.products.length, deals: menu.deals.length, promos: menu.promos.length, ...ops } };
+}
+
+type OpsFile = {
+  stock?: { name: string; unit?: string; onHand?: number; par?: number; supplier?: string; onOrder?: boolean }[];
+  drivers?: { name: string; phone?: string; vehicle?: string; status?: string }[];
+  staff?: { name: string; role?: string; phone?: string; email?: string; hoursWeek?: number; onShift?: boolean }[];
+  reviews?: { customerName: string; rating: number; body?: string; source?: string; reply?: string; daysAgo?: number }[];
+};
+
+/**
+ * Back-office operational data - stock, drivers, staff, reviews - from an optional
+ * config/<slug>/ops.json. Absent file means the client simply has none of it; the
+ * screens then render their empty states rather than failing.
+ */
+async function seedOps(clientId: string, slug: string) {
+  const file = join(clientDir(slug), "ops.json");
+  if (!existsSync(file)) return { stock: 0, drivers: 0, staff: 0, reviews: 0 };
+  const ops = JSON.parse(readFileSync(file, "utf8")) as OpsFile;
+
+  for (const [i, it] of (ops.stock ?? []).entries()) {
+    const data = { unit: it.unit ?? "kg", onHand: it.onHand ?? 0, par: it.par ?? 0, supplier: it.supplier ?? "", onOrder: it.onOrder ?? false, sortOrder: i };
+    await prisma.stockItem.upsert({ where: { clientId_name: { clientId, name: it.name } }, create: { clientId, name: it.name, ...data }, update: data });
+  }
+  for (const [i, d] of (ops.drivers ?? []).entries()) {
+    const data = { phone: d.phone ?? "", vehicle: d.vehicle ?? "", status: d.status ?? "available", active: true, sortOrder: i };
+    await prisma.driver.upsert({ where: { clientId_name: { clientId, name: d.name } }, create: { clientId, name: d.name, ...data }, update: data });
+  }
+  for (const [i, st] of (ops.staff ?? []).entries()) {
+    const data = { role: st.role ?? "kitchen", phone: st.phone ?? "", email: st.email ?? "", hoursWeek: st.hoursWeek ?? 0, onShift: st.onShift ?? false, active: true, sortOrder: i };
+    await prisma.staff.upsert({ where: { clientId_name: { clientId, name: st.name } }, create: { clientId, name: st.name, ...data }, update: data });
+  }
+  // Reviews carry no natural key, so they are only seeded into an empty table -
+  // re-seeding must not duplicate them or wipe real customer reviews.
+  if ((ops.reviews ?? []).length && (await prisma.review.count({ where: { clientId } })) === 0) {
+    await prisma.review.createMany({
+      data: (ops.reviews ?? []).map((r) => ({
+        clientId, customerName: r.customerName, rating: r.rating, body: r.body ?? "",
+        source: r.source ?? "direct", reply: r.reply ?? "", repliedAt: r.reply ? new Date() : null,
+        createdAt: new Date(Date.now() - (r.daysAgo ?? 0) * 86400_000),
+      })),
+    });
+  }
+
+  return { stock: (ops.stock ?? []).length, drivers: (ops.drivers ?? []).length, staff: (ops.staff ?? []).length, reviews: (ops.reviews ?? []).length };
 }
 
 function clientData(c: ClientConfig, configHash: string) {

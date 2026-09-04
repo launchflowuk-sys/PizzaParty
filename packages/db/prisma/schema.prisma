@@ -13,65 +13,69 @@ datasource db {
 // ---------- Tenant ----------
 
 model Client {
-  id            String     @id @default(cuid())
-  slug          String     @unique
-  name          String
-  domain        String
-  legacyDomains String[]   @default([])
-  brandPrimary  String
-  brandSecondary String
-  logo          String
-  phone         String     @default("")
-  email         String     @default("")
-  address       String     @default("")
-  fulfilment    String[]   @default(["delivery", "collection"])
-  stripeAccountId String   @default("")
-  cashOnCollection Boolean @default(true)
-  cashOnDelivery Boolean   @default(false)
-  seoLocality   String[]   @default([])
-  seoCuisine    String     @default("")
-  seoPrimaryKeyword String @default("")
-  kitchenEmail  String     @default("")
-  kitchenSms    String     @default("")
-  printerWebhook String    @default("")
-  reviewUrl     String     @default("")
-  configHash    String     @default("")
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  name              String
+  domain            String
+  legacyDomains     String[] @default([])
+  brandPrimary      String
+  brandSecondary    String
+  logo              String
+  phone             String   @default("")
+  email             String   @default("")
+  address           String   @default("")
+  fulfilment        String[] @default(["delivery", "collection"])
+  stripeAccountId   String   @default("")
+  cashOnCollection  Boolean  @default(true)
+  cashOnDelivery    Boolean  @default(false)
+  seoLocality       String[] @default([])
+  seoCuisine        String   @default("")
+  seoPrimaryKeyword String   @default("")
+  kitchenEmail      String   @default("")
+  kitchenSms        String   @default("")
+  printerWebhook    String   @default("")
+  reviewUrl         String   @default("")
+  configHash        String   @default("")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  locations     Location[]
-  categories    Category[]
-  products      Product[]
+  locations      Location[]
+  categories     Category[]
+  products       Product[]
   modifierGroups ModifierGroup[]
-  deals         Deal[]
-  customers     Customer[]
-  orders        Order[]
-  promos        Promo[]
+  deals          Deal[]
+  customers      Customer[]
+  orders         Order[]
+  promos         Promo[]
+  stockItems     StockItem[]
+  drivers        Driver[]
+  staff          Staff[]
+  reviews        Review[]
 }
 
 model Location {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   clientId         String
-  client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  key              String   // config id e.g. "basildon"
+  client           Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  key              String // config id e.g. "basildon"
   name             String
-  address          String   @default("")
-  phone            String   @default("")
+  address          String    @default("")
+  phone            String    @default("")
   lat              Float?
   lng              Float?
-  timezone         String   @default("Europe/London")
-  postcodePrefixes String[] @default([])
-  deliveryFee      Int      @default(0) // pence
-  minOrder         Int      @default(0) // pence
-  prepMinutes      Int      @default(15)
-  deliveryMinutes  Int      @default(35)
+  timezone         String    @default("Europe/London")
+  postcodePrefixes String[]  @default([])
+  deliveryFee      Int       @default(0) // pence
+  minOrder         Int       @default(0) // pence
+  prepMinutes      Int       @default(15)
+  deliveryMinutes  Int       @default(35)
   pausedUntil      DateTime?
-  pauseReason      String   @default("")
-  active           Boolean  @default(true)
-  sortOrder        Int      @default(0)
+  pauseReason      String    @default("")
+  active           Boolean   @default(true)
+  sortOrder        Int       @default(0)
 
-  hours            OpeningHours[]
-  orders           Order[]
+  hours  OpeningHours[]
+  orders Order[]
 
   @@unique([clientId, key])
 }
@@ -80,9 +84,9 @@ model OpeningHours {
   id         String   @id @default(cuid())
   locationId String
   location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  dayOfWeek  Int      // 0 = Sunday ... 6 = Saturday
-  opens      String   // "16:00"
-  closes     String   // "23:00" (may be past midnight e.g. "01:00")
+  dayOfWeek  Int // 0 = Sunday ... 6 = Saturday
+  opens      String // "16:00"
+  closes     String // "23:00" (may be past midnight e.g. "01:00")
 
   @@index([locationId, dayOfWeek])
 }
@@ -134,9 +138,9 @@ model ProductSize {
   id        String  @id @default(cuid())
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  key       String  // "small" | "medium" | "large" | "regular"
+  key       String // "small" | "medium" | "large" | "regular"
   name      String
-  price     Int     // pence
+  price     Int // pence
   sortOrder Int     @default(0)
   soldOut   Boolean @default(false)
 
@@ -144,14 +148,14 @@ model ProductSize {
 }
 
 model ModifierGroup {
-  id        String     @id @default(cuid())
+  id        String                 @id @default(cuid())
   clientId  String
-  client    Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client    Client                 @relation(fields: [clientId], references: [id], onDelete: Cascade)
   key       String
   name      String
-  minSelect Int        @default(0)
-  maxSelect Int        @default(10)
-  required  Boolean    @default(false)
+  minSelect Int                    @default(0)
+  maxSelect Int                    @default(10)
+  required  Boolean                @default(false)
   modifiers Modifier[]
   products  ProductModifierGroup[]
 
@@ -182,19 +186,19 @@ model ProductModifierGroup {
 }
 
 model Deal {
-  id          String     @id @default(cuid())
+  id          String      @id @default(cuid())
   clientId    String
-  client      Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client      Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
   slug        String
   name        String
-  description String     @default("")
-  image       String     @default("")
-  price       Int        // pence, fixed bundle price
-  active      Boolean    @default(true)
-  featured    Boolean    @default(false)
-  sortOrder   Int        @default(0)
-  daysOfWeek  Int[]      @default([]) // empty = every day
-  fulfilment  String[]   @default([]) // empty = any
+  description String      @default("")
+  image       String      @default("")
+  price       Int // pence, fixed bundle price
+  active      Boolean     @default(true)
+  featured    Boolean     @default(false)
+  sortOrder   Int         @default(0)
+  daysOfWeek  Int[]       @default([]) // empty = every day
+  fulfilment  String[]    @default([]) // empty = any
   slots       DealSlot[]
   orderItems  OrderItem[]
 
@@ -202,42 +206,42 @@ model Deal {
 }
 
 model DealSlot {
-  id            String   @id @default(cuid())
-  dealId        String
-  deal          Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
-  name          String   // "Large pizza"
-  qty           Int      @default(1)
-  categorySlugs String[] @default([]) // allowed categories
-  productSlugs  String[] @default([]) // or explicit products
-  sizeKeys      String[] @default([]) // allowed sizes, empty = any
-  extraPerModifier Boolean @default(true) // modifiers charged on top
-  sortOrder     Int      @default(0)
+  id               String   @id @default(cuid())
+  dealId           String
+  deal             Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  name             String // "Large pizza"
+  qty              Int      @default(1)
+  categorySlugs    String[] @default([]) // allowed categories
+  productSlugs     String[] @default([]) // or explicit products
+  sizeKeys         String[] @default([]) // allowed sizes, empty = any
+  extraPerModifier Boolean  @default(true) // modifiers charged on top
+  sortOrder        Int      @default(0)
 }
 
 // ---------- Customers ----------
 
 model Customer {
-  id            String    @id @default(cuid())
-  clientId      String
-  client        Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  phone         String    // E.164
-  email         String    @default("")
-  name          String    @default("")
-  guest         Boolean   @default(true)
-  marketingOptIn Boolean  @default(false)
-  lastPostcode  String    @default("")
-  lastOrderAt   DateTime?
-  ordersCount   Int       @default(0)
-  totalSpent    Int       @default(0)
-  loyaltyPoints Int       @default(0)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  clientId       String
+  client         Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  phone          String // E.164
+  email          String    @default("")
+  name           String    @default("")
+  guest          Boolean   @default(true)
+  marketingOptIn Boolean   @default(false)
+  lastPostcode   String    @default("")
+  lastOrderAt    DateTime?
+  ordersCount    Int       @default(0)
+  totalSpent     Int       @default(0)
+  loyaltyPoints  Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  addresses     Address[]
-  orders        Order[]
-  loyalty       LoyaltyLedger[]
-  sessions      Session[]
-  otpCodes      OtpCode[]
+  addresses Address[]
+  orders    Order[]
+  loyalty   LoyaltyLedger[]
+  sessions  Session[]
+  otpCodes  OtpCode[]
 
   @@unique([clientId, phone])
   @@index([clientId, lastOrderAt])
@@ -259,14 +263,14 @@ model Address {
 }
 
 model OtpCode {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   customerId String
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   codeHash   String
   expiresAt  DateTime
-  attempts   Int      @default(0)
+  attempts   Int       @default(0)
   usedAt     DateTime?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
 
   @@index([customerId, expiresAt])
 }
@@ -305,48 +309,48 @@ enum PaymentMethod {
 }
 
 model Order {
-  id              String        @id @default(cuid())
-  number          Int           @default(autoincrement())
-  clientId        String
-  client          Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  locationId      String
-  location        Location      @relation(fields: [locationId], references: [id])
-  customerId      String
-  customer        Customer      @relation(fields: [customerId], references: [id])
-  addressId       String?
-  address         Address?      @relation(fields: [addressId], references: [id])
-  status          OrderStatus   @default(pending_payment)
-  fulfilment      Fulfilment
-  paymentMethod   PaymentMethod @default(card)
-  customerName    String
-  customerPhone   String
-  customerEmail   String        @default("")
-  deliveryLine1   String        @default("")
-  deliveryLine2   String        @default("")
-  deliveryCity    String        @default("")
-  deliveryPostcode String       @default("")
-  notes           String        @default("")
-  scheduledFor    DateTime?     // pre-order slot; null = ASAP
-  etaMinutes      Int?
-  etaAt           DateTime?
-  subtotal        Int
-  deliveryFee     Int           @default(0)
-  discount        Int           @default(0)
-  promoCode       String        @default("")
-  total           Int
-  rejectReason    String        @default("")
+  id                String        @id @default(cuid())
+  number            Int           @default(autoincrement())
+  clientId          String
+  client            Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  locationId        String
+  location          Location      @relation(fields: [locationId], references: [id])
+  customerId        String
+  customer          Customer      @relation(fields: [customerId], references: [id])
+  addressId         String?
+  address           Address?      @relation(fields: [addressId], references: [id])
+  status            OrderStatus   @default(pending_payment)
+  fulfilment        Fulfilment
+  paymentMethod     PaymentMethod @default(card)
+  customerName      String
+  customerPhone     String
+  customerEmail     String        @default("")
+  deliveryLine1     String        @default("")
+  deliveryLine2     String        @default("")
+  deliveryCity      String        @default("")
+  deliveryPostcode  String        @default("")
+  notes             String        @default("")
+  scheduledFor      DateTime? // pre-order slot; null = ASAP
+  etaMinutes        Int?
+  etaAt             DateTime?
+  subtotal          Int
+  deliveryFee       Int           @default(0)
+  discount          Int           @default(0)
+  promoCode         String        @default("")
+  total             Int
+  rejectReason      String        @default("")
   reviewRequestedAt DateTime?
-  placedAt        DateTime?
-  acceptedAt      DateTime?
-  completedAt     DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  placedAt          DateTime?
+  acceptedAt        DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  items    OrderItem[]
-  payment  Payment?
-  events   OrderEvent[]
-  promo    Promo?        @relation(fields: [promoId], references: [id])
-  promoId  String?
+  items   OrderItem[]
+  payment Payment?
+  events  OrderEvent[]
+  promo   Promo?       @relation(fields: [promoId], references: [id])
+  promoId String?
 
   @@index([clientId, status, createdAt])
   @@index([locationId, status])
@@ -354,25 +358,25 @@ model Order {
 }
 
 model OrderItem {
-  id          String   @id @default(cuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId   String?
-  product     Product? @relation(fields: [productId], references: [id])
-  dealId      String?
-  deal        Deal?    @relation(fields: [dealId], references: [id])
-  parentId    String?  // for deal components: the deal line they belong to
-  parent      OrderItem?  @relation("DealComponents", fields: [parentId], references: [id])
-  components  OrderItem[] @relation("DealComponents")
-  name        String
-  sizeKey     String   @default("")
-  sizeName    String   @default("")
-  qty         Int      @default(1)
-  unitPrice   Int      // pence, before modifiers
-  lineTotal   Int      // pence, (unit + modifiers) * qty ; 0 for deal components
-  notes       String   @default("")
-  line        Json?    // original basket line, used for one-tap reorder
-  modifiers   OrderItemModifier[]
+  id         String              @id @default(cuid())
+  orderId    String
+  order      Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String?
+  product    Product?            @relation(fields: [productId], references: [id])
+  dealId     String?
+  deal       Deal?               @relation(fields: [dealId], references: [id])
+  parentId   String? // for deal components: the deal line they belong to
+  parent     OrderItem?          @relation("DealComponents", fields: [parentId], references: [id])
+  components OrderItem[]         @relation("DealComponents")
+  name       String
+  sizeKey    String              @default("")
+  sizeName   String              @default("")
+  qty        Int                 @default(1)
+  unitPrice  Int // pence, before modifiers
+  lineTotal  Int // pence, (unit + modifiers) * qty ; 0 for deal components
+  notes      String              @default("")
+  line       Json? // original basket line, used for one-tap reorder
+  modifiers  OrderItemModifier[]
 
   @@index([orderId])
 }
@@ -418,7 +422,7 @@ model OrderEvent {
   id        String   @id @default(cuid())
   orderId   String
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  type      String   // created, paid, placed, accepted, preparing, ready, out_for_delivery, completed, rejected, cancelled, note, sms_sent, email_sent, print_sent
+  type      String // created, paid, placed, accepted, preparing, ready, out_for_delivery, completed, rejected, cancelled, note, sms_sent, email_sent, print_sent
   actor     String   @default("system") // system | kitchen | admin | customer | stripe
   message   String   @default("")
   data      Json?
@@ -436,21 +440,21 @@ enum PromoType {
 }
 
 model Promo {
-  id          String    @id @default(cuid())
-  clientId    String
-  client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  code        String
-  type        PromoType
-  value       Int       @default(0) // percent (0-100) or pence
-  minOrder    Int       @default(0)
-  fulfilment  String[]  @default([])
-  startsAt    DateTime?
-  endsAt      DateTime?
-  maxUses     Int?
-  uses        Int       @default(0)
-  firstOrderOnly Boolean @default(false)
-  active      Boolean   @default(true)
-  orders      Order[]
+  id             String    @id @default(cuid())
+  clientId       String
+  client         Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  code           String
+  type           PromoType
+  value          Int       @default(0) // percent (0-100) or pence
+  minOrder       Int       @default(0)
+  fulfilment     String[]  @default([])
+  startsAt       DateTime?
+  endsAt         DateTime?
+  maxUses        Int?
+  uses           Int       @default(0)
+  firstOrderOnly Boolean   @default(false)
+  active         Boolean   @default(true)
+  orders         Order[]
 
   @@unique([clientId, code])
 }
@@ -470,11 +474,92 @@ model LoyaltyLedger {
 model Campaign {
   id        String   @id @default(cuid())
   clientId  String
-  channel   String   // sms | email
-  segment   String   // ordered_30d | lapsed_60d | all_optin
+  channel   String // sms | email
+  segment   String // ordered_30d | lapsed_60d | all_optin
   subject   String   @default("")
   body      String
   sent      Int      @default(0)
   failed    Int      @default(0)
   createdAt DateTime @default(now())
+}
+
+// ─── Back office: stock, drivers, staff and reviews ──────────────────────────
+// Added so /admin/inventory, /admin/dispatch, /admin/staff and /admin/reviews
+// run on real rows rather than hardcoded markup. Seeded from
+// config/<client>/ops.json.
+
+model StockItem {
+  id         String   @id @default(cuid())
+  clientId   String
+  locationId String   @default("")
+  name       String
+  unit       String   @default("kg")
+  onHand     Float    @default(0)
+  par        Float    @default(0)
+  supplier   String   @default("")
+  onOrder    Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, name])
+  @@index([clientId, sortOrder])
+}
+
+model Driver {
+  id            String    @id @default(cuid())
+  clientId      String
+  locationId    String    @default("")
+  name          String
+  phone         String    @default("")
+  vehicle       String    @default("")
+  /// available | on_delivery | off
+  status        String    @default("available")
+  activeOrderId String    @default("")
+  backAt        DateTime?
+  active        Boolean   @default(true)
+  sortOrder     Int       @default(0)
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, name])
+  @@index([clientId, status])
+}
+
+model Staff {
+  id        String  @id @default(cuid())
+  clientId  String
+  name      String
+  /// manager | shift_lead | kitchen | driver | front_of_house
+  role      String  @default("kitchen")
+  phone     String  @default("")
+  email     String  @default("")
+  hoursWeek Float   @default(0)
+  onShift   Boolean @default(false)
+  active    Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, name])
+  @@index([clientId, role])
+}
+
+model Review {
+  id           String    @id @default(cuid())
+  clientId     String
+  orderId      String    @default("")
+  customerName String
+  rating       Int
+  body         String    @default("")
+  /// direct | google
+  source       String    @default("direct")
+  reply        String    @default("")
+  repliedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId, createdAt])
 }

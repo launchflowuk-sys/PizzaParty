@@ -130,3 +130,89 @@ export async function sendCampaign(fd: FormData) {
   await prisma.campaign.create({ data: { clientId: client.id, channel, segment, subject, body, sent, failed } });
   revalidatePath("/admin/campaigns");
 }
+
+/* ─── Inventory ─────────────────────────────────────────────────────────── */
+
+export async function reorderStock(fd: FormData) {
+  const client = await guard();
+  const id = String(fd.get("id") ?? "");
+  // Scoped by clientId so one tenant cannot touch another's stock line.
+  await prisma.stockItem.updateMany({ where: { id, clientId: client.id }, data: { onOrder: true } });
+  revalidatePath("/admin/inventory");
+}
+
+export async function reorderAllBelowPar() {
+  const client = await guard();
+  const items = await prisma.stockItem.findMany({ where: { clientId: client.id }, select: { id: true, onHand: true, par: true } });
+  const ids = items.filter((i) => i.onHand < i.par).map((i) => i.id);
+  if (ids.length) await prisma.stockItem.updateMany({ where: { id: { in: ids }, clientId: client.id }, data: { onOrder: true } });
+  revalidatePath("/admin/inventory");
+}
+
+export async function receiveStock(fd: FormData) {
+  const client = await guard();
+  const id = String(fd.get("id") ?? "");
+  const item = await prisma.stockItem.findFirst({ where: { id, clientId: client.id } });
+  if (item) await prisma.stockItem.updateMany({ where: { id, clientId: client.id }, data: { onHand: item.par, onOrder: false } });
+  revalidatePath("/admin/inventory");
+}
+
+/* ─── Dispatch ──────────────────────────────────────────────────────────── */
+
+export async function assignDriver(fd: FormData) {
+  const client = await guard();
+  const driverId = String(fd.get("driverId") ?? "");
+  const orderId = String(fd.get("orderId") ?? "");
+  if (!driverId || !orderId) return;
+  const order = await prisma.order.findFirst({ where: { id: orderId, clientId: client.id }, select: { id: true } });
+  if (!order) return;
+  await prisma.driver.updateMany({
+    where: { id: driverId, clientId: client.id },
+    data: { status: "on_delivery", activeOrderId: orderId, backAt: new Date(Date.now() + 30 * 60_000) },
+  });
+  revalidatePath("/admin/dispatch");
+}
+
+export async function setDriverStatus(fd: FormData) {
+  const client = await guard();
+  const id = String(fd.get("id") ?? "");
+  const status = String(fd.get("status") ?? "available");
+  if (!["available", "on_delivery", "off"].includes(status)) return;
+  await prisma.driver.updateMany({
+    where: { id, clientId: client.id },
+    data: { status, ...(status === "available" ? { activeOrderId: "", backAt: null } : {}) },
+  });
+  revalidatePath("/admin/dispatch");
+}
+
+/* ─── Staff ─────────────────────────────────────────────────────────────── */
+
+const ROLES = ["manager", "shift_lead", "kitchen", "driver", "front_of_house"];
+
+export async function setStaffRole(fd: FormData) {
+  const client = await guard();
+  const id = String(fd.get("id") ?? "");
+  const role = String(fd.get("role") ?? "");
+  if (!ROLES.includes(role)) return;
+  await prisma.staff.updateMany({ where: { id, clientId: client.id }, data: { role } });
+  revalidatePath("/admin/staff");
+}
+
+export async function toggleShift(fd: FormData) {
+  const client = await guard();
+  const id = String(fd.get("id") ?? "");
+  const member = await prisma.staff.findFirst({ where: { id, clientId: client.id } });
+  if (member) await prisma.staff.updateMany({ where: { id, clientId: client.id }, data: { onShift: !member.onShift } });
+  revalidatePath("/admin/staff");
+}
+
+/* ─── Reviews ───────────────────────────────────────────────────────────── */
+
+export async function replyToReview(fd: FormData) {
+  const client = await guard();
+  const id = String(fd.get("id") ?? "");
+  const reply = String(fd.get("reply") ?? "").trim().slice(0, 1000);
+  if (!reply) return;
+  await prisma.review.updateMany({ where: { id, clientId: client.id }, data: { reply, repliedAt: new Date() } });
+  revalidatePath("/admin/reviews");
+}

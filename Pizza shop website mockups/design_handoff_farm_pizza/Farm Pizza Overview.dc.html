@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./_ds/modernist-869e83af-daff-45b7-a47a-e8582a2e3e2d/styles.css">
+<style>body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);text-wrap:pretty}a{color:var(--color-accent)}a:hover{color:var(--color-accent-600)}</style>
+</helmet>
+<div style="max-width:1200px;margin:0 auto;padding:0 32px 64px">
+  <nav class="nav" style="padding-inline:0">
+    <span class="nav-brand">FARM PIZZA</span>
+    <a href="Farm%20Pizza.dc.html">Storefront</a>
+    <a href="Farm%20Pizza%20Admin.dc.html">Back office</a>
+    <span style="font-size:12px;color:var(--color-neutral-600)">UI mockups · v1 · 4 Sep 2026</span>
+  </nav>
+
+  <section style="padding:72px 0 56px;display:grid;grid-template-columns:7fr 5fr;gap:48px;align-items:end">
+    <div>
+      <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:16px">Design brief · assumptions and reasoning</span>
+      <h1 style="font-family:var(--font-heading);font-weight:800;font-size:64px;line-height:1.02;letter-spacing:-.02em;margin:0 0 20px;margin-left:-.05em">Farm Pizza.<br>Storefront and back office.</h1>
+      <p style="font-size:17px;line-height:1.65;max-width:58ch;margin:0;color:var(--color-neutral-800)">23 screens across two working prototypes: a customer site that orders in three clicks, and the back office that runs the shops behind it. Both are set in the Modernist system: Archivo, one red, no rounded corners, 2px rules, photography in black and white.</p>
+    </div>
+    <div style="display:grid;gap:12px;font-size:14px;line-height:1.5">
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;padding:10px 0;border-top:2px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Brand</span><span>Farm Pizza — farm-sourced ingredients, dough made daily. Three Essex shops: Grays, Chelmsford, Colchester.</span></div>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;padding:10px 0;border-top:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Market</span><span>UK · £ · desktop-first</span></div>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;padding:10px 0;border-top:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Ordering</span><span>Delivery · Collection · Dine-in table order · Table booking</span></div>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;padding:10px 0;border-top:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Code</span><span>launchflowuk-sys/PizzaParty is empty, so everything here is built from scratch on the design system.</span></div>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;padding:10px 0;border-top:1px solid var(--color-divider);border-bottom:2px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Fidelity</span><span>Working prototypes: basket, builder pricing, checkout, live tracker, kitchen queue, dispatch and toggles all function.</span></div>
+    </div>
+  </section>
+
+  <div style="height:2px;background:var(--color-divider)"></div>
+
+  <section style="padding:48px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:40px">
+    <div><span style="display:block;font-family:var(--font-heading);font-weight:800;font-size:15px;margin-bottom:8px">01 &nbsp;Where the big three lose</span><p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-800)">Domino's, Pizza Hut and Papa John's front-load carousels, pop-ups and stacked promos. The menu is three taps deep and every price says "from". Speed is real, clarity is not.</p></div>
+    <div><span style="display:block;font-family:var(--font-heading);font-weight:800;font-size:15px;margin-bottom:8px">02 &nbsp;How Farm Pizza wins</span><p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-800)">One order bar (mode, postcode, time) that follows you. Real prices with the size shown. A builder with a live total. A tracker that shows the oven, not a cartoon. Red is spent on exactly one action per screen.</p></div>
+    <div><span style="display:block;font-family:var(--font-heading);font-weight:800;font-size:15px;margin-bottom:8px">03 &nbsp;The system on the page</span><p style="margin:0;font-size:14px;line-height:1.6;color:var(--color-neutral-800)">Menu items sit in a visible modular grid, not floating cards. Sections are separated by 2px rules. Labels are flush left, even inside buttons. Photographs print in black and white; the one red field is the closing poster.</p></div>
+  </section>
+
+  <div style="height:2px;background:var(--color-divider)"></div>
+
+  <section style="padding:48px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:64px">
+    <div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
+        <h2 style="font-family:var(--font-heading);font-weight:800;font-size:28px;letter-spacing:-.015em;margin:0">Storefront · 12 screens</h2>
+        <a href="Farm%20Pizza.dc.html" style="font-size:14px">Open prototype →</a>
+      </div>
+      <div style="display:grid;font-size:14px">
+        <a href="Farm%20Pizza.dc.html#home" style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;padding:10px 0;border-top:2px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">01</span><span>Home — direction A, ruled grid</span><span class="tag tag-accent">default</span></a>
+        <a href="Farm%20Pizza.dc.html#home-poster" style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">01b</span><span>Home — direction B, red poster</span><span class="tag tag-neutral">variant</span></a>
+        <a href="Farm%20Pizza.dc.html#home-order" style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">01c</span><span>Home — direction C, order-first</span><span class="tag tag-neutral">variant</span></a>
+        <a href="Farm%20Pizza.dc.html#menu" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">02</span><span>Menu</span></a>
+        <a href="Farm%20Pizza.dc.html#builder" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">03</span><span>Build your own pizza</span></a>
+        <a href="Farm%20Pizza.dc.html#product" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">04</span><span>Product detail</span></a>
+        <a href="Farm%20Pizza.dc.html#cart" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">05</span><span>Basket</span></a>
+        <a href="Farm%20Pizza.dc.html#checkout" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">06</span><span>Checkout — delivery, collection, dine-in</span></a>
+        <a href="Farm%20Pizza.dc.html#tracker" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">07</span><span>Order tracker</span></a>
+        <a href="Farm%20Pizza.dc.html#deals" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">08</span><span>Deals &amp; offers</span></a>
+        <a href="Farm%20Pizza.dc.html#rewards" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">09</span><span>Rewards — Crust Club</span></a>
+        <a href="Farm%20Pizza.dc.html#stores" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">10</span><span>Store finder &amp; table booking</span></a>
+        <a href="Farm%20Pizza.dc.html#account" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">11</span><span>Sign in / account</span></a>
+        <a href="Farm%20Pizza.dc.html#orders" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);border-bottom:2px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">12</span><span>Order history</span></a>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
+        <h2 style="font-family:var(--font-heading);font-weight:800;font-size:28px;letter-spacing:-.015em;margin:0">Back office · 11 screens</h2>
+        <a href="Farm%20Pizza%20Admin.dc.html" style="font-size:14px">Open prototype →</a>
+      </div>
+      <div style="display:grid;font-size:14px">
+        <a href="Farm%20Pizza%20Admin.dc.html#dashboard" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:2px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">01</span><span>Dashboard &amp; analytics</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#kitchen" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">02</span><span>Live kitchen queue</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#orders" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">03</span><span>Order management</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#menu" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">04</span><span>Menu &amp; pricing</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#inventory" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">05</span><span>Inventory &amp; stock</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#promos" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">06</span><span>Promotions &amp; coupons</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#customers" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">07</span><span>Customers / CRM</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#dispatch" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">08</span><span>Delivery dispatch &amp; drivers</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#staff" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">09</span><span>Staff &amp; roles</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#settings" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">10</span><span>Store settings &amp; hours</span></a>
+        <a href="Farm%20Pizza%20Admin.dc.html#reviews" style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--color-divider);border-bottom:2px solid var(--color-divider);color:inherit;text-decoration:none"><span style="color:var(--color-neutral-600)">11</span><span>Reviews &amp; feedback</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding:48px 0 0">
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Next steps</span>
+    <p style="font-size:14px;line-height:1.6;max-width:70ch;margin:0;color:var(--color-neutral-800)">Drop real photography into the image slots (hero, product). Pick a home direction, then decide: mobile layouts, real menu and prices, payment provider (Stripe / Apple Pay), and whether the kitchen screen needs a touch-only mode for the pass.</p>
+  </section>
+</div>
+</x-dc>
+</body>
+</html>

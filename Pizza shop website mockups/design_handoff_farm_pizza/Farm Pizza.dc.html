@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./_ds/modernist-869e83af-daff-45b7-a47a-e8582a2e3e2d/styles.css">
+<script src="./image-slot.js"></script>
+<style>body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);text-wrap:pretty}a{color:var(--color-accent)}a:hover{color:var(--color-accent-600)}input::placeholder{color:var(--color-neutral-500)}@keyframes fp-pulse{0%,100%{box-shadow:0 0 0 0 var(--color-accent-300)}50%{box-shadow:0 0 0 6px var(--color-accent-200)}}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column">
+<nav class="nav" style="position:sticky;top:0;z-index:10;background:var(--color-bg);padding-inline:max(32px,calc((100% - 1200px) / 2 + 32px))">
+  <a href="#home" class="nav-brand" style="letter-spacing:-.01em">FARM PIZZA</a>
+  <a href="#menu" aria-current="{{ cur.menu }}" style="white-space:nowrap">Menu</a>
+  <a href="#builder" aria-current="{{ cur.builder }}" style="white-space:nowrap">Build your own</a>
+  <a href="#deals" aria-current="{{ cur.deals }}" style="white-space:nowrap">Deals</a>
+  <a href="#rewards" aria-current="{{ cur.rewards }}" style="white-space:nowrap">Crust Club</a>
+  <a href="#stores" aria-current="{{ cur.stores }}" style="white-space:nowrap">Shops</a>
+  <div class="seg" role="radiogroup" aria-label="Order mode">
+    <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3"><label class="seg-opt" style="white-space:nowrap"><input type="radio" name="mode-nav" checked="{{ m.checked }}" onChange="{{ m.select }}">{{ m.label }}</label></sc-for>
+  </div>
+  <a href="#account" aria-current="{{ cur.account }}" style="white-space:nowrap">{{ accountLabel }}</a>
+  <a href="#cart" class="btn btn-primary" style="color:var(--color-bg);font-size:14px;white-space:nowrap">{{ basketLabel }}</a>
+</nav>
+<sc-if value="{{ closed }}" hint-placeholder-val="{{ false }}"><div style="background:var(--color-text);color:var(--color-bg);font-size:13px"><div style="max-width:1200px;margin:0 auto;padding:8px 32px">We’re closed right now — {{ store.name }} opens at 11:00. You can still order ahead for later.</div></div></sc-if>
+<sc-if value="{{ showCtx }}" hint-placeholder-val="{{ false }}"><div style="border-bottom:1px solid var(--color-divider);font-size:13px"><div style="max-width:1200px;margin:0 auto;padding:8px 32px;display:flex;gap:12px;align-items:center"><span style="width:8px;height:8px;background:var(--color-accent);flex:none"></span><span>{{ ctx }}</span><a href="#stores" style="margin-left:auto">Change</a></div></div></sc-if>
+<sc-if value="{{ added }}" hint-placeholder-val="{{ false }}"><div style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;background:var(--color-text);color:var(--color-bg);padding:12px 16px;display:flex;gap:20px;align-items:center;font-size:14px;box-shadow:var(--shadow-lg)"><span>Added {{ added }}</span><a href="#cart" style="color:var(--color-accent-400)">View basket · {{ totalLabel }}</a></div></sc-if>
+
+<main style="flex:1">
+
+<!-- ═══ HOME · A · Ruled grid ═══ -->
+<sc-if value="{{ is.grid }}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="Home A" style="max-width:1200px;margin:0 auto;padding:72px 32px 56px;display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:56px;align-items:center">
+  <div>
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:20px">Grays · Chelmsford · Colchester · open till 23:00</span>
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:76px;line-height:1.02;letter-spacing:-.02em;margin:0 0 24px;margin-left:-.05em">Real pizza.<br>From a real farm.</h1>
+    <p style="font-size:17px;line-height:1.65;max-width:50ch;margin:0 0 28px;color:var(--color-neutral-800)">Dough made this morning, tomatoes from our own fields, cheese from the dairy down the road. Delivered in about 30 minutes, or ready to collect in 15.</p>
+    <div style="display:flex;gap:12px"><a href="#menu" class="btn btn-primary">See the menu</a><a href="#builder" class="btn btn-ghost">Build your own →</a></div>
+  </div>
+  <div class="grayscale" style="height:440px;min-width:0;overflow:hidden"><image-slot id="hero-grid" shape="rect" style="width:100%;height:100%" placeholder="hero photograph · pizza on the pass · b/w"></image-slot></div>
+</section>
+<div style="height:2px;background:var(--color-divider)"></div>
+<section style="max-width:1200px;margin:0 auto;padding:40px 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:32px">
+  <div><div style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1;color:var(--color-accent);letter-spacing:-.02em">28 min</div><div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);margin-top:10px">Average delivery this week</div></div>
+  <div><div style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1;color:var(--color-accent);letter-spacing:-.02em">£9.50</div><div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);margin-top:10px">A Margherita, medium, always</div></div>
+  <div><div style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1;color:var(--color-accent);letter-spacing:-.02em">0</div><div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);margin-top:10px">Frozen ingredients on site</div></div>
+  <div><div style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1;color:var(--color-accent);letter-spacing:-.02em">4.8</div><div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);margin-top:10px">From 2,140 reviews</div></div>
+</section>
+<div style="height:2px;background:var(--color-divider)"></div>
+<section style="max-width:1200px;margin:0 auto;padding:56px 32px">
+  <div style="display:flex;align-items:end;justify-content:space-between;margin-bottom:24px">
+    <div><span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">Tonight’s menu</span><h2 style="font-family:var(--font-heading);font-weight:800;font-size:36px;letter-spacing:-.02em;margin:0;line-height:1.05">Eight pizzas. No filler.</h2></div>
+    <a href="#menu" style="font-size:14px">Full menu →</a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+    <sc-for list="{{ featured }}" as="it" hint-placeholder-count="4">
+    <div style="border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:16px;display:flex;flex-direction:column;gap:10px" style-hover="background:var(--color-surface)">
+      <div style="aspect-ratio:4/3;background:repeating-linear-gradient(-45deg,var(--color-surface) 0 10px,var(--color-neutral-300) 10px 11px);display:flex;align-items:flex-end;padding:8px"><span style="font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--color-neutral-700)">{{ it.photo }}</span></div>
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font-family:var(--font-heading);font-weight:800;font-size:17px;line-height:1.2">{{ it.name }}</span><span style="font-family:var(--font-heading);font-weight:800;font-size:17px">{{ it.priceLabel }}</span></div>
+      <p style="margin:0;font-size:13px;line-height:1.5;color:var(--color-neutral-700);flex:1">{{ it.desc }}</p>
+      <span style="font-size:11px;color:var(--color-neutral-600)">{{ it.sizeNote }}</span>
+      <div style="display:flex;gap:8px"><button class="btn btn-primary" onClick="{{ it.add }}">Add</button><button class="btn btn-secondary" onClick="{{ it.open }}">Customise</button></div>
+    </div>
+    </sc-for>
+  </div>
+</section>
+<section style="max-width:1200px;margin:0 auto;padding:0 32px 64px">
+  <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Deals this week</span>
+  <div style="border-top:2px solid var(--color-divider)">
+    <sc-for list="{{ deals }}" as="d" hint-placeholder-count="4">
+    <div style="display:grid;grid-template-columns:120px 1fr 2fr auto;gap:32px;align-items:center;padding:20px 0;border-bottom:2px solid var(--color-divider)">
+      <span style="font-family:var(--font-heading);font-weight:800;font-size:32px;letter-spacing:-.02em;color:var(--color-accent)">{{ d.price }}</span>
+      <div><div style="font-family:var(--font-heading);font-weight:800;font-size:20px;line-height:1.1">{{ d.title }}</div><div style="font-size:12px;color:var(--color-neutral-600);margin-top:4px">{{ d.terms }}</div></div>
+      <p style="margin:0;font-size:14px;color:var(--color-neutral-800)">{{ d.desc }}</p>
+      <button class="btn btn-secondary" onClick="{{ d.add }}">{{ d.btn }}</button>
+    </div>
+    </sc-for>
+  </div>
+</section>
+<section style="background:var(--color-accent);color:var(--color-bg)">
+  <div style="max-width:1200px;margin:0 auto;padding:64px 32px;display:flex;align-items:end;justify-content:space-between;gap:48px">
+    <h2 style="font-family:var(--font-heading);font-weight:800;font-size:64px;line-height:1;letter-spacing:-.02em;margin:0;margin-left:-.05em">Order by 22:30.<br>Eat by 23:00.</h2>
+    <a href="#menu" class="btn btn-ghost" style="color:var(--color-bg);border:1px solid var(--color-bg);padding:10px 16px">Start an order →</a>
+  </div>
+</section>
+</sc-if>
+
+<!-- ═══ HOME · B · Red poster ═══ -->
+<sc-if value="{{ is.poster }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Home B" style="background:var(--color-accent);color:var(--color-bg)">
+  <div style="max-width:1200px;margin:0 auto;padding:80px 32px 64px;display:grid;grid-template-columns:1fr 380px;gap:64px;align-items:end">
+    <div>
+      <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;margin-bottom:24px">Tonight · every shop · until 23:00</span>
+      <h1 style="font-family:var(--font-heading);font-weight:800;font-size:112px;line-height:.96;letter-spacing:-.03em;margin:0;margin-left:-.05em">Two large.<br>£24.<br>Tonight.</h1>
+    </div>
+    <div style="border:2px solid var(--color-bg);padding:20px;display:grid;gap:12px">
+      <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Start your order</span>
+      <div style="display:flex">
+        <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3"><button onClick="{{ m.select }}" style="flex:1;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--color-bg);margin-right:-1px;cursor:pointer;text-align:left;background: {{ m.posterBg }};color: {{ m.posterFg }}">{{ m.label }}</button></sc-for>
+      </div>
+      <input class="input" value="{{ postcode }}" onChange="{{ setPostcode }}" placeholder="Your postcode" style="background:transparent;color:var(--color-bg);border-color:var(--color-bg)">
+      <select class="input" value="{{ when }}" onChange="{{ setWhen }}" style="background:transparent;color:var(--color-bg);border-color:var(--color-bg)"><option value="asap">ASAP · about 30 min</option><option value="19:30">19:30</option><option value="19:45">19:45</option><option value="20:00">20:00</option><option value="20:15">20:15</option><option value="20:30">20:30</option></select>
+      <a href="#deals" class="btn" style="background:var(--color-bg);color:var(--color-accent);justify-content:flex-start">Order two large for £24 →</a>
+      <a href="#menu" style="color:var(--color-bg);font-size:13px">Or see the whole menu</a>
+    </div>
+  </div>
+</section>
+<section style="max-width:1200px;margin:0 auto;padding:56px 32px">
+  <div style="display:flex;align-items:end;justify-content:space-between;margin-bottom:24px">
+    <h2 style="font-family:var(--font-heading);font-weight:800;font-size:36px;letter-spacing:-.02em;margin:0;line-height:1.05">The pizzas</h2>
+    <a href="#menu" style="font-size:14px">Sides, drinks and desserts →</a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+    <sc-for list="{{ pizzas }}" as="it" hint-placeholder-count="8">
+    <div style="border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:16px;display:flex;flex-direction:column;gap:10px" style-hover="background:var(--color-surface)">
+      <div style="aspect-ratio:4/3;background:repeating-linear-gradient(-45deg,var(--color-surface) 0 10px,var(--color-neutral-300) 10px 11px);display:flex;align-items:flex-end;padding:8px"><span style="font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--color-neutral-700)">{{ it.photo }}</span></div>
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font-family:var(--font-heading);font-weight:800;font-size:17px;line-height:1.2">{{ it.name }}</span><span style="font-family:var(--font-heading);font-weight:800;font-size:17px">{{ it.priceLabel }}</span></div>
+      <p style="margin:0;font-size:13px;line-height:1.5;color:var(--color-neutral-700);flex:1">{{ it.desc }}</p>
+      <div style="display:flex;gap:8px"><button class="btn btn-primary" onClick="{{ it.add }}">Add</button><button class="btn btn-secondary" onClick="{{ it.open }}">Customise</button></div>
+    </div>
+    </sc-for>
+  </div>
+</section>
+<div style="height:2px;background:var(--color-divider)"></div>
+<section style="max-width:1200px;margin:0 auto;padding:40px 32px 64px;display:grid;grid-template-columns:1fr 1fr;gap:48px">
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start"><span style="width:14px;height:14px;background:var(--color-accent);margin-top:6px"></span><div><h3 style="font-family:var(--font-heading);font-weight:800;font-size:24px;margin:0 0 8px;letter-spacing:-.015em">Crust Club</h3><p style="margin:0 0 12px;font-size:14px;color:var(--color-neutral-800);line-height:1.6">A point for every pound. 250 points is a free medium pizza. No app needed — your phone number is your card.</p><a href="#rewards" style="font-size:14px">Join or sign in →</a></div></div>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start"><span style="width:14px;height:14px;background:var(--color-text);margin-top:6px"></span><div><h3 style="font-family:var(--font-heading);font-weight:800;font-size:24px;margin:0 0 8px;letter-spacing:-.015em">Three shops, one oven each</h3><p style="margin:0 0 12px;font-size:14px;color:var(--color-neutral-800);line-height:1.6">Grays, Chelmsford and Colchester. Eat in, book a table, or collect in fifteen minutes.</p><a href="#stores" style="font-size:14px">Find your shop →</a></div></div>
+</section>
+</sc-if>
+
+<!-- ═══ HOME · C · Order-first ═══ -->
+<sc-if value="{{ is.orderFirst }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Home C" style="max-width:1200px;margin:0 auto;padding:48px 32px 64px;display:grid;grid-template-columns:380px 1fr;gap:56px;align-items:start">
+  <div style="border:2px solid var(--color-text);padding:24px;display:grid;gap:16px;position:sticky;top:88px">
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:34px;line-height:1.02;letter-spacing:-.02em;margin:0">Order in three clicks.</h1>
+    <div class="field"><label>How</label><div class="seg" role="radiogroup"><sc-for list="{{ modes }}" as="m" hint-placeholder-count="3"><label class="seg-opt"><input type="radio" name="mode-home" checked="{{ m.checked }}" onChange="{{ m.select }}">{{ m.label }}</label></sc-for></div></div>
+    <div class="field"><label>Where</label><input class="input" value="{{ postcode }}" onChange="{{ setPostcode }}" placeholder="Postcode"></div>
+    <div class="field"><label>When</label><select class="input" value="{{ when }}" onChange="{{ setWhen }}"><option value="asap">ASAP · about 30 min</option><option value="19:30">19:30</option><option value="19:45">19:45</option><option value="20:00">20:00</option><option value="20:15">20:15</option><option value="20:30">20:30</option></select></div>
+    <div class="field"><label>Shop</label><select class="input" value="{{ storeId }}" onChange="{{ setStore }}"><option value="grays">Grays · 0.8 mi</option><option value="chelmsford">Chelmsford · 18 mi</option><option value="colchester">Colchester · 39 mi</option></select></div>
+    <a href="#menu" class="btn btn-primary btn-block">Start order →</a>
+    <a href="#tracker" style="font-size:13px">Track a live order</a>
+  </div>
+  <div>
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">Most ordered tonight</span>
+    <h2 style="font-family:var(--font-heading);font-weight:800;font-size:36px;letter-spacing:-.02em;margin:0 0 20px;line-height:1.05">Straight to the good part.</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+      <sc-for list="{{ featured }}" as="it" hint-placeholder-count="4">
+      <div style="border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:12px;display:flex;flex-direction:column;gap:8px" style-hover="background:var(--color-surface)">
+        <div style="aspect-ratio:4/3;background:repeating-linear-gradient(-45deg,var(--color-surface) 0 10px,var(--color-neutral-300) 10px 11px);display:flex;align-items:flex-end;padding:6px"><span style="font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--color-neutral-700)">{{ it.photo }}</span></div>
+        <div style="display:flex;justify-content:space-between;gap:8px"><span style="font-family:var(--font-heading);font-weight:800;font-size:15px;line-height:1.2">{{ it.name }}</span><span style="font-weight:600;font-size:14px">{{ it.priceLabel }}</span></div>
+        <button class="btn btn-primary" onClick="{{ it.add }}" style="align-self:flex-start">Add</button>
+      </div>
+      </sc-for>
+    </div>
+    <sc-for list="{{ menuGroups }}" as="g" hint-placeholder-count="4">
+    <div style="margin-top:36px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:22px;margin:0 0 8px;letter-spacing:-.015em">{{ g.name }}</h3>
+      <div style="border-top:2px solid var(--color-divider)">
+        <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:1fr auto auto;gap:24px;align-items:center;padding:10px 0;border-bottom:1px solid var(--color-divider)">
+          <div style="font-size:14px"><span style="font-weight:600">{{ it.name }}</span><span style="color:var(--color-neutral-600);margin-left:10px">{{ it.desc }}</span></div>
+          <span style="font-weight:600;font-size:14px;min-width:56px;text-align:right">{{ it.priceLabel }}</span>
+          <div style="display:flex;gap:6px"><button class="btn btn-primary" onClick="{{ it.add }}">Add</button><sc-if value="{{ it.isPizza }}" hint-placeholder-val="{{ true }}"><button class="btn btn-secondary" onClick="{{ it.open }}">Customise</button></sc-if></div>
+        </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-for>
+  </div>
+</section>
+</sc-if>
+
+<!-- ═══ MENU ═══ -->
+<sc-if value="{{ is.menu }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Menu" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px;display:grid;grid-template-columns:200px 1fr;gap:48px;align-items:start">
+  <aside style="position:sticky;top:104px">
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Menu</span>
+    <div style="display:grid;border-bottom:2px solid var(--color-divider)">
+      <sc-for list="{{ menuCats }}" as="c" hint-placeholder-count="4"><button onClick="{{ c.select }}" style="text-align:left;background:none;border:0;border-top:2px solid var(--color-divider);padding:12px 0;font-family:var(--font-heading);font-weight:800;font-size:18px;cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;color: {{ c.color }}"><span>{{ c.name }}</span><span style="font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--color-neutral-600)">{{ c.count }}</span></button></sc-for>
+    </div>
+    <p style="font-size:12px;color:var(--color-neutral-600);margin:16px 0 0;line-height:1.5">V vegetarian · VG vegan. Every pizza can be made on a gluten-free base for £1.50.</p>
+    <a href="#builder" class="btn btn-secondary btn-block" style="margin-top:16px">Build your own →</a>
+  </aside>
+  <div>
+    <div style="display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:24px">
+      <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0">{{ menuTitle }}</h1>
+      <input class="input" style="max-width:280px" placeholder="Search the menu" value="{{ query }}" onChange="{{ setQuery }}">
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+      <sc-for list="{{ menuItems }}" as="it" hint-placeholder-count="6">
+      <div style="border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:16px;display:flex;flex-direction:column;gap:10px" style-hover="background:var(--color-surface)">
+        <div style="aspect-ratio:4/3;background:repeating-linear-gradient(-45deg,var(--color-surface) 0 10px,var(--color-neutral-300) 10px 11px);display:flex;align-items:flex-end;padding:8px"><span style="font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--color-neutral-700)">{{ it.photo }}</span></div>
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><span style="font-family:var(--font-heading);font-weight:800;font-size:17px;line-height:1.2">{{ it.name }}</span><span style="font-family:var(--font-heading);font-weight:800;font-size:17px">{{ it.priceLabel }}</span></div>
+        <p style="margin:0;font-size:13px;line-height:1.5;color:var(--color-neutral-700);flex:1">{{ it.desc }}</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-height:20px"><sc-for list="{{ it.tagList }}" as="t" hint-placeholder-count="1"><span class="tag tag-neutral">{{ t }}</span></sc-for><span style="font-size:11px;color:var(--color-neutral-600)">{{ it.sizeNote }}</span></div>
+        <div style="display:flex;gap:8px"><button class="btn btn-primary" onClick="{{ it.add }}">Add</button><sc-if value="{{ it.isPizza }}" hint-placeholder-val="{{ true }}"><button class="btn btn-secondary" onClick="{{ it.open }}">Customise</button></sc-if></div>
+      </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{ menuEmpty }}" hint-placeholder-val="{{ false }}"><p style="margin:24px 0 0;color:var(--color-neutral-600)">Nothing matches “{{ query }}”. Try a topping, or clear the search.</p></sc-if>
+  </div>
+</section>
+</sc-if>
+
+<!-- ═══ BUILD YOUR OWN ═══ -->
+<sc-if value="{{ is.builder }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Build your own" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px;display:grid;grid-template-columns:1fr 380px;gap:56px;align-items:start">
+  <div>
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Build your own</span>
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0 0 12px">Your pizza, priced as you go.</h1>
+    <p style="font-size:15px;line-height:1.6;color:var(--color-neutral-800);margin:0;max-width:56ch">Pick a size, a base and a sauce, then as many toppings as you like. The total on the right updates with every choice.</p>
+    <div style="margin-top:36px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:20px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline"><span>01 &nbsp;Size</span><span style="font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--color-neutral-600)">Sets the base price</span></h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+        <sc-for list="{{ build.sizes }}" as="z" hint-placeholder-count="4"><label class="radio" style="display:flex;align-items:flex-start;gap:10px;padding:14px;border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider)"><input type="radio" name="b-size" checked="{{ z.checked }}" onChange="{{ z.select }}"><span class="dot" style="margin-top:2px"></span><span style="display:grid;gap:2px"><span style="font-weight:600">{{ z.label }}</span><span style="font-size:12px;color:var(--color-neutral-600)">{{ z.price }}</span></span></label></sc-for>
+      </div>
+    </div>
+    <div style="margin-top:32px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:20px;margin:0 0 10px">02 &nbsp;Base</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+        <sc-for list="{{ build.crusts }}" as="z" hint-placeholder-count="4"><label class="radio" style="display:flex;align-items:flex-start;gap:10px;padding:14px;border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider)"><input type="radio" name="b-crust" checked="{{ z.checked }}" onChange="{{ z.select }}"><span class="dot" style="margin-top:2px"></span><span style="display:grid;gap:2px"><span style="font-weight:600">{{ z.label }}</span><span style="font-size:12px;color:var(--color-neutral-600)">{{ z.price }}</span></span></label></sc-for>
+      </div>
+    </div>
+    <div style="margin-top:32px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:20px;margin:0 0 10px">03 &nbsp;Sauce</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+        <sc-for list="{{ build.sauces }}" as="z" hint-placeholder-count="4"><label class="radio" style="display:flex;align-items:center;gap:10px;padding:14px;border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider)"><input type="radio" name="b-sauce" checked="{{ z.checked }}" onChange="{{ z.select }}"><span class="dot"></span><span style="font-weight:600">{{ z.label }}</span></label></sc-for>
+      </div>
+    </div>
+    <div style="margin-top:32px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:20px;margin:0 0 10px">04 &nbsp;Cheese</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+        <sc-for list="{{ build.cheeses }}" as="z" hint-placeholder-count="4"><label class="radio" style="display:flex;align-items:flex-start;gap:10px;padding:14px;border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider)"><input type="radio" name="b-cheese" checked="{{ z.checked }}" onChange="{{ z.select }}"><span class="dot" style="margin-top:2px"></span><span style="display:grid;gap:2px"><span style="font-weight:600">{{ z.label }}</span><span style="font-size:12px;color:var(--color-neutral-600)">{{ z.price }}</span></span></label></sc-for>
+      </div>
+    </div>
+    <div style="margin-top:32px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:20px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:baseline"><span>05 &nbsp;Toppings</span><span style="font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--color-neutral-600)">Veg £1.20 · Meat £1.60</span></h3>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <sc-for list="{{ build.toppings }}" as="t" hint-placeholder-count="8"><button class="btn {{ t.variant }}" onClick="{{ t.toggle }}">{{ t.label }}<span style="font-weight:400;font-size:12px;opacity:.75">{{ t.price }}</span></button></sc-for>
+      </div>
+    </div>
+  </div>
+  <aside style="position:sticky;top:104px;border:2px solid var(--color-text);padding:24px;display:grid;gap:16px">
+    <div style="display:grid;place-items:center;padding:8px 0 16px">
+      <div style="border:2px solid var(--color-text);display:grid;place-items:center;position:relative;transition:width .25s,height .25s;width: {{ build.box }};height: {{ build.box }}">
+        <div style="position:absolute;inset:12px;background:var(--color-surface)"></div>
+        <span style="position:relative;font-family:var(--font-heading);font-weight:800;font-size:40px;letter-spacing:-.02em">{{ build.sizeShort }}</span>
+        <span style="position:absolute;left:12px;bottom:12px;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--color-neutral-700)">{{ build.count }} toppings</span>
+      </div>
+    </div>
+    <div style="display:grid;font-size:13px;border-top:2px solid var(--color-divider)">
+      <div style="display:grid;grid-template-columns:72px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Size</span><span>{{ build.sizeLabel }}</span></div>
+      <div style="display:grid;grid-template-columns:72px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Base</span><span>{{ build.crust }}</span></div>
+      <div style="display:grid;grid-template-columns:72px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Sauce</span><span>{{ build.sauce }}</span></div>
+      <div style="display:grid;grid-template-columns:72px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Cheese</span><span>{{ build.cheese }}</span></div>
+      <div style="display:grid;grid-template-columns:72px 1fr;gap:8px;padding:8px 0;border-bottom:2px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Toppings</span><span>{{ build.toppingList }}</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">Total</span><span style="font-family:var(--font-heading);font-weight:800;font-size:40px;letter-spacing:-.02em;color:var(--color-accent);line-height:1">{{ build.price }}</span></div>
+    <button class="btn btn-primary btn-block" onClick="{{ build.add }}">Add to basket →</button>
+    <button class="btn btn-ghost" onClick="{{ build.reset }}" style="justify-content:flex-start">Start again</button>
+  </aside>
+</section>
+</sc-if>
+
+<!-- ═══ PRODUCT ═══ -->
+<sc-if value="{{ is.product }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Product" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:start">
+  <div style="position:sticky;top:104px">
+    <div class="grayscale" style="aspect-ratio:1;min-width:0;overflow:hidden"><image-slot id="product-photo" shape="rect" style="width:100%;height:100%" placeholder="product photograph · overhead · b/w"></image-slot></div>
+    <p style="margin:12px 0 0;font-size:12px;color:var(--color-neutral-600);line-height:1.5">Allergens: {{ product.allergens }}. The full allergen sheet is at the counter and on request.</p>
+  </div>
+  <div>
+    <a href="#menu" style="font-size:13px">← Back to the menu</a>
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin:20px 0 10px">{{ product.cat }}</span>
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0 0 12px">{{ product.name }}</h1>
+    <p style="font-size:16px;line-height:1.6;color:var(--color-neutral-800);margin:0 0 12px">{{ product.desc }}</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ product.tagList }}" as="t" hint-placeholder-count="1"><span class="tag tag-neutral">{{ t }}</span></sc-for></div>
+    <sc-if value="{{ product.isPizza }}" hint-placeholder-val="{{ true }}">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:18px;margin:32px 0 4px">Size</h3>
+      <div style="display:grid;border-bottom:2px solid var(--color-divider)">
+        <sc-for list="{{ product.sizes }}" as="z" hint-placeholder-count="4"><label class="radio" style="display:flex;padding:10px 0;border-top:1px solid var(--color-divider)"><input type="radio" name="p-size" checked="{{ z.checked }}" onChange="{{ z.select }}"><span class="dot"></span><span style="flex:1">{{ z.label }}</span><span style="color:var(--color-neutral-700)">{{ z.price }}</span></label></sc-for>
+      </div>
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:18px;margin:28px 0 4px">Base</h3>
+      <div style="display:grid;border-bottom:2px solid var(--color-divider)">
+        <sc-for list="{{ product.crusts }}" as="z" hint-placeholder-count="4"><label class="radio" style="display:flex;padding:10px 0;border-top:1px solid var(--color-divider)"><input type="radio" name="p-crust" checked="{{ z.checked }}" onChange="{{ z.select }}"><span class="dot"></span><span style="flex:1">{{ z.label }}</span><span style="color:var(--color-neutral-700)">{{ z.price }}</span></label></sc-for>
+      </div>
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:18px;margin:28px 0 10px">Extra toppings</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ product.extras }}" as="t" hint-placeholder-count="6"><button class="btn {{ t.variant }}" onClick="{{ t.toggle }}">{{ t.label }}<span style="font-weight:400;font-size:12px;opacity:.75">{{ t.price }}</span></button></sc-for></div>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:16px;border-top:2px solid var(--color-divider);padding-top:20px;margin-top:32px">
+      <div class="seg"><button class="seg-opt" onClick="{{ product.dec }}" style="background:none;border:0;font:inherit;font-size:16px;cursor:pointer;width:40px;justify-content:center">−</button><span class="seg-opt" style="min-width:44px;justify-content:center;font-weight:600">{{ product.qty }}</span><button class="seg-opt" onClick="{{ product.inc }}" style="background:none;border:0;border-left:1px solid var(--color-divider);font:inherit;font-size:16px;cursor:pointer;width:40px;justify-content:center">+</button></div>
+      <button class="btn btn-primary" style="flex:1;justify-content:space-between;padding:12px 16px" onClick="{{ product.add }}"><span>Add to basket</span><span>{{ product.total }}</span></button>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<!-- ═══ BASKET ═══ -->
+<sc-if value="{{ is.cart }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Basket" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px">
+  <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Basket</span>
+  <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0">{{ cartTitle }}</h1>
+  <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+    <p style="font-size:15px;color:var(--color-neutral-800);margin:12px 0 24px">Nothing in here yet. The Margherita is £9.50 and takes 12 minutes.</p>
+    <div style="display:flex;gap:12px"><a href="#menu" class="btn btn-primary">See the menu</a><a href="#deals" class="btn btn-secondary">Deals</a></div>
+  </sc-if>
+  <sc-if value="{{ hasCart }}" hint-placeholder-val="{{ true }}">
+  <div style="display:grid;grid-template-columns:7fr 5fr;gap:56px;align-items:start;margin-top:28px">
+    <div>
+      <div style="border-top:2px solid var(--color-divider)">
+        <sc-for list="{{ lines }}" as="l" hint-placeholder-count="2">
+        <div style="display:grid;grid-template-columns:1fr auto 80px;gap:24px;align-items:center;padding:16px 0;border-bottom:1px solid var(--color-divider)">
+          <div><div style="font-weight:600">{{ l.name }}</div><div style="font-size:13px;color:var(--color-neutral-600);margin-top:2px">{{ l.detail }}</div><button onClick="{{ l.remove }}" style="background:none;border:0;padding:4px 0 0;font:inherit;font-size:12px;color:var(--color-accent-700);cursor:pointer">Remove</button></div>
+          <div class="seg"><button class="seg-opt" onClick="{{ l.dec }}" style="background:none;border:0;font:inherit;cursor:pointer;width:36px;justify-content:center">−</button><span class="seg-opt" style="min-width:40px;justify-content:center;font-weight:600">{{ l.qty }}</span><button class="seg-opt" onClick="{{ l.inc }}" style="background:none;border:0;border-left:1px solid var(--color-divider);font:inherit;cursor:pointer;width:36px;justify-content:center">+</button></div>
+          <div style="text-align:right;font-weight:600">{{ l.lineTotal }}</div>
+        </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:36px">
+        <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Goes well with</span>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+          <sc-for list="{{ sides }}" as="it" hint-placeholder-count="4">
+          <div style="border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:12px;display:grid;gap:6px" style-hover="background:var(--color-surface)">
+            <span style="font-weight:600;font-size:14px">{{ it.name }}</span><span style="font-size:12px;color:var(--color-neutral-600)">{{ it.desc }}</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px"><span style="font-weight:600">{{ it.priceLabel }}</span><button class="btn btn-secondary" onClick="{{ it.add }}">Add</button></div>
+          </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <aside style="border:2px solid var(--color-text);padding:24px;display:grid;gap:10px;position:sticky;top:104px;font-size:14px">
+      <div style="display:flex;gap:10px;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--color-divider);font-size:13px"><span style="width:8px;height:8px;background:var(--color-accent);flex:none"></span><span>{{ ctx }}</span></div>
+      <div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>{{ subtotalLabel }}</span></div>
+      <div style="display:flex;justify-content:space-between"><span>{{ feeName }}</span><span>{{ feeLabel }}</span></div>
+      <sc-if value="{{ hasDiscount }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;color:var(--color-accent-700)"><span>{{ promo }}</span><span>−{{ discountLabel }}</span></div></sc-if>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--color-divider);padding-top:12px;margin-top:4px"><span style="font-weight:600">Total</span><span style="font-family:var(--font-heading);font-weight:800;font-size:28px;letter-spacing:-.02em">{{ totalLabel }}</span></div>
+      <div style="display:flex;gap:8px;margin-top:8px"><input class="input" placeholder="Promo code" value="{{ promoInput }}" onChange="{{ setPromoInput }}"><button class="btn btn-secondary" onClick="{{ applyPromo }}">Apply</button></div>
+      <sc-if value="{{ promoMsg }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:var(--color-accent-700)">{{ promoMsg }}</span></sc-if>
+      <a href="#checkout" class="btn btn-primary btn-block" style="padding:12px 16px">Go to checkout →</a>
+      <p style="margin:0;font-size:12px;color:var(--color-neutral-600);line-height:1.5">{{ feeNote }}</p>
+    </aside>
+  </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<!-- ═══ CHECKOUT ═══ -->
+<sc-if value="{{ is.checkout }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Checkout" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px;display:grid;grid-template-columns:7fr 5fr;gap:56px;align-items:start">
+  <div>
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Checkout</span>
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0 0 28px">Four questions, then the oven.</h1>
+    <div style="border-top:2px solid var(--color-divider);padding:24px 0;display:grid;grid-template-columns:160px 1fr;gap:24px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:18px;margin:0">01 &nbsp;How</h3>
+      <div style="display:grid;gap:16px">
+        <div class="seg" role="radiogroup"><sc-for list="{{ modes }}" as="m" hint-placeholder-count="3"><label class="seg-opt"><input type="radio" name="mode-co" checked="{{ m.checked }}" onChange="{{ m.select }}">{{ m.label }}</label></sc-for></div>
+        <sc-if value="{{ is.delivery }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field" style="grid-column:1 / -1"><label>Address</label><input class="input" value="{{ addr.line1 }}" onChange="{{ setAddr.line1 }}" placeholder="House number and street"></div>
+            <div class="field"><label>Town</label><input class="input" value="{{ addr.city }}" onChange="{{ setAddr.city }}"></div>
+            <div class="field"><label>Postcode</label><input class="input" value="{{ addr.pc }}" onChange="{{ setAddr.pc }}"></div>
+            <div class="field" style="grid-column:1 / -1"><label>Note for the driver</label><input class="input" placeholder="Gate code, flat number, leave at the door…"></div>
+          </div>
+          <p style="margin:0;font-size:13px;color:var(--color-neutral-600)">Delivering from {{ store.name }} · {{ store.wait }} · £2.49, free over £25.</p>
+        </sc-if>
+        <sc-if value="{{ is.collection }}" hint-placeholder-val="{{ false }}">
+          <div class="field"><label>Collect from</label><select class="input" value="{{ storeId }}" onChange="{{ setStore }}"><option value="grays">Grays · 42 High Street</option><option value="chelmsford">Chelmsford · 118 Moulsham Street</option><option value="colchester">Colchester · 9 Crouch Street</option></select></div>
+          <p style="margin:0;font-size:13px;color:var(--color-neutral-600)">Ready in 15–20 minutes. Park in the bays outside; we’ll bring it to the car if you text.</p>
+        </sc-if>
+        <sc-if value="{{ is.dinein }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="field"><label>Shop</label><select class="input" value="{{ storeId }}" onChange="{{ setStore }}"><option value="grays">Grays</option><option value="chelmsford">Chelmsford</option><option value="colchester">Colchester</option></select></div>
+            <div class="field"><label>Table number</label><select class="input" value="{{ table }}" onChange="{{ setTable }}"><option value="4">Table 4</option><option value="7">Table 7</option><option value="12">Table 12</option><option value="15">Table 15</option><option value="21">Table 21 · outside</option></select></div>
+          </div>
+          <p style="margin:0;font-size:13px;color:var(--color-neutral-600)">The number is on the red square on your table. We bring it straight over.</p>
+        </sc-if>
+      </div>
+    </div>
+    <div style="border-top:2px solid var(--color-divider);padding:24px 0;display:grid;grid-template-columns:160px 1fr;gap:24px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:18px;margin:0">02 &nbsp;When</h3>
+      <div class="field"><label>Time</label><select class="input" value="{{ when }}" onChange="{{ setWhen }}"><option value="asap">As soon as possible</option><option value="19:30">19:30</option><option value="19:45">19:45</option><option value="20:00">20:00</option><option value="20:15">20:15</option><option value="20:30">20:30</option></select></div>
+    </div>
+    <div style="border-top:2px solid var(--color-divider);padding:24px 0;display:grid;grid-template-columns:160px 1fr;gap:24px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:18px;margin:0">03 &nbsp;Who</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Name</label><input class="input" value="{{ contact.name }}" onChange="{{ setContact.name }}"></div>
+        <div class="field"><label>Mobile</label><input class="input" value="{{ contact.phone }}" onChange="{{ setContact.phone }}"></div>
+        <div class="field" style="grid-column:1 / -1"><label>Email for the receipt</label><input class="input" value="{{ contact.email }}" onChange="{{ setContact.email }}"></div>
+      </div>
+    </div>
+    <div style="border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:24px 0;display:grid;grid-template-columns:160px 1fr;gap:24px">
+      <h3 style="font-family:var(--font-heading);font-weight:800;font-size:18px;margin:0">04 &nbsp;Pay</h3>
+      <div style="display:grid;gap:16px">
+        <div class="seg" role="radiogroup"><sc-for list="{{ pays }}" as="p" hint-placeholder-count="3"><label class="seg-opt"><input type="radio" name="pay" checked="{{ p.checked }}" onChange="{{ p.select }}">{{ p.label }}</label></sc-for></div>
+        <sc-if value="{{ is.card }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px">
+            <div class="field"><label>Card number</label><input class="input" defaultValue="4921 1200 0000 4421"></div>
+            <div class="field"><label>Expiry</label><input class="input" defaultValue="09 / 28"></div>
+            <div class="field"><label>CVC</label><input class="input" defaultValue="•••"></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ is.apple }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:13px;color:var(--color-neutral-600)">You’ll confirm with Face ID when you place the order.</p></sc-if>
+        <sc-if value="{{ is.cash }}" hint-placeholder-val="{{ false }}"><p style="margin:0;font-size:13px;color:var(--color-neutral-600)">Pay at the counter or to the driver. Exact change helps — drivers carry £20 float.</p></sc-if>
+      </div>
+    </div>
+  </div>
+  <aside style="border:2px solid var(--color-text);padding:24px;display:grid;gap:10px;position:sticky;top:104px;font-size:14px">
+    <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">Your order · {{ store.name }}</span>
+    <div style="border-top:2px solid var(--color-divider)">
+      <sc-for list="{{ lines }}" as="l" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:24px 1fr auto;gap:10px;padding:10px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">{{ l.qty }}×</span><div><div style="font-weight:600">{{ l.name }}</div><div style="font-size:12px;color:var(--color-neutral-600)">{{ l.detail }}</div></div><span>{{ l.lineTotal }}</span></div></sc-for>
+    </div>
+    <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}"><p style="margin:0;color:var(--color-neutral-600)">Your basket is empty — <a href="#menu">add something first</a>.</p></sc-if>
+    <div style="display:flex;justify-content:space-between"><span>Subtotal</span><span>{{ subtotalLabel }}</span></div>
+    <div style="display:flex;justify-content:space-between"><span>{{ feeName }}</span><span>{{ feeLabel }}</span></div>
+    <sc-if value="{{ hasDiscount }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:space-between;color:var(--color-accent-700)"><span>{{ promo }}</span><span>−{{ discountLabel }}</span></div></sc-if>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--color-divider);padding-top:12px"><span style="font-weight:600">Total</span><span style="font-family:var(--font-heading);font-weight:800;font-size:28px;letter-spacing:-.02em">{{ totalLabel }}</span></div>
+    <button class="btn btn-primary btn-block" style="padding:12px 16px;justify-content:space-between" onClick="{{ placeOrder }}" disabled="{{ cartEmpty }}"><span>Place order</span><span>{{ totalLabel }}</span></button>
+    <p style="margin:0;font-size:12px;color:var(--color-neutral-600);line-height:1.5">By placing the order you agree to our terms. Allergies? Call the shop on {{ store.phone }} before you order.</p>
+  </aside>
+</section>
+</sc-if>
+
+<!-- ═══ TRACKER ═══ -->
+<sc-if value="{{ is.tracker }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Order tracker" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px">
+  <sc-if value="{{ noOrder }}" hint-placeholder-val="{{ false }}">
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Track an order</span>
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0 0 12px">No live order right now.</h1>
+    <p style="font-size:15px;color:var(--color-neutral-800);margin:0 0 24px">Place one and this page follows it from the dough bench to your door.</p>
+    <a href="#menu" class="btn btn-primary">See the menu</a>
+  </sc-if>
+  <sc-if value="{{ hasOrder }}" hint-placeholder-val="{{ true }}">
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Order {{ order.no }} · {{ order.modeLabel }} · {{ order.store }}</span>
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:56px;line-height:1.02;letter-spacing:-.02em;margin:0 0 12px">{{ trackTitle }}</h1>
+    <p style="font-size:15px;color:var(--color-neutral-800);margin:0 0 32px">Placed at {{ order.placedLabel }} · {{ order.pay }} · {{ order.total }}</p>
+    <div style="height:4px;background:var(--color-neutral-300);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;background:var(--color-accent);transition:width .6s;width: {{ progressPct }}%"></div></div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:16px">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+      <div style="display:grid;gap:8px"><div style="width:14px;height:14px;border:2px solid {{ s.border }};background: {{ s.bg }};animation: {{ s.anim }}"></div><div style="font-weight:600;font-size:14px;line-height:1.3;color: {{ s.color }}">{{ s.label }}</div><div style="font-size:12px;color:var(--color-neutral-600)">{{ s.time }}</div></div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:7fr 5fr;gap:56px;margin-top:48px;align-items:start">
+      <div>
+        <sc-if value="{{ showMap }}" hint-placeholder-val="{{ true }}">
+        <div style="height:360px;border:2px solid var(--color-text);position:relative;background:repeating-linear-gradient(0deg,transparent 0 39px,var(--color-neutral-300) 39px 40px),repeating-linear-gradient(90deg,transparent 0 39px,var(--color-neutral-300) 39px 40px),var(--color-surface)">
+          <span style="position:absolute;left:12px;top:12px;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--color-neutral-700)">map · driver route · {{ order.store }} → {{ order.where }}</span>
+          <span style="position:absolute;left:18%;top:64%;width:14px;height:14px;background:var(--color-text)"></span>
+          <span style="position:absolute;left:19%;top:66%;width:1px;height:2px"></span>
+          <span style="position:absolute;left:calc(18% + 7px);top:calc(64% + 7px);width:240px;height:2px;background:var(--color-text);transform-origin:0 0;transform:rotate(-28deg)"></span>
+          <span style="position:absolute;left:72%;top:26%;width:14px;height:14px;background:var(--color-accent);animation:fp-pulse 1.4s ease-in-out infinite"></span>
+          <span style="position:absolute;left:calc(72% + 22px);top:calc(26% - 2px);font-size:12px;font-weight:600">{{ order.where }}</span>
+          <span style="position:absolute;left:calc(18% + 22px);top:calc(64% - 2px);font-size:12px;font-weight:600">{{ order.store }} shop</span>
+        </div>
+        </sc-if>
+        <sc-if value="{{ showPickup }}" hint-placeholder-val="{{ false }}">
+        <div style="border:2px solid var(--color-text);padding:24px;display:grid;gap:8px">
+          <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">{{ pickupKicker }}</span>
+          <div style="font-family:var(--font-heading);font-weight:800;font-size:28px;letter-spacing:-.02em">{{ order.where }}</div>
+          <p style="margin:0;font-size:14px;color:var(--color-neutral-800)">{{ pickupNote }}</p>
+        </div>
+        </sc-if>
+        <sc-if value="{{ showDriver }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:56px 1fr auto;gap:16px;align-items:center;border:2px solid var(--color-divider);border-top:0;padding:16px">
+          <div class="grayscale" style="width:56px;height:56px;background:repeating-linear-gradient(-45deg,var(--color-surface) 0 6px,var(--color-neutral-300) 6px 7px)"></div>
+          <div><div style="font-weight:600">Sam is on the way</div><div style="font-size:13px;color:var(--color-neutral-600)">Electric van · EV19 FRM · 4.9 from 812 deliveries</div></div>
+          <button class="btn btn-secondary">Message Sam</button>
+        </div>
+        </sc-if>
+      </div>
+      <aside style="border:2px solid var(--color-text);padding:24px;display:grid;gap:10px;font-size:14px">
+        <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">What’s coming</span>
+        <div style="border-top:2px solid var(--color-divider)">
+          <sc-for list="{{ order.items }}" as="l" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:24px 1fr auto;gap:10px;padding:10px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">{{ l.qty }}×</span><div><div style="font-weight:600">{{ l.name }}</div><div style="font-size:12px;color:var(--color-neutral-600)">{{ l.detail }}</div></div><span>{{ l.lineTotal }}</span></div></sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-weight:600">Total</span><span style="font-family:var(--font-heading);font-weight:800;font-size:24px">{{ order.total }}</span></div>
+        <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-secondary">Something wrong?</button><a href="#menu" class="btn btn-ghost">Order again</a></div>
+      </aside>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<!-- ═══ DEALS ═══ -->
+<sc-if value="{{ is.deals }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Deals" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px">
+  <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Deals &amp; offers</span>
+  <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0 0 12px">Four deals. No small print you need a lawyer for.</h1>
+  <p style="font-size:15px;color:var(--color-neutral-800);margin:0 0 32px;max-width:60ch">Every deal works on delivery and collection unless it says otherwise. Prices include VAT. One code per order.</p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+    <sc-for list="{{ deals }}" as="d" hint-placeholder-count="4">
+    <div style="border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:20px;display:flex;flex-direction:column;gap:12px;min-height:300px" style-hover="background:var(--color-surface)">
+      <span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700)">{{ d.kicker }}</span>
+      <span style="font-family:var(--font-heading);font-weight:800;font-size:56px;line-height:1;letter-spacing:-.03em;color:var(--color-accent)">{{ d.price }}</span>
+      <span style="font-family:var(--font-heading);font-weight:800;font-size:22px;line-height:1.1">{{ d.title }}</span>
+      <p style="margin:0;font-size:14px;color:var(--color-neutral-800);flex:1">{{ d.desc }}</p>
+      <span style="font-size:12px;color:var(--color-neutral-600)">{{ d.terms }}</span>
+      <button class="btn btn-primary" onClick="{{ d.add }}" style="align-self:flex-start">{{ d.btn }}</button>
+    </div>
+    </sc-for>
+  </div>
+  <div style="margin-top:48px">
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Codes</span>
+    <div style="border-top:2px solid var(--color-divider)">
+      <sc-for list="{{ codes }}" as="c" hint-placeholder-count="3">
+      <div style="display:grid;grid-template-columns:180px 1fr auto auto;gap:24px;align-items:center;padding:16px 0;border-bottom:1px solid var(--color-divider)">
+        <span style="font-family:ui-monospace,Menlo,monospace;font-size:15px;font-weight:600">{{ c.code }}</span>
+        <span style="font-size:14px">{{ c.desc }}</span>
+        <span style="font-size:12px;color:var(--color-neutral-600)">{{ c.note }}</span>
+        <button class="btn btn-secondary" onClick="{{ c.apply }}">Apply to basket</button>
+      </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<!-- ═══ REWARDS ═══ -->
+<sc-if value="{{ is.rewards }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Rewards" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px">
+  <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Crust Club</span>
+  <sc-if value="{{ notSignedIn }}" hint-placeholder-val="{{ false }}">
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:56px;line-height:1.02;letter-spacing:-.02em;margin:0 0 16px;max-width:16ch">A point for every pound. A pizza for every 250.</h1>
+    <p style="font-size:15px;color:var(--color-neutral-800);margin:0 0 24px;max-width:56ch">No app, no card. Your mobile number is your membership. Points land the moment the order is paid.</p>
+    <div style="display:flex;gap:12px"><button class="btn btn-primary" onClick="{{ signIn }}">Join Crust Club</button><a href="#account" class="btn btn-secondary">Sign in</a></div>
+  </sc-if>
+  <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:end">
+      <div>
+        <h1 style="font-family:var(--font-heading);font-weight:800;font-size:96px;line-height:.95;letter-spacing:-.03em;margin:0;color:var(--color-accent);margin-left:-.04em">{{ points }}</h1>
+        <div style="font-size:15px;margin-top:12px">points, Ada. <span style="color:var(--color-neutral-600)">{{ pointsToNext }} more and the next medium is free.</span></div>
+        <div style="height:4px;background:var(--color-neutral-300);margin-top:20px;position:relative"><div style="position:absolute;inset:0 auto 0 0;background:var(--color-accent);width: {{ rewardPct }}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-neutral-600);margin-top:6px"><span>0</span><span>250 · free medium pizza</span></div>
+      </div>
+      <div>
+        <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">Stamp card · {{ stampCount }} of 10 · tenth pizza is on us</span>
+        <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:8px;margin-top:12px">
+          <sc-for list="{{ stamps }}" as="st" hint-placeholder-count="10"><div style="aspect-ratio:1;border:2px solid var(--color-accent);background: {{ st.bg }}"></div></sc-for>
+        </div>
+        <div style="display:flex;gap:24px;margin-top:20px;font-size:13px"><span><span style="color:var(--color-neutral-600)">Tier</span> &nbsp;Grower</span><span><span style="color:var(--color-neutral-600)">Member since</span> &nbsp;March 2025</span><span><span style="color:var(--color-neutral-600)">Lifetime</span> &nbsp;£612</span></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:48px;align-items:start">
+      <div>
+        <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Spend points</span>
+        <div style="border-top:2px solid var(--color-divider)">
+          <sc-for list="{{ rewards }}" as="r" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:24px;align-items:center;padding:14px 0;border-bottom:1px solid var(--color-divider)">
+            <div><div style="font-weight:600">{{ r.name }}</div><div style="font-size:12px;color:var(--color-neutral-600)">{{ r.note }}</div></div>
+            <span style="font-family:var(--font-heading);font-weight:800;font-size:18px">{{ r.cost }} pts</span>
+            <button class="btn btn-secondary" onClick="{{ r.redeem }}" disabled="{{ r.disabled }}">Redeem</button>
+          </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">How it works</span>
+        <div style="border-top:2px solid var(--color-divider);font-size:14px">
+          <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--color-divider)"><span style="font-weight:800;font-family:var(--font-heading)">01</span><span>One point per £1, on everything except delivery fees.</span></div>
+          <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--color-divider)"><span style="font-weight:800;font-family:var(--font-heading)">02</span><span>Every pizza stamps the card. Ten stamps, tenth pizza free — on top of your points.</span></div>
+          <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--color-divider)"><span style="font-weight:800;font-family:var(--font-heading)">03</span><span>Seedling → Grower at 500 points a year → Farmer at 1,500. Farmers get a free side on every order.</span></div>
+          <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--color-divider)"><span style="font-weight:800;font-family:var(--font-heading)">04</span><span>Points never expire while you order at least once a year.</span></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<!-- ═══ STORES ═══ -->
+<sc-if value="{{ is.stores }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Shops" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px">
+  <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Shops</span>
+  <div style="display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:28px">
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0">Three shops in Essex.</h1>
+    <input class="input" style="max-width:260px" placeholder="Postcode or town" value="{{ storesQuery }}" onChange="{{ setStoresQuery }}">
+  </div>
+  <div style="display:grid;grid-template-columns:5fr 7fr;gap:56px;align-items:start">
+    <div style="border-top:2px solid var(--color-divider)">
+      <sc-for list="{{ stores }}" as="st" hint-placeholder-count="3">
+      <div onClick="{{ st.choose }}" style="padding:20px 16px;border-bottom:2px solid var(--color-divider);cursor:pointer;display:grid;gap:8px;background: {{ st.bg }}" style-hover="background:var(--color-surface)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:var(--font-heading);font-weight:800;font-size:22px;letter-spacing:-.015em">{{ st.name }}</span><span style="font-size:13px;color:var(--color-neutral-600)">{{ st.dist }}</span></div>
+        <div style="font-size:14px">{{ st.addr }}</div>
+        <div style="display:flex;gap:8px;align-items:center;font-size:13px"><span class="tag tag-accent">Open · closes {{ st.closes }}</span><span class="tag tag-neutral">{{ st.tablesLabel }}</span><span style="color:var(--color-neutral-600)">Delivery {{ st.wait }}</span></div>
+        <div style="display:flex;gap:8px;margin-top:4px"><button class="btn btn-primary" onClick="{{ st.order }}">Order from here</button><a href="#stores" class="btn btn-ghost">Directions</a></div>
+      </div>
+      </sc-for>
+    </div>
+    <div>
+      <div style="height:320px;border:2px solid var(--color-text);position:relative;background:repeating-linear-gradient(0deg,transparent 0 39px,var(--color-neutral-300) 39px 40px),repeating-linear-gradient(90deg,transparent 0 39px,var(--color-neutral-300) 39px 40px),var(--color-surface)">
+        <span style="position:absolute;left:12px;top:12px;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--color-neutral-700)">map · Essex · three shops · b/w tiles</span>
+        <sc-for list="{{ stores }}" as="st" hint-placeholder-count="3"><span style="position:absolute;width:14px;height:14px;left: {{ st.x }};top: {{ st.y }};background: {{ st.pin }}"></span><span style="position:absolute;font-size:12px;font-weight:600;left: calc({{ st.x }} + 22px);top: calc({{ st.y }} - 3px)">{{ st.name }}</span></sc-for>
+      </div>
+      <div style="margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div style="font-size:14px">
+          <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">{{ selStore.name }} shop</span>
+          <div style="border-top:2px solid var(--color-divider)">
+            <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Hours</span><span>{{ selStore.hours }} · every day</span></div>
+            <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Phone</span><span>{{ selStore.phone }}</span></div>
+            <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Address</span><span>{{ selStore.addr }}</span></div>
+            <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--color-divider)"><span style="color:var(--color-neutral-600)">Eat in</span><span>{{ selStore.tablesLabel }}</span></div>
+          </div>
+        </div>
+        <div>
+          <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:10px">Book a table</span>
+          <sc-if value="{{ noBooking }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;gap:10px">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div class="field"><label>Day</label><select class="input" value="{{ bookingForm.date }}" onChange="{{ setBooking.date }}"><option>Fri 4 Sep</option><option>Sat 5 Sep</option><option>Sun 6 Sep</option><option>Mon 7 Sep</option></select></div>
+              <div class="field"><label>Time</label><select class="input" value="{{ bookingForm.time }}" onChange="{{ setBooking.time }}"><option>18:00</option><option>18:30</option><option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option></select></div>
+              <div class="field"><label>People</label><select class="input" value="{{ bookingForm.party }}" onChange="{{ setBooking.party }}"><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option></select></div>
+            </div>
+            <button class="btn btn-primary btn-block" onClick="{{ book }}" disabled="{{ selStore.noTables }}">{{ bookLabel }}</button>
+          </div>
+          </sc-if>
+          <sc-if value="{{ hasBooking }}" hint-placeholder-val="{{ false }}">
+          <div style="border:2px solid var(--color-accent);padding:16px;display:grid;gap:6px;font-size:14px">
+            <span style="font-family:var(--font-heading);font-weight:800;font-size:20px">Booked. Ref {{ booking.ref }}</span>
+            <span>{{ booking.store }} · {{ booking.date }} · {{ booking.time }} · table for {{ booking.party }}</span>
+            <span style="font-size:12px;color:var(--color-neutral-600)">We hold the table for 15 minutes. Text confirmation sent.</span>
+            <button class="btn btn-ghost" style="justify-content:flex-start;padding-inline:0" onClick="{{ cancelBooking }}">Cancel booking</button>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<!-- ═══ ACCOUNT ═══ -->
+<sc-if value="{{ is.account }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Account" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px">
+  <sc-if value="{{ notSignedIn }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start">
+      <div>
+        <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Sign in</span>
+        <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0 0 24px">Welcome back.</h1>
+        <div style="display:grid;gap:12px;max-width:400px">
+          <div class="field"><label>Email or mobile</label><input class="input" value="{{ authEmail }}" onChange="{{ setAuthEmail }}" placeholder="ada@example.co.uk"></div>
+          <div class="field"><label>Password</label><input class="input" type="password" defaultValue="••••••••••"></div>
+          <button class="btn btn-primary btn-block" onClick="{{ signIn }}">Sign in →</button>
+          <a href="#account" style="font-size:13px">Forgotten your password?</a>
+        </div>
+      </div>
+      <div style="border-left:2px solid var(--color-divider);padding-left:56px">
+        <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">New here</span>
+        <h2 style="font-family:var(--font-heading);font-weight:800;font-size:32px;line-height:1.05;letter-spacing:-.02em;margin:0 0 16px">Create an account in one step.</h2>
+        <p style="font-size:14px;color:var(--color-neutral-800);line-height:1.6;margin:0 0 20px;max-width:44ch">Saves your addresses and cards, keeps your order history, and enrols you in Crust Club automatically. Or check out as a guest — we won’t stop you.</p>
+        <div style="display:grid;gap:12px;max-width:400px">
+          <div class="field"><label>Mobile</label><input class="input" placeholder="07700 900 000"></div>
+          <button class="btn btn-secondary btn-block" onClick="{{ signIn }}">Text me a code</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
+    <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Account</span>
+    <div style="display:flex;align-items:end;justify-content:space-between;margin-bottom:32px">
+      <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0">Ada Okafor</h1>
+      <div style="display:flex;gap:8px"><a href="#orders" class="btn btn-secondary">Order history</a><a href="#rewards" class="btn btn-secondary">Crust Club · {{ points }} pts</a><button class="btn btn-ghost" onClick="{{ signOut }}">Sign out</button></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:2px solid var(--color-divider);border-left:2px solid var(--color-divider)">
+      <div style="border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:20px;display:grid;gap:10px;font-size:14px;align-content:start">
+        <span style="font-family:var(--font-heading);font-weight:800;font-size:18px">Details</span>
+        <div class="field"><label>Name</label><input class="input" defaultValue="Ada Okafor"></div>
+        <div class="field"><label>Mobile</label><input class="input" defaultValue="07700 900 123"></div>
+        <div class="field"><label>Email</label><input class="input" defaultValue="ada@example.co.uk"></div>
+        <button class="btn btn-secondary" style="justify-self:start">Save</button>
+      </div>
+      <div style="border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:20px;display:grid;gap:10px;font-size:14px;align-content:start">
+        <span style="font-family:var(--font-heading);font-weight:800;font-size:18px">Addresses</span>
+        <div style="padding:10px 0;border-top:1px solid var(--color-divider)"><div style="font-weight:600">Home <span class="tag tag-accent" style="margin-left:6px">Default</span></div><div style="color:var(--color-neutral-700)">14 Orsett Road, Grays RM17 5DA</div></div>
+        <div style="padding:10px 0;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div style="font-weight:600">Work</div><div style="color:var(--color-neutral-700)">Unit 3, Thurrock Park Way, Tilbury RM18 7HL</div></div>
+        <button class="btn btn-secondary" style="justify-self:start">Add an address</button>
+      </div>
+      <div style="border-right:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider);padding:20px;display:grid;gap:10px;font-size:14px;align-content:start">
+        <span style="font-family:var(--font-heading);font-weight:800;font-size:18px">Payment &amp; preferences</span>
+        <div style="padding:10px 0;border-top:1px solid var(--color-divider);display:flex;justify-content:space-between"><span>Visa ending 4421</span><span style="color:var(--color-neutral-600)">09/28</span></div>
+        <div style="padding:10px 0;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;justify-content:space-between"><span>Apple Pay</span><span style="color:var(--color-neutral-600)">Linked</span></div>
+        <label class="radio" style="margin-top:6px"><input type="checkbox" defaultChecked><span class="dot"></span>Text me when my order is out for delivery</label>
+        <label class="radio"><input type="checkbox"><span class="dot"></span>Email me the Tuesday deal</label>
+        <label class="radio"><input type="checkbox" defaultChecked><span class="dot"></span>Remember my usual order</label>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<!-- ═══ ORDER HISTORY ═══ -->
+<sc-if value="{{ is.orders }}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="Order history" style="max-width:1200px;margin:0 auto;padding:40px 32px 64px">
+  <span style="display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:12px">Order history</span>
+  <div style="display:flex;align-items:end;justify-content:space-between;margin-bottom:28px">
+    <h1 style="font-family:var(--font-heading);font-weight:800;font-size:44px;line-height:1.05;letter-spacing:-.02em;margin:0">{{ historyTitle }}</h1>
+    <a href="#tracker" class="btn btn-secondary">Track the live order</a>
+  </div>
+  <sc-if value="{{ notSignedIn }}" hint-placeholder-val="{{ false }}"><p style="font-size:15px;color:var(--color-neutral-800);margin:0 0 20px">Sign in to see past orders and reorder in one click.</p><button class="btn btn-primary" onClick="{{ signIn }}">Sign in</button></sc-if>
+  <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
+  <table class="table">
+    <thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Shop</th><th>Mode</th><th style="text-align:right">Total</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <sc-for list="{{ history }}" as="h" hint-placeholder-count="4">
+      <tr><td style="font-family:ui-monospace,Menlo,monospace;font-size:13px">{{ h.no }}</td><td class="text-muted">{{ h.date }}</td><td>{{ h.itemsText }}</td><td>{{ h.store }}</td><td>{{ h.mode }}</td><td style="text-align:right;font-weight:600">{{ h.totalLabel }}</td><td><span class="tag tag-neutral">{{ h.status }}</span></td><td style="text-align:right"><button class="btn btn-secondary" onClick="{{ h.reorder }}">Reorder</button></td></tr>
+      </sc-for>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--color-neutral-600);margin:16px 0 0">Receipts are emailed the moment you pay. Need a VAT receipt? Reply to any of them.</p>
+  </sc-if>
+</section>
+</sc-if>
+
+</main>
+
+<footer style="border-top:2px solid var(--color-divider);margin-top:auto">
+  <div style="max-width:1200px;margin:0 auto;padding:40px 32px 24px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;font-size:13px">
+    <div><div class="nav-brand" style="margin:0 0 8px">FARM PIZZA</div><p style="margin:0;color:var(--color-neutral-700);line-height:1.6;max-width:36ch">Dough made daily. Tomatoes, herbs and most of the veg from Rainham Hall Farm, Essex. Three shops, one oven each.</p></div>
+    <div style="display:grid;gap:6px;align-content:start"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:4px">Order</span><a href="#menu" style="color:inherit;text-decoration:none">Menu</a><a href="#builder" style="color:inherit;text-decoration:none">Build your own</a><a href="#deals" style="color:inherit;text-decoration:none">Deals</a><a href="#rewards" style="color:inherit;text-decoration:none">Crust Club</a></div>
+    <div style="display:grid;gap:6px;align-content:start"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:4px">Shops</span><a href="#stores" style="color:inherit;text-decoration:none">Grays</a><a href="#stores" style="color:inherit;text-decoration:none">Chelmsford</a><a href="#stores" style="color:inherit;text-decoration:none">Colchester</a><a href="#stores" style="color:inherit;text-decoration:none">Book a table</a></div>
+    <div style="display:grid;gap:6px;align-content:start"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-700);margin-bottom:4px">Help</span><a href="#tracker" style="color:inherit;text-decoration:none">Track an order</a><a href="#account" style="color:inherit;text-decoration:none">Allergens</a><a href="#account" style="color:inherit;text-decoration:none">Contact</a><a href="#account" style="color:inherit;text-decoration:none">Careers</a></div>
+  </div>
+  <div style="max-width:1200px;margin:0 auto;padding:0 32px 24px;font-size:12px;color:var(--color-neutral-600)">© 2026 Farm Pizza Ltd · Made in Essex · Prices include VAT</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;homeDirection&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Ruled grid&quot;,&quot;options&quot;:[&quot;Ruled grid&quot;,&quot;Red poster&quot;,&quot;Order-first&quot;],&quot;tsType&quot;:&quot;'Ruled grid' | 'Red poster' | 'Order-first'&quot;,&quot;section&quot;:&quot;Home page&quot;},&quot;signedIn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State&quot;},&quot;storeOpen&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State&quot;}}">
+class Component extends DCLogic {
+  SCREENS = ['home','menu','builder','product','cart','checkout','tracker','deals','rewards','stores','account','orders'];
+  MENU = [
+    {id:'margherita',cat:'Pizzas',name:'Margherita',desc:'Fior di latte, farm tomato sauce, basil',price:9.5,tags:['V']},
+    {id:'farmhand',cat:'Pizzas',name:'The Farmhand',desc:'Pulled ham hock, field mushrooms, mature cheddar',price:12.5,tags:[]},
+    {id:'hothoney',cat:'Pizzas',name:'Hot Honey Pepperoni',desc:'Cured pepperoni, chilli honey, mozzarella',price:12,tags:['Spicy']},
+    {id:'garden',cat:'Pizzas',name:'Garden Veg',desc:'Roast peppers, courgette, red onion, olives',price:11,tags:['V','VG option']},
+    {id:'bbq',cat:'Pizzas',name:'BBQ Chicken',desc:'Free-range chicken, smoky BBQ, sweetcorn',price:12.5,tags:[]},
+    {id:'fourcheese',cat:'Pizzas',name:'Four Cheese',desc:"Cheddar, mozzarella, blue, goat's",price:11.5,tags:['V']},
+    {id:'meat',cat:'Pizzas',name:'Meat Feast',desc:'Pepperoni, sausage, ham hock, bacon',price:13.5,tags:[]},
+    {id:'mushroom',cat:'Pizzas',name:'Wild Mushroom',desc:'Chestnut and oyster mushrooms, garlic butter, thyme',price:12,tags:['V']},
+    {id:'doughballs',cat:'Sides',name:'Garlic Dough Balls',desc:'Twelve, with garlic butter',price:4.5,tags:['V']},
+    {id:'fries',cat:'Sides',name:'Rosemary Fries',desc:'Skin-on, sea salt',price:3.5,tags:['VG']},
+    {id:'wings',cat:'Sides',name:'Chicken Wings ×8',desc:'Hot honey or smoky BBQ',price:6.5,tags:[]},
+    {id:'salad',cat:'Sides',name:'Farm Salad',desc:'Leaves, radish, lemon dressing',price:4,tags:['VG']},
+    {id:'apple',cat:'Drinks',name:'Cloudy Apple Juice',desc:'330ml, pressed in Kent',price:2.5,tags:['VG']},
+    {id:'cola',cat:'Drinks',name:'Cola',desc:'330ml can',price:1.8,tags:['VG']},
+    {id:'water',cat:'Drinks',name:'Sparkling Water',desc:'500ml',price:1.5,tags:['VG']},
+    {id:'cookie',cat:'Desserts',name:'Cookie Dough',desc:'Warm, with vanilla ice cream',price:4.5,tags:['V']},
+    {id:'crumble',cat:'Desserts',name:'Apple Crumble',desc:'Bramley apples, oat crumble',price:4,tags:['V']}
+  ];
+  SIZES = [{id:'S',label:'Small 9″',short:'9″',delta:-2,base:7.5,box:'150px'},{id:'M',label:'Medium 11″',short:'11″',delta:0,base:9.5,box:'190px'},{id:'L',label:'Large 13″',short:'13″',delta:2.5,base:11.5,box:'230px'},{id:'XL',label:'XL 15″',short:'15″',delta:5,base:13.5,box:'270px'}];
+  CRUSTS = [{id:'Hand-stretched',delta:0},{id:'Thin & crispy',delta:0},{id:'Deep pan',delta:1},{id:'Stuffed crust',delta:2}];
+  SAUCES = ['Farm tomato','Smoky BBQ','Garlic cream','No sauce'];
+  CHEESES = [{id:'Mozzarella',delta:0},{id:'Extra mozzarella',delta:1.2},{id:'Vegan cheese',delta:1},{id:'No cheese',delta:0}];
+  TOPPINGS = [{n:'Pepperoni',p:1.6},{n:'Ham hock',p:1.6},{n:'Chicken',p:1.6},{n:'Bacon',p:1.6},{n:'Sausage',p:1.6},{n:'Mushrooms',p:1.2},{n:'Red onion',p:1.2},{n:'Peppers',p:1.2},{n:'Olives',p:1.2},{n:'Sweetcorn',p:1.2},{n:'Jalapeños',p:1.2},{n:'Spinach',p:1.2},{n:'Pineapple',p:1.2},{n:'Hot honey',p:1.2}];
+  DEALS = [
+    {id:'two4tue',kicker:'Tuesdays',title:'Two for Tuesday',price:'£20',unit:20,desc:'Any two medium pizzas.',terms:'Tuesdays only · delivery or collection',btn:'Add two mediums'},
+    {id:'family',kicker:'Feeds four',title:'Family Feast',price:'£32',unit:32,desc:'Two large pizzas, two sides and a 1.5L drink.',terms:'Every day · saves about £9',btn:'Add the Feast'},
+    {id:'lunch',kicker:'Mon–Fri, 11–3',title:'Lunch Slice',price:'£8.50',unit:8.5,desc:'Any small pizza and a drink.',terms:'Weekday lunchtimes · collection only',btn:'Add lunch'},
+    {id:'twolarge',kicker:'Tonight',title:'Two Large',price:'£24',unit:24,desc:'Any two large pizzas, any toppings.',terms:'Every day after 5pm',btn:'Add two large'}
+  ];
+  CODES = [
+    {code:'FARM25',desc:'25% off collection orders',note:'Collection only'},
+    {code:'STUDENT20',desc:'20% off with a valid student ID',note:'Show ID at the door'},
+    {code:'FREEDOUGH',desc:'Free garlic dough balls with any pizza',note:'One per order'}
+  ];
+  STORES = [
+    {id:'grays',name:'Grays',addr:'42 High Street, Grays RM17 6LU',dist:'0.8 mi',hours:'11:00 – 23:00',closes:'23:00',phone:'01375 400 400',wait:'25–35 min',tables:true,x:'22%',y:'62%'},
+    {id:'chelmsford',name:'Chelmsford',addr:'118 Moulsham Street, Chelmsford CM2 0JD',dist:'18 mi',hours:'11:00 – 23:00',closes:'23:00',phone:'01245 400 400',wait:'30–40 min',tables:true,x:'55%',y:'30%'},
+    {id:'colchester',name:'Colchester',addr:'9 Crouch Street, Colchester CO3 3EN',dist:'39 mi',hours:'11:30 – 22:30',closes:'22:30',phone:'01206 400 400',wait:'30–40 min',tables:false,x:'80%',y:'16%'}
+  ];
+  HISTORY = [
+    {no:'#48213',date:'Tue 1 Sep',items:[['hothoney','L'],['doughballs']],store:'Grays',mode:'Delivery',total:19,status:'Delivered'},
+    {no:'#47902',date:'Fri 28 Aug',items:[['margherita','M'],['garden','M'],['apple']],store:'Grays',mode:'Collection',total:23,status:'Collected'},
+    {no:'#47555',date:'Sat 22 Aug',items:[['meat','XL'],['wings'],['cola'],['cola']],store:'Chelmsford',mode:'Delivery',total:28.6,status:'Delivered'},
+    {no:'#47120',date:'Sun 16 Aug',items:[['fourcheese','M'],['cookie']],store:'Grays',mode:'Dine-in',total:16,status:'Served'}
+  ];
+  REWARDS = [{id:'pizza',name:'Free medium pizza',note:'Any pizza on the menu, medium, any base',cost:250},{id:'side',name:'Free side',note:'Dough balls, fries or salad',cost:80},{id:'drink',name:'Free drink',note:'Any 330ml or 500ml',cost:40}];
+  state = {
+    screen:'home', homeDir:null, mode:'delivery', storeId:'grays', cart:[], promoInput:'', promo:null, promoMsg:'',
+    productId:'hothoney', pOpts:{size:'M',crust:'Hand-stretched',extras:[],qty:1},
+    b:{size:'M',crust:'Hand-stretched',sauce:'Farm tomato',cheese:'Mozzarella',toppings:['Pepperoni','Hot honey']},
+    signedIn:null, order:null, step:0, postcode:'RM17 6DS', when:'asap', pay:'card', menuCat:'Pizzas', query:'',
+    booking:null, bookingForm:{date:'Sat 5 Sep',time:'19:00',party:'4'}, table:'12',
+    addr:{line1:'14 Orsett Road',city:'Grays',pc:'RM17 5DA'}, contact:{name:'Ada Okafor',phone:'07700 900 123',email:'ada@example.co.uk'},
+    storesQuery:'RM17', authEmail:'', added:null, points:184
+  };
+  fmt = n => '£' + n.toFixed(2);
+  componentDidMount() { this.applyHash(); this._hh = () => this.applyHash(); window.addEventListener('hashchange', this._hh); }
+  componentWillUnmount() { window.removeEventListener('hashchange', this._hh); clearInterval(this.timer); clearTimeout(this.toastT); }
+  applyHash() {
+    const h = (location.hash || '').replace('#', '');
+    if (!h) return;
+    const dirs = {'home-grid':'Ruled grid','home-poster':'Red poster','home-order':'Order-first'};
+    if (dirs[h]) this.setState({screen:'home', homeDir:dirs[h]});
+    else if (h === 'home') this.setState({screen:'home', homeDir:null});
+    else if (this.SCREENS.includes(h)) { if (h === 'tracker' && !this.state.order) this.demoOrder(); this.setState({screen:h}); }
+    window.scrollTo(0, 0);
+  }
+  go = s => { this.setState({screen:s}); try { history.replaceState(null, '', '#' + s); } catch (e) {} window.scrollTo(0, 0); };
+  on = k => e => this.setState({[k]: e.target.value});
+  onIn = (obj, k) => e => { const v = e.target.value; this.setState(st => ({[obj]: {...st[obj], [k]: v}})); };
+  setP = patch => this.setState(st => ({pOpts:{...st.pOpts, ...patch}}));
+  setB = patch => this.setState(st => ({b:{...st.b, ...patch}}));
+  toast(name) { clearTimeout(this.toastT); this.setState({added:name}); this.toastT = setTimeout(() => this.setState({added:null}), 2600); }
+  addLine(line) {
+    this.setState(st => { const i = st.cart.findIndex(l => l.key === line.key); const cart = st.cart.slice(); if (i >= 0) cart[i] = {...cart[i], qty: cart[i].qty + line.qty}; else cart.push(line); return {cart}; });
+    this.toast(line.name);
+  }
+  addMenu(m) { const pizza = m.cat === 'Pizzas'; this.addLine({key: m.id + (pizza ? ':M:Hand-stretched' : ''), name:m.name, detail: pizza ? 'Medium 11″ · Hand-stretched' : m.desc, unit:m.price, qty:1}); }
+  openProduct(m) { this.setState({productId:m.id, pOpts:{size:'M',crust:'Hand-stretched',extras:[],qty:1}}); this.go('product'); }
+  addProduct(prod, unit, size, crust) {
+    const po = this.state.pOpts;
+    const detail = prod.cat === 'Pizzas' ? size.label + ' · ' + crust.id + (po.extras.length ? ' · + ' + po.extras.join(', ') : '') : prod.desc;
+    this.addLine({key:[prod.id, po.size, po.crust, ...po.extras].join(':'), name:prod.name, detail, unit, qty:po.qty}); this.go('cart');
+  }
+  addBuild(price, size) {
+    const b = this.state.b;
+    this.addLine({key:'build:' + [b.size, b.crust, b.sauce, b.cheese, ...b.toppings].join(':'), name:'Build your own', detail: size.label + ' · ' + b.crust + ' · ' + b.sauce + ' · ' + b.cheese + (b.toppings.length ? ' · ' + b.toppings.join(', ') : ''), unit:price, qty:1}); this.go('cart');
+  }
+  qty(key, d) { this.setState(st => ({cart: st.cart.map(l => l.key === key ? {...l, qty:l.qty + d} : l).filter(l => l.qty > 0)})); }
+  addDeal(d) { this.addLine({key:'deal:' + d.id, name:d.title, detail:d.desc + ' Pick the pizzas at the counter or by text.', unit:d.unit, qty:1}); this.go('cart'); }
+  applyPromo(code) {
+    const c = (typeof code === 'string' ? code : this.state.promoInput).trim().toUpperCase(); const st = this.state; let msg = '', ok = false;
+    if (c === 'FARM25') { ok = st.mode === 'collection'; msg = ok ? 'FARM25 applied — 25% off.' : 'FARM25 is for collection orders. Switch to collection to use it.'; }
+    else if (c === 'STUDENT20') { ok = true; msg = 'STUDENT20 applied — 20% off. Bring your student ID.'; }
+    else if (c === 'FREEDOUGH') { const hasPizza = st.cart.some(l => l.key.includes(':')); if (hasPizza) { this.addLine({key:'free:dough', name:'Garlic Dough Balls', detail:'Free with FREEDOUGH', unit:0, qty:1}); msg = 'Free dough balls added.'; ok = true; } else msg = 'Add a pizza first, then the dough balls are on us.'; }
+    else msg = c ? 'We don’t recognise that code.' : 'Enter a code first.';
+    this.setState({promo: ok && c !== 'FREEDOUGH' ? c : null, promoInput:c, promoMsg:msg});
+  }
+  buildOrder(lines, total, step) {
+    const st = this.state, placed = new Date(), offs = [0, 3, 9, 17, 21, 33];
+    const t = m => { const d = new Date(placed.getTime() + (m - offs[step]) * 60000); return d.toTimeString().slice(0, 5); };
+    const store = this.STORES.find(x => x.id === st.storeId);
+    return {
+      no:'#' + (48200 + Math.floor(Math.random() * 700)), mode:st.mode, modeLabel:{delivery:'Delivery',collection:'Collection',dinein:'Dine-in'}[st.mode],
+      items: lines.map(l => ({name:l.name, detail:l.detail, qty:l.qty, lineTotal:this.fmt(l.unit * l.qty)})), total:this.fmt(total),
+      placedLabel:t(0), etaLabel:t(33), times:offs.map(t), store:store.name, table:st.table,
+      pay:{card:'Paid by card ending 4421',apple:'Paid with Apple Pay',cash:'Paying with cash'}[st.pay],
+      where: st.mode === 'delivery' ? st.addr.line1 + ', ' + st.addr.city + ' ' + st.addr.pc : st.mode === 'collection' ? store.addr : 'Table ' + st.table
+    };
+  }
+  placeOrder(lines, total) {
+    if (!lines.length) { this.go('menu'); return; }
+    this.setState({order:this.buildOrder(lines, total, 0), step:0, cart:[], promo:null, promoMsg:'', promoInput:''}); this.go('tracker'); this.startTimer();
+  }
+  demoOrder() {
+    const lines = [{key:'hothoney:L', name:'Hot Honey Pepperoni', detail:'Large 13″ · Hand-stretched', unit:14.5, qty:1}, {key:'doughballs', name:'Garlic Dough Balls', detail:'Twelve, with garlic butter', unit:4.5, qty:1}];
+    this.setState({order:this.buildOrder(lines, 19, 2), step:2}); this.startTimer();
+  }
+  startTimer() { clearInterval(this.timer); this.timer = setInterval(() => this.setState(st => { if (!st.order || st.step >= 5) { clearInterval(this.timer); return null; } return {step:st.step + 1}; }), 5000); }
+  reorder(h) {
+    h.items.forEach(([id, sz]) => { const m = this.MENU.find(x => x.id === id); if (!m) return; if (sz) { const z = this.SIZES.find(q => q.id === sz); this.addLine({key:m.id + ':' + sz + ':Hand-stretched', name:m.name, detail:z.label + ' · Hand-stretched', unit:m.price + z.delta, qty:1}); } else this.addLine({key:m.id, name:m.name, detail:m.desc, unit:m.price, qty:1}); });
+    this.go('cart');
+  }
+  redeem(r) { this.setState(st => ({points: st.points - r.cost})); this.addLine({key:'reward:' + r.id, name:r.name, detail:'Crust Club reward · ' + r.cost + ' points', unit:0, qty:1}); }
+  book() { const st = this.state, store = this.STORES.find(x => x.id === st.storeId); this.setState({booking:{...st.bookingForm, store:store.name, ref:'FB-' + (1000 + Math.floor(Math.random() * 9000))}}); }
+  renderVals() {
+    const s = this.state, P = this.props || {}, fmt = this.fmt;
+    const dir = s.homeDir || P.homeDirection || 'Ruled grid';
+    const signedIn = s.signedIn ?? (P.signedIn ?? true);
+    const store = this.STORES.find(x => x.id === s.storeId) || this.STORES[0];
+    const is = {}, cur = {};
+    this.SCREENS.forEach(k => { is[k] = s.screen === k; cur[k] = s.screen === k ? 'page' : false; });
+    is.grid = is.home && dir === 'Ruled grid'; is.poster = is.home && dir === 'Red poster'; is.orderFirst = is.home && dir === 'Order-first';
+    is.delivery = s.mode === 'delivery'; is.collection = s.mode === 'collection'; is.dinein = s.mode === 'dinein';
+    is.card = s.pay === 'card'; is.apple = s.pay === 'apple'; is.cash = s.pay === 'cash';
+    const modes = [['delivery','Delivery'],['collection','Collection'],['dinein','Dine-in']].map(([id, label]) => ({id, label, checked:s.mode === id, select:() => this.setState({mode:id}), posterBg: s.mode === id ? 'var(--color-bg)' : 'transparent', posterFg: s.mode === id ? 'var(--color-accent)' : 'var(--color-bg)'}));
+    const pays = [['card','Card'],['apple','Apple Pay'],['cash','Cash']].map(([id, label]) => ({id, label, checked:s.pay === id, select:() => this.setState({pay:id})}));
+    // basket
+    const subtotal = s.cart.reduce((a, l) => a + l.unit * l.qty, 0);
+    const fee = s.mode === 'delivery' && subtotal > 0 && subtotal < 25 ? 2.49 : 0;
+    const discount = s.promo === 'FARM25' && s.mode === 'collection' ? subtotal * 0.25 : s.promo === 'STUDENT20' ? subtotal * 0.2 : 0;
+    const total = Math.max(0, subtotal - discount + fee);
+    const cartCount = s.cart.reduce((a, l) => a + l.qty, 0);
+    const lines = s.cart.map(l => ({...l, lineTotal:fmt(l.unit * l.qty), inc:() => this.qty(l.key, 1), dec:() => this.qty(l.key, -1), remove:() => this.qty(l.key, -l.qty)}));
+    const ctx = s.mode === 'delivery' ? `Delivering to ${s.postcode || 'your postcode'} · ${s.when === 'asap' ? 'ASAP, ' + store.wait : s.when} · from ${store.name}` : s.mode === 'collection' ? `Collecting from ${store.name}, ${store.addr} · ${s.when === 'asap' ? 'ready in 15–20 min' : s.when}` : `Dine-in at ${store.name} · table ${s.table}`;
+    // menu
+    const cats = ['Pizzas','Sides','Drinks','Desserts'];
+    const q = s.query.trim().toLowerCase();
+    const tile = m => ({...m, priceLabel:fmt(m.price), isPizza:m.cat === 'Pizzas', tagList:m.tags, sizeNote: m.cat === 'Pizzas' ? 'Medium 11″ · small from ' + fmt(m.price - 2) : '', photo:'photo · ' + m.name.toLowerCase() + ' · b/w', add:() => this.addMenu(m), open:() => this.openProduct(m)});
+    const shown = this.MENU.filter(m => q ? (m.name + ' ' + m.desc + ' ' + m.cat).toLowerCase().includes(q) : m.cat === s.menuCat);
+    const menuCats = cats.map(c => ({name:c, count:this.MENU.filter(m => m.cat === c).length, color: c === s.menuCat && !q ? 'var(--color-accent)' : 'var(--color-text)', select:() => this.setState({menuCat:c, query:''})}));
+    // product
+    const prod = this.MENU.find(m => m.id === s.productId) || this.MENU[2];
+    const po = s.pOpts, sizeObj = this.SIZES.find(z => z.id === po.size), crustObj = this.CRUSTS.find(c => c.id === po.crust);
+    const isPizza = prod.cat === 'Pizzas';
+    const extrasTotal = po.extras.reduce((a, n) => a + (this.TOPPINGS.find(t => t.n === n) || {p:0}).p, 0);
+    const unit = prod.price + (isPizza ? sizeObj.delta + crustObj.delta + extrasTotal : 0);
+    const product = {...tile(prod),
+      sizes: this.SIZES.map(z => ({label:z.label, price:fmt(prod.price + z.delta), checked:z.id === po.size, select:() => this.setP({size:z.id})})),
+      crusts: this.CRUSTS.map(c => ({label:c.id, price: c.delta ? '+' + fmt(c.delta) : 'Included', checked:c.id === po.crust, select:() => this.setP({crust:c.id})})),
+      extras: this.TOPPINGS.map(t => ({label:t.n, price:'+' + fmt(t.p), variant: po.extras.includes(t.n) ? 'btn-primary' : 'btn-secondary', toggle:() => this.setP({extras: po.extras.includes(t.n) ? po.extras.filter(x => x !== t.n) : [...po.extras, t.n]})})),
+      qty:po.qty, inc:() => this.setP({qty:po.qty + 1}), dec:() => this.setP({qty:Math.max(1, po.qty - 1)}), total:fmt(unit * po.qty), add:() => this.addProduct(prod, unit, sizeObj, crustObj),
+      allergens: isPizza ? 'gluten, milk' + (prod.tags.includes('V') ? '' : ', celery') : prod.cat === 'Sides' ? 'gluten, milk' : 'ask in store'};
+    // builder
+    const b = s.b, bSize = this.SIZES.find(z => z.id === b.size), bCrust = this.CRUSTS.find(c => c.id === b.crust), bCheese = this.CHEESES.find(c => c.id === b.cheese);
+    const bPrice = bSize.base + bCrust.delta + bCheese.delta + b.toppings.reduce((a, n) => a + (this.TOPPINGS.find(t => t.n === n) || {p:0}).p, 0);
+    const build = {
+      sizes: this.SIZES.map(z => ({label:z.label, price:fmt(z.base), checked:z.id === b.size, select:() => this.setB({size:z.id})})),
+      crusts: this.CRUSTS.map(c => ({label:c.id, price: c.delta ? '+' + fmt(c.delta) : 'Included', checked:c.id === b.crust, select:() => this.setB({crust:c.id})})),
+      sauces: this.SAUCES.map(x => ({label:x, checked:x === b.sauce, select:() => this.setB({sauce:x})})),
+      cheeses: this.CHEESES.map(c => ({label:c.id, price: c.delta ? '+' + fmt(c.delta) : 'Included', checked:c.id === b.cheese, select:() => this.setB({cheese:c.id})})),
+      toppings: this.TOPPINGS.map(t => ({label:t.n, price:'+' + fmt(t.p), variant: b.toppings.includes(t.n) ? 'btn-primary' : 'btn-secondary', toggle:() => this.setB({toppings: b.toppings.includes(t.n) ? b.toppings.filter(x => x !== t.n) : [...b.toppings, t.n]})})),
+      sizeLabel:bSize.label, sizeShort:bSize.short, box:bSize.box, crust:b.crust, sauce:b.sauce, cheese:b.cheese, toppingList: b.toppings.length ? b.toppings.join(', ') : 'None yet', count:b.toppings.length, price:fmt(bPrice),
+      add:() => this.addBuild(bPrice, bSize), reset:() => this.setState({b:{size:'M',crust:'Hand-stretched',sauce:'Farm tomato',cheese:'Mozzarella',toppings:[]}})
+    };
+    // tracker
+    const o = s.order;
+    const labels = o ? (o.mode === 'delivery' ? ['Order received','Preparing','In the oven','Quality check','Out for delivery','Delivered'] : o.mode === 'collection' ? ['Order received','Preparing','In the oven','Quality check','Ready to collect','Collected'] : ['Order received','Preparing','In the oven','Quality check','On its way to your table','Served']) : [];
+    const steps = labels.map((label, i) => ({label, time: i < s.step ? o.times[i] : i === s.step ? 'now' : i === 5 ? 'about ' + o.etaLabel : '—', bg: i < s.step ? 'var(--color-accent)' : i === s.step ? 'var(--color-bg)' : 'transparent', border: i <= s.step ? 'var(--color-accent)' : 'var(--color-neutral-400)', color: i <= s.step ? 'var(--color-text)' : 'var(--color-neutral-600)', anim: i === s.step ? 'fp-pulse 1.4s ease-in-out infinite' : 'none'}));
+    const done = o && s.step >= 5;
+    const trackTitle = !o ? '' : done ? (o.mode === 'delivery' ? 'Delivered. Enjoy.' : o.mode === 'collection' ? 'Collected. Enjoy.' : 'Served. Enjoy.') : o.mode === 'delivery' ? 'Arriving about ' + o.etaLabel + '.' : o.mode === 'collection' ? 'Ready to collect about ' + o.etaLabel + '.' : 'Coming to table ' + o.table + ' about ' + o.etaLabel + '.';
+    // rewards
+    const stampCount = 7;
+    const rewards = this.REWARDS.map(r => ({...r, disabled:s.points < r.cost, redeem:() => this.redeem(r)}));
+    // stores
+    const stores = this.STORES.map(st => ({...st, bg: st.id === s.storeId ? 'var(--color-surface)' : 'transparent', pin: st.id === s.storeId ? 'var(--color-accent)' : 'var(--color-text)', tablesLabel: st.tables ? 'Tables · booking' : 'Takeaway only', noTables:!st.tables, choose:() => this.setState({storeId:st.id, booking:null}), order:() => { this.setState({storeId:st.id}); this.go('menu'); }}));
+    const selStore = stores.find(x => x.id === s.storeId) || stores[0];
+    const history = this.HISTORY.map(h => ({...h, totalLabel:fmt(h.total), itemsText: h.items.map(([id, sz]) => { const m = this.MENU.find(x => x.id === id); const z = sz ? this.SIZES.find(q => q.id === sz) : null; return m.name + (z ? ' ' + z.short : ''); }).join(', '), reorder:() => this.reorder(h)}));
+    return {
+      is, cur, modes, pays, store, storeId:s.storeId, setStore:this.on('storeId'), closed: P.storeOpen === false, added:s.added,
+      accountLabel: signedIn ? 'Ada' : 'Sign in', basketLabel: 'Basket · ' + cartCount + (cartCount ? ' · ' + fmt(total) : ''),
+      showCtx: !is.home && !is.tracker && !is.account && !is.orders && !is.rewards && !is.stores && !is.deals, ctx,
+      postcode:s.postcode, setPostcode:this.on('postcode'), when:s.when, setWhen:this.on('when'), table:s.table, setTable:this.on('table'),
+      featured: this.MENU.slice(0, 4).map(tile), pizzas: this.MENU.filter(m => m.cat === 'Pizzas').map(tile), sides: this.MENU.filter(m => m.cat === 'Sides').map(tile),
+      menuGroups: cats.map(c => ({name:c, items:this.MENU.filter(m => m.cat === c).map(tile)})),
+      deals: this.DEALS.map(d => ({...d, add:() => this.addDeal(d)})), codes: this.CODES.map(c => ({...c, apply:() => { this.applyPromo(c.code); this.go('cart'); }})),
+      menuCats, menuItems:shown.map(tile), menuTitle: q ? 'Results for “' + s.query + '”' : s.menuCat, query:s.query, setQuery:this.on('query'), menuEmpty: shown.length === 0,
+      build, product,
+      lines, cartTitle: cartCount ? cartCount + (cartCount === 1 ? ' item' : ' items') + ' · ' + fmt(total) : 'Your basket is empty', cartEmpty: cartCount === 0, hasCart: cartCount > 0,
+      subtotalLabel:fmt(subtotal), feeName: s.mode === 'delivery' ? 'Delivery' : s.mode === 'collection' ? 'Collection' : 'Table service', feeLabel: fee ? fmt(fee) : 'Free', hasDiscount: discount > 0, discountLabel:fmt(discount), promo:s.promo, totalLabel:fmt(total),
+      feeNote: s.mode === 'delivery' ? (subtotal >= 25 ? 'Free delivery — you’re over £25.' : 'Free delivery on orders over £25. Add ' + fmt(25 - subtotal) + ' more.') : s.mode === 'collection' ? 'Collection is always free. FARM25 takes 25% off.' : 'No service charge. Tips go to the kitchen.',
+      promoInput:s.promoInput, setPromoInput:this.on('promoInput'), applyPromo:() => this.applyPromo(), promoMsg:s.promoMsg,
+      addr:s.addr, setAddr:{line1:this.onIn('addr','line1'), city:this.onIn('addr','city'), pc:this.onIn('addr','pc')}, contact:s.contact, setContact:{name:this.onIn('contact','name'), phone:this.onIn('contact','phone'), email:this.onIn('contact','email')},
+      placeOrder:() => this.placeOrder(s.cart, total),
+      order:o || {items:[]}, noOrder:!o, hasOrder:!!o, steps, progressPct: o ? (s.step / 5) * 100 : 0, trackTitle,
+      showMap: !!o && o.mode === 'delivery', showPickup: !!o && o.mode !== 'delivery', showDriver: !!o && o.mode === 'delivery' && s.step === 4,
+      pickupKicker: o && o.mode === 'collection' ? 'Collect from' : 'Your table', pickupNote: o && o.mode === 'collection' ? 'Come to the counter and say your name — no need to queue. Park in the bays outside.' : 'We’ll bring it straight over. Wave if you need anything.',
+      signedIn, notSignedIn:!signedIn, signIn:() => { this.setState({signedIn:true}); this.go('account'); }, signOut:() => { this.setState({signedIn:false}); this.go('home'); }, authEmail:s.authEmail, setAuthEmail:this.on('authEmail'),
+      points:s.points, pointsToNext:Math.max(0, 250 - s.points), rewardPct:Math.min(100, s.points / 2.5), stampCount, stamps: Array.from({length:10}, (_, i) => ({bg: i < stampCount ? 'var(--color-accent)' : 'transparent'})), rewards,
+      stores, selStore, storesQuery:s.storesQuery, setStoresQuery:this.on('storesQuery'),
+      bookingForm:s.bookingForm, setBooking:{date:this.onIn('bookingForm','date'), time:this.onIn('bookingForm','time'), party:this.onIn('bookingForm','party')}, book:() => this.book(), cancelBooking:() => this.setState({booking:null}),
+      booking:s.booking || {}, hasBooking:!!s.booking, noBooking:!s.booking, bookLabel: selStore.tables ? 'Book at ' + selStore.name + ' →' : 'No tables at ' + selStore.name,
+      history, historyTitle: signedIn ? 'Your last four orders' : 'Order history'
+    };
+  }
+}
+</script>
+</body>
+</html>

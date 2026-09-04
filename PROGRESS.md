@@ -63,20 +63,20 @@ distinguished by colour alone and want an underline.
 - [x] `#account` — ruled order history, points panel, saved addresses
 - [x] `#orders` — merged into `/account`, as the data is the same list
 
-## Back office — 11 screens
+## Back office — 11 screens (all built)
 
 - [x] `/admin/dashboard` — ruled accent numerals, themed recent-orders table
 - [x] `/admin/kitchen` — four-column ruled ticket board, 44px targets for a wall tablet
 - [x] `/admin/orders`
 - [x] `/admin/menu`
-- [ ] `/admin/inventory` — not built: no stock model in the schema
+- [x] `/admin/inventory` — ruled counters, stock table with level bars, reorder
 - [x] `/admin/promos`
 - [x] `/admin/customers`
-- [ ] `/admin/dispatch` — not built: no driver model in the schema
-- [ ] `/admin/staff` — not built: single shared admin password, no staff/roles model
+- [x] `/admin/dispatch` — driver table, live pins, assign a driver to a waiting order
+- [x] `/admin/staff` — staff table with role editing, clock on/off, permission matrix
 - [x] `/admin/settings` — split across `/admin/hours` and `/admin/zones`
-- [ ] `/admin/reviews` — not built: no review model in the schema
-- [ ] Sidebar filtered by role — needs a staff/roles model first
+- [x] `/admin/reviews` — rating breakdown, review list, reply inline
+- [~] Sidebar role filtering — the permission matrix exists on /admin/staff, but nothing is enforced: the back office has one shared password, so there is no signed-in person to check a role against. Needs per-user sign-in.
 
 ## Legacy class bridge
 

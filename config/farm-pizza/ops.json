@@ -1,0 +1,47 @@
+{
+  "_comment": "Back-office operational data: stock, drivers, staff and reviews. This is build-stage sample data so /admin/inventory, /admin/dispatch, /admin/staff and /admin/reviews run on real rows. Replace with the shop's own before launch.",
+  "stock": [
+    { "name": "00 flour", "unit": "kg", "onHand": 48, "par": 60, "supplier": "Marsh Mill" },
+    { "name": "Fior di latte", "unit": "kg", "onHand": 9, "par": 18, "supplier": "Marsh Dairy" },
+    { "name": "Mature cheddar", "unit": "kg", "onHand": 14, "par": 12, "supplier": "Marsh Dairy" },
+    { "name": "Tomato passata", "unit": "L", "onHand": 22, "par": 30, "supplier": "Essex Produce" },
+    { "name": "Pepperoni", "unit": "kg", "onHand": 0, "par": 8, "supplier": "Thurrock Meats", "onOrder": true },
+    { "name": "Ham hock", "unit": "kg", "onHand": 5, "par": 6, "supplier": "Thurrock Meats" },
+    { "name": "Chicken breast", "unit": "kg", "onHand": 11, "par": 10, "supplier": "Thurrock Meats" },
+    { "name": "Chestnut mushrooms", "unit": "kg", "onHand": 3, "par": 7, "supplier": "Essex Produce" },
+    { "name": "Red onions", "unit": "kg", "onHand": 12, "par": 8, "supplier": "Essex Produce" },
+    { "name": "Peppers", "unit": "kg", "onHand": 2, "par": 6, "supplier": "Essex Produce" },
+    { "name": "Sweetcorn", "unit": "kg", "onHand": 6, "par": 5, "supplier": "Essex Produce" },
+    { "name": "Olives", "unit": "kg", "onHand": 4, "par": 4, "supplier": "Essex Produce" },
+    { "name": "Semolina", "unit": "kg", "onHand": 7, "par": 6, "supplier": "Marsh Mill" },
+    { "name": "Olive oil", "unit": "L", "onHand": 9, "par": 12, "supplier": "Marsh Mill" },
+    { "name": "Pizza boxes 10\"", "unit": "ea", "onHand": 240, "par": 400, "supplier": "Boxpack" },
+    { "name": "Pizza boxes 13\"", "unit": "ea", "onHand": 95, "par": 300, "supplier": "Boxpack", "onOrder": true }
+  ],
+  "drivers": [
+    { "name": "Marek Nowak", "phone": "07700 900 201", "vehicle": "Vauxhall Corsa · GY19 KLM", "status": "on_delivery" },
+    { "name": "Aisha Rahman", "phone": "07700 900 202", "vehicle": "Honda PCX · LT21 WRX", "status": "available" },
+    { "name": "Danny Fields", "phone": "07700 900 203", "vehicle": "Ford Fiesta · EA18 TYU", "status": "available" },
+    { "name": "Kasia Wójcik", "phone": "07700 900 204", "vehicle": "Yamaha NMAX · RB22 PLO", "status": "off" }
+  ],
+  "staff": [
+    { "name": "Ada Okafor", "role": "manager", "phone": "07700 900 101", "hoursWeek": 41, "onShift": true },
+    { "name": "Tom Bennett", "role": "shift_lead", "phone": "07700 900 102", "hoursWeek": 36, "onShift": true },
+    { "name": "Giulia Ferrari", "role": "kitchen", "phone": "07700 900 103", "hoursWeek": 38, "onShift": true },
+    { "name": "Sam Whitfield", "role": "kitchen", "phone": "07700 900 104", "hoursWeek": 22, "onShift": true },
+    { "name": "Priya Shah", "role": "front_of_house", "phone": "07700 900 105", "hoursWeek": 18, "onShift": true },
+    { "name": "Marek Nowak", "role": "driver", "phone": "07700 900 201", "hoursWeek": 30, "onShift": true },
+    { "name": "Aisha Rahman", "role": "driver", "phone": "07700 900 202", "hoursWeek": 27, "onShift": false },
+    { "name": "Danny Fields", "role": "driver", "phone": "07700 900 203", "hoursWeek": 24, "onShift": false }
+  ],
+  "reviews": [
+    { "customerName": "Chloe H.", "rating": 5, "body": "Best pizza in Basildon, no contest. Dough is unreal and it turned up hot.", "source": "google", "daysAgo": 1 },
+    { "customerName": "Dan M.", "rating": 4, "body": "Really good. Took a bit longer than the estimate on a Friday but worth the wait.", "source": "direct", "daysAgo": 2 },
+    { "customerName": "Nadia K.", "rating": 5, "body": "Ordered the Meat Feast for four of us, everyone finished it. Driver was lovely.", "source": "google", "daysAgo": 3, "reply": "Thanks Nadia, we will pass that on to Marek." },
+    { "customerName": "Ryan T.", "rating": 2, "body": "Garlic bread was cold when it arrived. Pizza was fine.", "source": "direct", "daysAgo": 4 },
+    { "customerName": "Beth A.", "rating": 5, "body": "Veggie Supreme is genuinely the best veggie pizza round here.", "source": "google", "daysAgo": 6 },
+    { "customerName": "Omar S.", "rating": 4, "body": "Solid every time. Collection is quick and they always get the order right.", "source": "direct", "daysAgo": 8 },
+    { "customerName": "Jess P.", "rating": 5, "body": "Ordered for the kids' party, they sorted a big order at short notice. Top marks.", "source": "google", "daysAgo": 11 },
+    { "customerName": "Liam C.", "rating": 3, "body": "Good pizza, but the app said 30 minutes and it was closer to 50.", "source": "direct", "daysAgo": 14 }
+  ]
+}
