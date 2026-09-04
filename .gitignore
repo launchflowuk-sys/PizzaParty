@@ -9,3 +9,10 @@ dist
 .lighthouseci
 .DS_Store
 packages/db/generated
+
+# Working drops that duplicate what is already tracked. The handoff lives in
+# docs/design_handoff_farm_pizza/ and the image spec in docs/IMAGE-SPEC.md.
+/Pizza shop website mockups/
+/IMAGESPEC.md
+/Farm logo.png
+/Logo.png
