@@ -16,13 +16,21 @@ import { env } from "./env";
  * fake immediately, which destroys the only reason the badge is there, and the
  * schemes require their marks to be reproduced exactly.
  */
+/* Read once. This is called from the root layout, so without the cache it is a
+   synchronous directory read on the render path of every single page view - for
+   a list of at most five filenames that only changes on deploy. */
+let cached: string[] | undefined;
+
 export function paymentMarks(): string[] {
+  if (cached) return cached;
   try {
-    return readdirSync(join(clientDir(env.clientSlug), "assets", "payments"))
+    cached = readdirSync(join(clientDir(env.clientSlug), "assets", "payments"))
       .filter((f) => f.toLowerCase().endsWith(".svg") || f.toLowerCase().endsWith(".png"));
+    return cached;
   } catch {
     // No folder yet. The footer falls back to a line of text rather than
     // showing an empty row where the badges should be.
-    return [];
+    cached = [];
+    return cached;
   }
 }
