@@ -30,8 +30,49 @@ pnpm seed farm-pizza
 pnpm dev                        # http://localhost:3000
 ```
 
-- Kitchen: `/kitchen` (PIN = `KITCHEN_PIN`). Admin: `/admin` (`ADMIN_PASSWORD`). Agency: `/admin/launchflow` (`LAUNCHFLOW_KEY`).
+- Kitchen: `/kitchen` (PIN = `KITCHEN_PIN`). Admin: `/admin` (`ADMIN_PASSWORD`). Agency: `/admin/launchflow` (`LAUNCHFLOW_KEY`). Staff sign in at `/admin/login` with their own PIN, which decides what they can reach.
+- Secrets live in `.env` only. `docker/compose.yml` sets `CLIENT_SLUG` and `DATABASE_URL` and nothing else, because anything in its `environment:` block silently overrides `env_file`. Host ports come from `docker/.env` (`WEB_PORT`, `DB_PORT`) when 3000 or 5432 are taken.
+- **Before exposing the stack to anything but your own machine** — a Cloudflare quick tunnel counts — set real values for `ADMIN_PASSWORD`, `LAUNCHFLOW_KEY`, `SESSION_SECRET` and `CRON_SECRET`, and change the sample staff PINs in `config/<slug>/ops.json`. They are committed to this repo, so they are public.
 - Without Stripe/Twilio/Resend keys, SMS/email are logged to the console (dry-run) and the OTP login shows the code in the UI (dev only). Cash on collection works end to end without Stripe.
+
+## Demo data
+
+A shop with three orders on the dashboard does not sell itself. This builds one
+worth showing:
+
+```bash
+pnpm demo-data farm-pizza          # 850 customers, ~9 months of orders
+pnpm demo-data farm-pizza --wipe    # clear what it made, then rebuild
+```
+
+It writes real rows through the normal tables: a customer base with regulars,
+one-timers and a lapsed tail, proper volume in the recent weeks, orders still on
+the pass right now so the kitchen and dispatch screens have work in them, and a
+win-back campaign that has already run with its revenue attributed. Everything
+it creates carries a reserved `+447700 90xxxx` number (Ofcom's fiction range),
+so `--wipe` removes exactly what it made and never touches a genuine order.
+
+Re-run it before a demo to refresh the live orders, and never run it against a
+shop that is actually trading.
+
+## Marketing
+
+The back office earns its keep here rather than just taking orders.
+
+- **Automations** (`/admin/marketing`) run on their own: win back a lapsed
+  customer, nudge a one-timer, thank a new one, fill a quiet night. Each has a
+  cooldown and a per-run cap, so a misconfigured rule cannot text the whole list.
+  Point a daily scheduler at `POST /api/cron/automations` with
+  `Authorization: Bearer $CRON_SECRET`.
+- **Campaigns** (`/admin/campaigns`) go out once, to one of nine segments.
+- **Attribution** is the point of both. Every message carries an offer code and
+  writes a `MarketingSend` row; when an order redeems that code the money is
+  credited back to the message that caused it, so a campaign's revenue is
+  measured rather than claimed. Both screens check the code against the audience
+  first — a first-order-only code sent to a win-back list is a silent, expensive
+  failure, because pricing drops an inapplicable promo without erroring.
+- Only customers who opted in are ever contacted, and every SMS gets
+  "Reply STOP to opt out" appended. Both are legal requirements, not settings.
 
 ## New client in 4 steps
 
