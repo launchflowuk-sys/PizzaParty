@@ -1622,3 +1622,301 @@ html, body { max-width: 100%; overflow-x: clip; }
 .fp-ticket-full-items { display: grid; gap: 8px; font-size: 14px; border-top: 1px solid var(--color-divider); padding-top: 10px; }
 .fp-ticket-full-items > div { padding-bottom: 6px; border-bottom: 1px solid var(--color-divider); }
 .fp-ticket-full-items > div:last-child { border-bottom: 0; }
+
+/* == Crust Club ============================================================
+   The page was a number, a bar and two lists, which read as a statement rather
+   than an offer. A loyalty scheme has to argue for itself to a stranger and
+   give a member one obvious thing to do next, and those are different jobs -
+   so the route serves two pages.
+
+   The hero uses a photograph if the shop has dropped one at
+   assets/rewards-hero.jpg, and falls back to the accent, so a tenant without
+   one still gets something that looks deliberate. */
+.fp-cc-hero {
+  position: relative;
+  background: var(--color-accent);
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(420px, 56vh, 560px);
+}
+.fp-cc-hero-member { min-height: clamp(360px, 46vh, 460px); }
+.fp-cc-hero-scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,.42) 38%, rgba(0,0,0,.10) 72%, rgba(0,0,0,0) 100%);
+}
+.fp-cc-hero-inner { position: relative; z-index: 1; width: 100%; padding: 0 32px 48px; }
+.fp-cc-badge {
+  display: inline-block; margin-bottom: 14px;
+  padding: 6px 14px; border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.4);
+  font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  backdrop-filter: blur(4px);
+}
+.fp-cc-h1 {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: clamp(34px, 5.4vw, 64px); line-height: 1.03; letter-spacing: -.03em;
+  margin: 0 0 16px; text-shadow: 0 1px 2px rgba(0,0,0,.6), 0 2px 20px rgba(0,0,0,.45);
+}
+.fp-cc-h1 em { font-style: normal; color: #ffb9ad; }
+.fp-cc-lede {
+  font-size: clamp(15px, 1.6vw, 18px); line-height: 1.6; max-width: 48ch; margin: 0 0 26px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+.fp-cc-cta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* The balance is the largest thing on the page: it is what a member came to
+   see, and it should be readable at a glance. */
+.fp-cc-balance { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.fp-cc-bignum {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: clamp(64px, 12vw, 128px); line-height: .88; letter-spacing: -.04em;
+  text-shadow: 0 2px 24px rgba(0,0,0,.5);
+}
+.fp-cc-bigunit { font-size: clamp(16px, 2vw, 22px); font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+.fp-cc-prog { margin-bottom: 22px; max-width: 460px; }
+.fp-cc-prog-bar { height: 8px; border-radius: var(--radius-pill); background: rgba(255,255,255,.28); overflow: hidden; }
+.fp-cc-prog-bar > span { display: block; height: 100%; background: #fff; border-radius: var(--radius-pill); }
+.fp-cc-prog-l { font-size: 15px; margin: 10px 0 0; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+
+.fp-cc-sec { padding: 56px 32px; }
+.fp-cc-h2 {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: clamp(26px, 3.4vw, 38px); line-height: 1.08; letter-spacing: -.02em;
+  margin: 8px 0 28px; max-width: 22ch;
+}
+.fp-cc-note { font-size: 15px; color: var(--color-neutral-700); margin: 20px 0 0; max-width: 60ch; }
+
+/* Numbered, because the order is the explanation. */
+.fp-cc-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.fp-cc-step { border-top: 3px solid var(--color-text); padding-top: 16px; }
+.fp-cc-stepno {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--color-accent); color: #fff;
+  font-weight: 800; font-size: 16px; margin-bottom: 12px;
+}
+.fp-cc-step h3 { font-family: var(--font-heading); font-weight: 800; font-size: 19px; margin: 0 0 6px; }
+.fp-cc-step p { font-size: 14.5px; line-height: 1.6; color: var(--color-neutral-800); margin: 0; }
+
+.fp-cc-ladder { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+.fp-cc-rung {
+  border: 2px solid var(--color-divider); border-radius: var(--radius-md);
+  padding: 20px; background: var(--color-bg);
+}
+.fp-cc-rung[data-first] { border-color: var(--color-accent); box-shadow: 0 8px 26px color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.fp-cc-pts { font-family: var(--font-heading); font-weight: 800; font-size: 40px; line-height: 1; letter-spacing: -.03em; color: var(--color-accent); }
+.fp-cc-pts-l { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-neutral-700); margin-left: 6px; }
+.fp-cc-rung h3, .fp-cc-card h3 { font-family: var(--font-heading); font-weight: 800; font-size: 18px; margin: 12px 0 4px; }
+.fp-cc-rung p { font-size: 14px; color: var(--color-neutral-700); margin: 0; }
+.fp-cc-tag {
+  display: inline-block; margin-top: 12px; padding: 4px 10px; border-radius: var(--radius-pill);
+  background: var(--color-accent); color: #fff; font-size: 11px; font-weight: 800;
+  letter-spacing: .07em; text-transform: uppercase;
+}
+
+/* Locked rewards show the distance rather than just going grey, because how far
+   away it is happens to be the useful part. */
+.fp-cc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.fp-cc-card {
+  border: 2px solid var(--color-divider); border-radius: var(--radius-md);
+  padding: 20px; background: var(--color-bg); display: flex; flex-direction: column;
+}
+.fp-cc-card[data-ready] { border-color: var(--color-action); box-shadow: 0 8px 26px color-mix(in srgb, var(--color-action) 16%, transparent); }
+.fp-cc-card-top { display: flex; align-items: baseline; }
+.fp-cc-card-w { font-size: 14px; color: var(--color-neutral-800); margin: 0 0 4px; }
+.fp-cc-card-x { font-size: 12.5px; color: var(--color-neutral-700); margin: 0 0 16px; }
+.fp-cc-claim { width: 100%; margin-top: auto; }
+.fp-cc-locked { margin-top: auto; display: grid; gap: 6px; }
+.fp-cc-lockbar { height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-300); overflow: hidden; }
+.fp-cc-lockbar > span { display: block; height: 100%; background: var(--color-neutral-500); }
+.fp-cc-locked > span { font-size: 12.5px; font-weight: 700; color: var(--color-neutral-700); }
+
+/* The code is the prize, so it is set like one. */
+.fp-cc-code { background: var(--color-action); color: #fff; border-radius: var(--radius-md); padding: 28px 32px; }
+.fp-cc-code-k { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; opacity: .85; margin: 0 0 10px; }
+.fp-cc-code-v { font-family: var(--font-heading); font-weight: 800; font-size: clamp(32px, 6vw, 52px); letter-spacing: .05em; margin: 0 0 10px; }
+.fp-cc-code-p { font-size: 15px; margin: 0; opacity: .92; }
+.fp-cc-err { background: var(--color-neutral-100); border-radius: var(--radius-md); padding: 16px 20px; font-size: 15px; font-weight: 700; }
+
+.fp-cc-codes { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.fp-cc-codecard { border: 2px dashed var(--color-action); border-radius: var(--radius-md); padding: 16px 18px; display: grid; gap: 4px; }
+.fp-cc-codecard-v { font-family: var(--font-heading); font-weight: 800; font-size: 22px; letter-spacing: .04em; }
+.fp-cc-codecard-w { font-size: 13.5px; color: var(--color-neutral-800); }
+.fp-cc-codecard-x { font-size: 12px; color: var(--color-neutral-700); }
+
+.fp-cc-ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.fp-cc-way { border: 2px solid var(--color-divider); border-radius: var(--radius-md); padding: 22px; }
+.fp-cc-way h3 { font-family: var(--font-heading); font-weight: 800; font-size: 20px; margin: 0 0 8px; }
+.fp-cc-way p { font-size: 14.5px; line-height: 1.6; color: var(--color-neutral-800); margin: 0 0 16px; }
+
+.fp-cc-refer { background: var(--color-accent-2, #3E6B48); color: #fff; border-radius: var(--radius-md); padding: clamp(28px, 5vw, 48px); }
+.fp-cc-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+.fp-cc-facts h4 { font-family: var(--font-heading); font-weight: 800; font-size: 16px; margin: 0 0 6px; }
+.fp-cc-facts p { font-size: 14px; line-height: 1.6; color: var(--color-neutral-800); margin: 0; }
+
+.fp-cc-ledger { border-top: 2px solid var(--color-divider); }
+.fp-cc-ledger > div {
+  display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 18px; align-items: center;
+  padding: 13px 0; border-bottom: 1px solid var(--color-divider); font-size: 14.5px;
+}
+.fp-cc-ledger-d { font-size: 12.5px; color: var(--color-neutral-700); white-space: nowrap; }
+.fp-cc-ledger-n { font-family: var(--font-heading); font-weight: 800; font-size: 18px; color: var(--ok); }
+.fp-cc-ledger-n[data-neg] { color: var(--color-neutral-700); }
+
+@media (max-width: 900px) {
+  .fp-cc-steps { grid-template-columns: minmax(0, 1fr); }
+  .fp-cc-hero-inner, .fp-cc-sec { padding-inline: 16px; }
+  .fp-cc-cta .btn { flex: 1 1 auto; text-align: center; }
+}
+
+/* == Storefront nav ========================================================
+   Five underlined words, all the same size, a few pixels apart. That reads as a
+   footer, not as the way to order food - and the gaps were tight enough that on
+   a phone they ran together.
+
+   Menu, Deals and Crust Club are the reasons somebody is here, so they are
+   buttons with a mark on them. Menu carries the accent because it is what
+   nearly everybody wants. Shops and Account stay quiet text: they are errands,
+   and giving everything equal weight is the same as giving nothing weight. */
+.nav-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  padding: 9px 16px;
+  min-height: 42px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-divider);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: .01em;
+  text-decoration: none !important;
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.nav-pill:hover { background: color-mix(in srgb, var(--color-text) 6%, transparent); border-color: var(--color-neutral-500); }
+.nav-pill:active { transform: translateY(1px); }
+
+/* The one everybody came for. */
+.nav-pill[data-primary] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+  padding-inline: 20px;
+  font-size: 15px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+.nav-pill[data-primary]:hover { background: var(--color-accent-600, var(--color-accent)); border-color: var(--color-accent-600, var(--color-accent)); }
+
+/* Errands, set back so the three that matter can lead. */
+.nav-quiet { display: inline-flex; align-items: center; gap: 18px; margin-left: 8px; }
+.nav-quiet a { font-size: 14px; color: var(--color-neutral-700); white-space: nowrap; }
+.nav-quiet a:hover { color: var(--color-text); }
+
+/* Room to breathe. The bar was cramped vertically as well as horizontally. */
+.nav { padding-block: 14px; gap: 18px; }
+
+@media (max-width: 900px) {
+  /* On a phone the pills carry the row and the errands drop underneath, rather
+     than five things fighting over one line. */
+  .nav-links { gap: 8px; width: 100%; }
+  .nav-pill { flex: 1 1 auto; justify-content: center; padding-inline: 12px; }
+  .nav-quiet { width: 100%; margin-left: 0; justify-content: center; gap: 22px; }
+}
+
+/* == Delivery-area pages ===================================================
+   Grays and Basildon carried good information in one undifferentiated column -
+   headings a fixed gap apart, the three numbers a customer actually wants
+   buried in a sentence, and the postcodes as pills small enough to miss.
+
+   The question these pages answer is "will you come to me, what will it cost,
+   how long". So that goes first, as figures, and everything else is given a
+   section of its own with room around it. */
+.fp-loc-head { padding-top: 32px; }
+
+.fp-loc-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  margin-top: 24px;
+  background: var(--color-divider);
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.fp-loc-facts > div {
+  background: var(--color-bg);
+  padding: 18px 16px;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+.fp-loc-facts .n {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: clamp(24px, 4vw, 34px); line-height: 1; letter-spacing: -.02em;
+  color: var(--color-accent);
+}
+.fp-loc-facts .n small { font-size: .45em; font-weight: 700; letter-spacing: 0; }
+.fp-loc-facts .l { font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--color-neutral-700); font-weight: 700; }
+
+.fp-loc-check {
+  margin-top: 20px;
+  padding: 18px;
+  border: 2px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.fp-loc-sec { padding: 44px 0 0; }
+.fp-loc-h2 {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: clamp(24px, 3vw, 32px); line-height: 1.1; letter-spacing: -.02em;
+  margin: 6px 0 18px;
+}
+.fp-loc-note { font-size: 14.5px; line-height: 1.6; color: var(--color-neutral-700); margin: 16px 0 0; max-width: 62ch; }
+
+/* Postcodes big enough to find your own in. They were set at pill size in a
+   run of text, which is where you put something you do not want read. */
+.fp-loc-pcs { display: flex; flex-wrap: wrap; gap: 10px; }
+.fp-loc-pc {
+  display: inline-flex; align-items: center;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-accent-700, var(--color-accent));
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: 17px; letter-spacing: .04em;
+}
+.fp-loc-area {
+  display: inline-flex; align-items: center;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--color-divider);
+  font-weight: 700; font-size: 15px;
+  text-decoration: none !important;
+}
+.fp-loc-area:hover { border-color: var(--color-text); background: color-mix(in srgb, var(--color-text) 6%, transparent); }
+
+/* Hours as ruled rows rather than a bare table, so a closed day is as easy to
+   read as an open one. */
+.fp-loc-hours { border-top: 2px solid var(--color-divider); max-width: 420px; }
+.fp-loc-hours > div {
+  display: flex; justify-content: space-between; gap: 20px;
+  padding: 11px 0; border-bottom: 1px solid var(--color-divider);
+  font-size: 15px;
+}
+.fp-loc-hours > div > span:first-child { font-weight: 700; }
+.fp-loc-hours > div > span:last-child { color: var(--color-neutral-700); }
+
+@media (max-width: 700px) {
+  .fp-loc-facts { grid-template-columns: minmax(0, 1fr); }
+  .fp-loc-facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+}

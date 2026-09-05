@@ -48,41 +48,80 @@ export default async function LocalityPage({ params }: Params) {
   return (
     <div className="lf-container max-w-3xl">
       <JsonLd data={[localBusinessJsonLd(cfg, locality, loc), ...(faqs.length ? [faqJsonLd(faqs)] : [])]} />
-      <header className="pt-8">
+      {/* The page ran as one column of headings a fixed gap apart, so the three
+          numbers a customer actually wants - what it costs, what the minimum is,
+          how long it takes - were a sentence in a paragraph. They are the answer
+          to "will you deliver to me", so they lead. */}
+      <header className="fp-loc-head">
         {avail && loc ? <OpenPill a={avail} tz={loc.timezone} etaMinutes={loc.deliveryMinutes} /> : null}
         <h1 className="lf-h1 mt-3">{cfg.seo.cuisine} delivery in {locality}</h1>
-        <p className="text-muted mt-2 text-lg">Order online from {cfg.name}{loc ? ` ${loc.name}` : ""}. {loc ? `${gbpShort(loc.deliveryFee)} delivery, ${gbpShort(loc.minOrder)} minimum, about ${loc.deliveryMinutes} minutes.` : ""}</p>
-        <div className="lf-card p-3 mt-5"><PostcodeCheck /></div>
+        <p className="text-muted mt-2 text-lg">
+          Order online from {cfg.name}{loc ? ` ${loc.name}` : ""}.
+        </p>
+
+        {loc ? (
+          <div className="fp-loc-facts">
+            <div><span className="n">{gbpShort(loc.deliveryFee)}</span><span className="l">Delivery</span></div>
+            <div><span className="n">{gbpShort(loc.minOrder)}</span><span className="l">Minimum order</span></div>
+            <div><span className="n">{loc.deliveryMinutes}<small> min</small></span><span className="l">Typical wait</span></div>
+          </div>
+        ) : null}
+
+        <div className="fp-loc-check">
+          <span className="fp-kicker" style={{ marginBottom: 8 }}>Check your postcode</span>
+          <PostcodeCheck />
+        </div>
       </header>
 
       {loc?.postcodePrefixes.length ? (
-        <section className="mt-8">
-          <h2 className="lf-h2">Delivery area</h2>
-          <p className="mt-2">We deliver to postcodes starting: {loc.postcodePrefixes.map((p) => <span key={p} className="lf-pill bg-surface border border-line mr-1">{p}</span>)}</p>
+        <section className="fp-loc-sec">
+          <span className="fp-kicker">Delivery area</span>
+          <h2 className="fp-loc-h2">Where we come to.</h2>
+          <div className="fp-loc-pcs">
+            {loc.postcodePrefixes.map((p) => <span key={p} className="fp-loc-pc">{p}</span>)}
+          </div>
+          <p className="fp-loc-note">
+            If your postcode starts with one of these we deliver to you. Not sure? Put it in the box
+            above and it will tell you straight away, along with what it costs from your street.
+          </p>
         </section>
       ) : null}
 
-      {md ? <section className="lf-prose mt-8" dangerouslySetInnerHTML={{ __html: renderMarkdown(md) }} /> : null}
+      {md ? <section className="lf-prose fp-loc-sec" dangerouslySetInnerHTML={{ __html: renderMarkdown(md) }} /> : null}
 
-      <section className="mt-10">
-        <h2 className="lf-h2">Popular in {locality}</h2>
+      <section className="fp-loc-sec">
+        <span className="fp-kicker">Most ordered</span>
+        <h2 className="fp-loc-h2">Popular in {locality}</h2>
         <div className="grid gap-3 mt-4 sm:grid-cols-2">
           {sellers.map(({ product, category }) => <ProductCard key={product.id} product={product} href={productPath(category, product)} image={assetUrl(product.image)} />)}
         </div>
-        <Link href="/menu" className="lf-btn lf-btn-primary mt-5">See the full menu</Link>
+        <Link href="/menu" className="btn btn-primary fp-cta-lg" style={{ marginTop: 20 }}>See the full menu</Link>
       </section>
 
       {loc ? (
-        <section className="mt-10">
-          <h2 className="lf-h2">Opening hours · {loc.name}</h2>
-          <table className="mt-3 text-sm w-full max-w-sm"><tbody>{formatHours(loc.hours).map((h) => <tr key={h.day} className="border-b border-line"><td className="py-1.5 font-semibold">{h.day}</td><td className="py-1.5 text-right">{h.text}</td></tr>)}</tbody></table>
-          {loc.address ? <p className="text-muted mt-3">{loc.address}</p> : null}
+        <section className="fp-loc-sec">
+          <span className="fp-kicker">When we are open</span>
+          <h2 className="fp-loc-h2">{loc.name} opening hours</h2>
+          <div className="fp-loc-hours">
+            {formatHours(loc.hours).map((h) => (
+              <div key={h.day}><span>{h.day}</span><span>{h.text}</span></div>
+            ))}
+          </div>
+          {loc.address ? <p className="fp-loc-note">{loc.address}</p> : null}
         </section>
       ) : null}
 
-      <section className="mt-10 text-sm text-muted">
-        Also delivering to: {cfg.seo.locality.filter((l) => l !== locality).map((l) => <Link key={l} href={localityPath(cfg, l)} className="underline mr-2">{l}</Link>)}
-      </section>
+      {cfg.seo.locality.filter((l) => l !== locality).length ? (
+        <section className="fp-loc-sec">
+          <span className="fp-kicker">Also delivering to</span>
+          <h2 className="fp-loc-h2">Somewhere else?</h2>
+          <div className="fp-loc-pcs">
+            {cfg.seo.locality.filter((l) => l !== locality).map((l) => (
+              <Link key={l} href={localityPath(cfg, l)} className="fp-loc-area">{l}</Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
