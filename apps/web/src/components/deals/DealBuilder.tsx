@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBasket } from "@/components/basket/store";
 import { gbp } from "@/lib/money";
@@ -93,6 +93,19 @@ export function DealBuilder({ deal }: { deal: BuilderDeal }) {
   const total = deal.price + extra;
   const donecount = flat.filter((x) => x.p).length;
 
+  // Which step is live. Used only to know when to scroll, not to render.
+  const stepRef = useRef<HTMLDivElement>(null);
+  const stepKey = next ? `${next.slot}-${next.n}` : "done";
+  useEffect(() => {
+    const el = stepRef.current;
+    if (!el) return;
+    // Only correct the position when the choice has actually moved off screen,
+    // so picking something already in view does not yank the page about.
+    const box = el.getBoundingClientRect();
+    const offScreen = box.top < 72 || box.top > window.innerHeight - 140;
+    if (offScreen) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [stepKey]);
+
   function done() {
     const components: BasketComponent[] = flat.map((x) => ({ slot: x.slot, product: x.p!.product.slug, size: x.p!.size, modifiers: x.p!.modifiers }));
     add({ kind: "deal", deal: deal.slug, components, qty: 1, name: deal.name, detail: flat.map((x) => x.p!.label).join(", "), unitPrice: total, lineTotal: total });
@@ -100,7 +113,7 @@ export function DealBuilder({ deal }: { deal: BuilderDeal }) {
   }
 
   return (
-    <div style={{ paddingBottom: 96 }}>
+    <div className="fp-hasbottombar">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
         <span className="fp-kicker">What&rsquo;s in it</span>
         <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{donecount} of {flat.length} chosen</span>
@@ -138,6 +151,12 @@ export function DealBuilder({ deal }: { deal: BuilderDeal }) {
           );
         })}
       </ol>
+
+      {/* The step you are on is scrolled back into view whenever it changes.
+          Without this, finishing a step unmounts a tall picker, the page gets
+          shorter under the scroll position, and the browser leaves you looking
+          at the footer instead of the next choice. */}
+      <div ref={stepRef} style={{ scrollMarginTop: 96 }} />
 
       {next ? (
         <SlotPicker

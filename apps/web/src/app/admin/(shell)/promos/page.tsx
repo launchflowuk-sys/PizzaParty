@@ -1,6 +1,7 @@
 import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 import { togglePromo, upsertPromo } from "../actions";
 
 import { requireScreen } from "@/lib/session";
@@ -16,7 +17,14 @@ export default async function AdminPromos() {
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
-          <h1>Promotions</h1>
+          <h1>
+            Promotions
+            <HelpSpot title="Can I make a code that only certain customers see?" article="promo-codes" anchor="every-live-code-is-on-your-website">
+              No. Every code that is switched on is listed publicly at the bottom of the website’s Deals page,
+              with a button that drops it into the basket. A code is a public offer from the moment you create
+              it until somebody presses Disable.
+            </HelpSpot>
+          </h1>
         </div>
       </header>
       <form action={upsertPromo} className="lf-card p-4 mt-4 grid gap-2 sm:grid-cols-3">
@@ -31,7 +39,32 @@ export default async function AdminPromos() {
         <button className="lf-btn lf-btn-primary">Create / update</button>
       </form>
       <table className="w-full text-sm mt-6 lf-card">
-        <thead><tr className="text-left border-b border-line"><th className="p-2">Code</th><th className="p-2">Type</th><th className="p-2">Rules</th><th className="p-2">Uses</th><th className="p-2"></th></tr></thead>
+        <thead><tr className="text-left border-b border-line"><th className="p-2">
+          Code
+          <HelpSpot title="How do I edit a code?" article="promo-codes" anchor="retyping-every-field">
+            There is no Edit button and the table does not fill the form in — you retype the code along with
+            every rule you want it to keep, because anything left blank is saved as blank. Saving also
+            switches the code back on, even one you had disabled.
+          </HelpSpot>
+        </th><th className="p-2">
+          Type
+          <HelpSpot title="Does a % code take money off the delivery too?" article="promo-codes" anchor="percent-never-touches-delivery">
+            No. % off and £ off come off the food only; the delivery fee is added afterwards and is never
+            discounted. Free delivery is its own type, and codes never stack, so a customer cannot have both.
+          </HelpSpot>
+        </th><th className="p-2">
+          Rules
+          <HelpSpot title="Can I set a code to start next Friday?" article="promo-codes" anchor="no-start-date">
+            No — the date box is an end date only, the last day it works. A code is live the second you press
+            Create / update, so either make it on the day, or make it now and press Disable until you want it.
+          </HelpSpot>
+        </th><th className="p-2">
+          Uses
+          <HelpSpot title="Is Max uses per customer?" article="promo-codes" anchor="creating-a-code">
+            No, it is the total across everybody. Because every live code is listed on your website, a code
+            with a low maximum runs out faster than you would expect.
+          </HelpSpot>
+        </th><th className="p-2"></th></tr></thead>
         <tbody>{promos.map((p) => (
           <tr key={p.id} className={`border-b border-line ${p.active ? "" : "opacity-50"}`}>
             <td className="p-2 font-bold">{p.code}</td>

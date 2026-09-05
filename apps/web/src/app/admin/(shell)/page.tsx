@@ -4,6 +4,7 @@ import { getClientRow, getLocations } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { STATUS_LABEL, STATUS_TONE } from "@/lib/orders";
 import { availability } from "@/lib/availability";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 
 import { requireScreen } from "@/lib/session";
 
@@ -30,9 +31,24 @@ export default async function AdminHome() {
   const a = primary ? availability(primary) : null;
   const avg = weekAgg._count ? Math.round((weekAgg._sum.total ?? 0) / weekAgg._count) : 0;
 
-  const stats: [string, string][] = [
-    [gbp(today._sum.total ?? 0), `Today · ${today._count} order${today._count === 1 ? "" : "s"}`],
-    [String(live), "Live in the kitchen"],
+  const stats: [string, string, React.ReactNode?][] = [
+    [
+      gbp(today._sum.total ?? 0),
+      `Today · ${today._count} order${today._count === 1 ? "" : "s"}`,
+      <HelpSpot key="h" title="What is counted in today's takings?" article="dashboard" anchor="todays-takings">
+        Everything placed since midnight, less baskets that were never paid for, cancelled orders and
+        rejected ones — so it is money you have actually taken. Every shop is added together, and
+        nothing on this screen splits the takings back out by shop.
+      </HelpSpot>,
+    ],
+    [
+      String(live),
+      "Live in the kitchen",
+      <HelpSpot key="h" title="What counts as live?" article="dashboard" anchor="live-in-the-kitchen">
+        Every order still open, including ones nobody has accepted yet — it is a workload count, not a
+        count of what is in the oven. It does not move on its own; reload the page to see it change.
+      </HelpSpot>,
+    ],
     [gbp(avg), "Average order, 7 days"],
     [String(customers), "Customers who have ordered"],
   ];
@@ -50,16 +66,21 @@ export default async function AdminHome() {
           <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ width: 8, height: 8, background: a?.open ? "var(--color-accent)" : "var(--color-neutral-400)", animation: a?.open ? "fp-pulse 1.4s ease-in-out infinite" : undefined }} />
             {a?.open ? "Taking orders" : a?.paused ? "Paused" : "Closed"}
+            <HelpSpot title="Which shop is this light for?" article="dashboard" anchor="the-open-light">
+              The first shop in your settings only — {primary?.name ?? client.name}. Any other shop can be
+              paused or shut without this light changing, so check the kitchen header or Hours &amp; pause
+              before you trust it for the rest.
+            </HelpSpot>
           </span>
           <Link href="/admin/hours" className="btn btn-secondary">Hours &amp; pause</Link>
         </div>
       </header>
 
       <div className="fp-stats4">
-        {stats.map(([n, l]) => (
+        {stats.map(([n, l, help]) => (
           <div key={l} className="fp-statcell">
             <span className="n">{n}</span>
-            <span className="l">{l}</span>
+            <span className="l">{l}{help}</span>
           </div>
         ))}
       </div>
@@ -70,7 +91,11 @@ export default async function AdminHome() {
           <div style={{ overflowX: "auto" }}>
             <table className="table" style={{ width: "100%" }}>
               <thead>
-                <tr><th>Order</th><th>Customer</th><th>Mode</th><th>Shop</th><th>Status</th><th style={{ textAlign: "right" }}>Total</th></tr>
+                <tr><th>Order<HelpSpot title="Where does an order number go?" article="dashboard" anchor="recent-orders">
+                  It opens the customer’s own tracking page, which needs no login — anyone holding the link
+                  can see what was ordered and the delivery address. Open it to check on an order, but do not
+                  forward it to anybody else.
+                </HelpSpot></th><th>Customer</th><th>Mode</th><th>Shop</th><th>Status</th><th style={{ textAlign: "right" }}>Total</th></tr>
               </thead>
               <tbody>
                 {recent.map((o) => (

@@ -7,7 +7,9 @@ import { gbpShort } from "@/lib/money";
 import { JsonLd } from "@/components/JsonLd";
 import Image from "next/image";
 import { Photo } from "@/components/Photo";
-import { MenuSearchPill } from "@/components/MenuSearchPill";
+import { MenuSearchPill, type SearchItem } from "@/components/MenuSearchPill";
+import { ReviewStrip } from "@/components/ReviewStrip";
+import { publicReviews, reviewSummary } from "@/lib/google-reviews";
 import { TypewriterTitle } from "@/components/TypewriterTitle";
 import { HeroStamp } from "@/components/HeroStamp";
 
@@ -18,7 +20,9 @@ export const dynamic = "force-dynamic";
  *  menu, shops and opening hours rather than the prototype's sample data. */
 export default async function Home() {
   const cfg = getConfig();
-  const [menu, locations] = await Promise.all([getMenu(), getLocations()]);
+  const [menu, locations, reviews, reviewStats] = await Promise.all([
+    getMenu(), getLocations(), publicReviews(6), reviewSummary(),
+  ]);
   const primary = locations[0];
   const avail = primary ? availability(primary) : null;
   const featured = topSellers(menu, 4);
@@ -32,6 +36,23 @@ export default async function Home() {
   // the rest of the menu so it is not eight pizzas in a row.
   // Every pizza on the menu, best sellers first so the good ones are seen even
   // if nobody watches the whole cycle.
+  // A compact index for the hero search dropdown: names and prices only, so it
+  // is a few KB rather than the whole menu with descriptions and photographs.
+  const searchItems: SearchItem[] = menu.categories.flatMap((c) =>
+    c.products.map((p) => {
+      const prices = p.sizes.map((sz) => sz.price);
+      return {
+        slug: p.slug,
+        name: p.name,
+        category: c.name,
+        href: productPath(c, p),
+        fromPrice: prices.length ? Math.min(...prices) : 0,
+        sizeNote: p.sizes.length > 1 ? `${p.sizes.length} sizes` : (p.sizes[0]?.name ?? ""),
+        soldOut: p.soldOut,
+      };
+    }),
+  );
+
   const heroRotation = (() => {
     const top = featured.map((f) => f.product.name);
     const rest = (menu.categories.find((c) => c.slug === "pizzas")?.products ?? [])
@@ -81,7 +102,7 @@ export default async function Home() {
             <Link href="/deals" className="btn btn-hero-ghost">Tonight&rsquo;s deals</Link>
           </div>
 
-          <MenuSearchPill suggestions={heroSuggestions} />
+          <MenuSearchPill suggestions={heroSuggestions} items={searchItems} />
         </div>
       </section>
 
@@ -167,6 +188,10 @@ export default async function Home() {
       ) : null}
 
       {/* the one red field on the page */}
+      <div className="fp-rule" />
+
+      <ReviewStrip reviews={reviews} summary={reviewStats} reviewUrl={cfg.contact.reviewUrl} />
+
       <section style={{ background: "var(--color-accent)", color: "var(--color-bg)" }}>
         <div className="fp-wrap" style={{ padding: "64px 32px", display: "flex", alignItems: "end", justifyContent: "space-between", gap: 48 }}>
           <h2 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 64, lineHeight: 1, letterSpacing: "-.02em", margin: 0, marginLeft: "-.05em" }}>

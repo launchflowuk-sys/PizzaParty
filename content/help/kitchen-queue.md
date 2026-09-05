@@ -79,7 +79,7 @@ Keep the tablet awake, plugged in, and on this page. If you would rather have a 
 
 ## One queue for every branch
 
-The board shows every shop's tickets together and does not filter by branch. {shop} runs one shop, Grays, so today this changes nothing at all. It is only here so nobody is surprised the day a second shop opens.
+The board shows every shop's tickets together and does not filter by branch. {shop} runs two, Grays and Basildon, so Basildon's tickets sit on this board alongside your own with nothing but the ticket to tell them apart. There is no way to show one shop's queue on its own.
 
 ## What you cannot do here
 

@@ -1,10 +1,13 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gbp } from "@/lib/money";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 
 type Item = { qty: number; name: string; size: string; modifiers: string[]; components: string[]; notes: string };
 type O = { id: string; number: number; status: string; fulfilment: string; paymentMethod: string; paid: boolean; customerName: string; customerPhone: string; address: string; notes: string; scheduledFor: string | null; etaAt: string | null; etaMinutes: number | null; total: number; createdAt: string; placedAt: string | null; locationKey: string; locationName: string; rejectReason: string; items: Item[]; text: string };
 type Loc = { key: string; name: string; open: boolean; paused: boolean; pausedUntil: string | null; pauseReason: string; prepMinutes: number; deliveryMinutes: number };
+/** Which of the three alert channels this shop actually has switched on. */
+type Alerts = { sms: boolean; email: boolean; printer: boolean };
 
 const NEXT: Record<string, { label: string; to: string }[]> = {
   accepted: [{ label: "Cooking", to: "preparing" }],
@@ -38,6 +41,7 @@ function beep(ctx: AudioContext) {
 export function KitchenScreen() {
   const [orders, setOrders] = useState<O[]>([]);
   const [locs, setLocs] = useState<Loc[]>([]);
+  const [alerts, setAlerts] = useState<Alerts>({ sms: false, email: false, printer: false });
   const [sound, setSound] = useState(false);
   const [eta, setEta] = useState<Record<string, number>>({});
   const audio = useRef<AudioContext | null>(null);
@@ -47,8 +51,9 @@ export function KitchenScreen() {
   const load = useCallback(async () => {
     const r = await fetch("/api/kitchen/orders", { cache: "no-store" });
     if (r.status === 401) { window.location.href = "/kitchen/login"; return; }
-    const d = (await r.json()) as { orders: O[]; locations: Loc[] };
+    const d = (await r.json()) as { orders: O[]; locations: Loc[]; alerts?: Alerts };
     setOrders(d.orders); setLocs(d.locations);
+    if (d.alerts) setAlerts(d.alerts);
     const fresh = d.orders.filter((o) => o.status === "placed" && !known.current.has(o.id));
     d.orders.forEach((o) => known.current.add(o.id));
     if (!first.current && fresh.length && audio.current) beep(audio.current);
@@ -79,7 +84,24 @@ export function KitchenScreen() {
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Kitchen queue</span>
-          <h1>Tickets</h1>
+          <h1>Tickets
+            <HelpSpot title="Does anything else tell us an order has come in?" article="kitchen-queue" anchor="nobody-is-alerted-but-this-screen">
+              {alerts.sms || alerts.email || alerts.printer ? (
+                <>
+                  Yes — this shop is also set up to send a new order to{" "}
+                  {[alerts.sms && "a kitchen text", alerts.email && "a kitchen email", alerts.printer && "the ticket printer"]
+                    .filter(Boolean).join(", ")}
+                  . Those can fail quietly, so this board is still the one to watch.
+                </>
+              ) : (
+                <>
+                  No. There is no kitchen text, no kitchen email and no printer switched on for this shop — new
+                  orders appear here and nowhere else. If this tab is shut or the tablet goes to sleep, nobody
+                  is told.
+                </>
+              )}
+            </HelpSpot>
+          </h1>
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           {locs.map((l) => (
@@ -92,6 +114,11 @@ export function KitchenScreen() {
                 }}
               />
               {l.name}: {l.paused ? `paused${l.pausedUntil ? ` until ${new Date(l.pausedUntil).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}` : ""}` : l.open ? "open" : "closed"}
+              <HelpSpot title="What do customers see while we are paused?" article="kitchen-queue" anchor="pausing-from-here">
+                The word &ldquo;Busy&rdquo;, and you cannot change it from here — pause from Hours &amp; pause if they
+                need to read something else. &ldquo;Rest of day&rdquo; is four hours, not until closing, and a pause
+                stops new orders only; anything already in still has to be cooked.
+              </HelpSpot>
               {l.paused ? (
                 <button className="btn btn-secondary" style={{ minHeight: 44 }} onClick={() => pause(l.key, 0)}>Resume</button>
               ) : (
@@ -114,6 +141,10 @@ export function KitchenScreen() {
           >
             {sound ? "Sound on" : "Enable sound"}
           </button>
+          <HelpSpot title="Why does this say Enable sound again?" article="kitchen-queue" anchor="the-beep">
+            Browsers will not play a sound until somebody presses something, so every reload or tablet restart
+            switches it off. First job of a shift: check it says Sound on.
+          </HelpSpot>
           {/* A shared tablet needs a way to hand over at the end of a shift. */}
           <button
             className="btn btn-secondary"
@@ -130,6 +161,10 @@ export function KitchenScreen() {
 
       <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 16px" }}>
         Oldest ticket first. Accent timers are past the {LATE_MINUTES}-minute promise.
+        <HelpSpot title="Can I move a ticket back a column?" article="kitchen-queue" anchor="the-four-columns">
+          No. The buttons only go forwards — tap Ready by mistake and it cannot go back in the oven, and there
+          is no way to edit or cancel a ticket once it has been accepted. Ring the customer and sort it between you.
+        </HelpSpot>
       </p>
 
       <div className="fp-kitchen">
@@ -138,7 +173,16 @@ export function KitchenScreen() {
           return (
             <div key={col.key} className="fp-kitchencol">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "12px 14px", borderBottom: "2px solid var(--color-divider)" }}>
-                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16 }}>{col.label}</span>
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16 }}>
+                  {col.label}
+                  {col.key === "new" ? (
+                    <HelpSpot title="What does the minutes box promise?" article="kitchen-queue" anchor="accepting-an-order">
+                      Whatever number is showing when you tap Accept is the time the customer is told. It starts at
+                      your standard 15 or 35 minutes and takes no notice of how busy you are, so put it up by hand on
+                      a bad night. Reject refunds a card payment in full, straight away, and cannot be undone.
+                    </HelpSpot>
+                  ) : null}
+                </span>
                 <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 22, color: "var(--color-accent)" }}>{tickets.length}</span>
               </div>
 

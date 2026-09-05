@@ -6,6 +6,7 @@ import { requireScreen } from "@/lib/session";
 import { SEGMENTS, segmentWhere, segmentLabel } from "@/lib/segments";
 import { campaignStats, promoWarning, audienceKind, SMS_COST_PENCE } from "@/lib/marketing";
 import { sendCampaign } from "../actions";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,14 @@ export default async function AdminCampaigns() {
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
-          <h1>Campaigns</h1>
+          <h1>
+            Campaigns
+            <HelpSpot title="Can I take a send back?" article="campaigns" anchor="there-is-no-undo">
+              No. There is no confirmation box, no preview, no test send to yourself and no way to
+              stop it once Send now is pressed. A single send also stops at 2,000 people, and anybody
+              past that is left out with nothing on screen to say so.
+            </HelpSpot>
+          </h1>
         </div>
       </header>
 
@@ -55,14 +63,29 @@ export default async function AdminCampaigns() {
           <form action={sendCampaign} style={{ display: "grid", gap: 12 }}>
             <div className="fp-fields">
               <div className="field">
-                <label htmlFor="channel">Channel</label>
+                <label htmlFor="channel">
+                  Channel
+                  <HelpSpot title="Should I ever use email?" article="campaigns" anchor="email-has-no-unsubscribe">
+                    Not for marketing. Email from here carries no unsubscribe link and a customer has
+                    no way of taking themselves off the list, which is against UK marketing rules.
+                    Send offers by SMS.
+                  </HelpSpot>
+                </label>
                 <select id="channel" name="channel" className="input" defaultValue="sms">
                   <option value="sms">SMS &mdash; {gbp(SMS_COST_PENCE)} each</option>
                   <option value="email">Email &mdash; free</option>
                 </select>
               </div>
               <div className="field">
-                <label htmlFor="segment">Send to</label>
+                <label htmlFor="segment">
+                  Send to
+                  <HelpSpot title="What is the number in brackets?" article="campaigns" anchor="sending-a-one-off">
+                    The people in that group who have opted in <em>and</em> have a mobile number, so
+                    it can be lower than the same group on Customers. On an email send that bracket
+                    still counts mobiles, but the message goes to whoever in the group has an email
+                    address &mdash; a different, usually smaller, set of people.
+                  </HelpSpot>
+                </label>
                 <select id="segment" name="segment" className="input" defaultValue="lapsed_60d">
                   {counts.map((s) => <option key={s.key} value={s.key}>{s.label} ({s.n})</option>)}
                 </select>
@@ -101,7 +124,14 @@ export default async function AdminCampaigns() {
         </div>
 
         <div style={{ border: "2px solid var(--color-neutral-300)", padding: 24 }}>
-          <span className="fp-kicker" style={{ marginBottom: 12 }}>Your list</span>
+          <span className="fp-kicker" style={{ marginBottom: 12 }}>
+            Your list
+            <HelpSpot title="Are these prices what I will be billed?" article="campaigns" anchor="what-it-costs">
+              No. Texts are counted at a flat 4p inside the software rather than read off your phone
+              bill, and it is 4p per message however long it is &mdash; a wordy text is charged by the
+              network as two or three, so a long campaign really costs more than this says.
+            </HelpSpot>
+          </span>
           <table className="table" style={{ width: "100%" }}>
             <tbody>
               {counts.map((s) => (
@@ -132,7 +162,14 @@ export default async function AdminCampaigns() {
             <thead>
               <tr>
                 <th>When</th><th>Sent to</th><th>Message</th><th>Code</th>
-                <th style={{ textAlign: "right" }}>Sent</th>
+                <th style={{ textAlign: "right" }}>
+                  Sent
+                  <HelpSpot title="Why is Sent lower than the group was?" article="campaigns" anchor="a-big-send-can-time-out">
+                    The difference is failures. Sent is written down text by text, so that figure is
+                    reliable; the &ldquo;N failed&rdquo; line under it is only written at the very end,
+                    so a send that timed out can show none at all.
+                  </HelpSpot>
+                </th>
                 <th style={{ textAlign: "right" }}>Orders</th>
                 <th style={{ textAlign: "right" }}>Cost</th>
                 <th style={{ textAlign: "right" }}>Earned</th>

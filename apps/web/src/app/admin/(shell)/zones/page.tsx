@@ -2,6 +2,7 @@ import { getLocations } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
 import { updateZone, saveBand, deleteBand } from "../actions";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,14 @@ export default async function AdminZones() {
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
-          <h1>Delivery zones</h1>
+          <h1>
+            Delivery zones
+            <HelpSpot title="Do changes here stick?" article="delivery-zones" anchor="bands-can-be-wiped-by-a-redeploy">
+              Everything on this screen is live the moment you save, but a software update rebuilds the
+              shop from its setup file and puts the old districts, fees and bands back. Make the change
+              here so tonight is right, then tell LaunchFlow so it gets written down properly.
+            </HelpSpot>
+          </h1>
         </div>
       </header>
 
@@ -33,7 +41,14 @@ export default async function AdminZones() {
           <form action={updateZone} style={{ border: "2px solid var(--color-text)", padding: 24, display: "grid", gap: 12 }}>
             <input type="hidden" name="locationId" value={l.id} />
             <div className="field">
-              <label htmlFor={`prefixes-${l.id}`}>Postcode districts we deliver to</label>
+              <label htmlFor={`prefixes-${l.id}`}>
+                Postcode districts we deliver to
+                <HelpSpot title="What does an entry like RM cover?" article="delivery-zones" anchor="the-districts-you-deliver-to">
+                  A letters-only entry covers the whole area &mdash; RM on its own lets RM1 to RM20 and
+                  beyond order. A district that is not in this box cannot place a delivery order at all,
+                  though it can still order for collection.
+                </HelpSpot>
+              </label>
               <input id={`prefixes-${l.id}`} name="prefixes" defaultValue={l.postcodePrefixes.join(", ")} className="input" style={{ textTransform: "uppercase" }} />
             </div>
             <div className="fp-fields">
@@ -50,7 +65,13 @@ export default async function AdminZones() {
                 <input id={`prep-${l.id}`} name="prepMinutes" defaultValue={l.prepMinutes} className="input" inputMode="numeric" />
               </div>
               <div className="field">
-                <label htmlFor={`del-${l.id}`}>Delivery time (min)</label>
+                <label htmlFor={`del-${l.id}`}>
+                  Delivery time (min)
+                  <HelpSpot title="Where does this number come from?" article="delivery-zones" anchor="the-districts-you-deliver-to">
+                    You. It is the wait quoted to customers, typed here by hand &mdash; nothing measures how
+                    long deliveries actually take. A band&rsquo;s extra minutes are added on top for that area.
+                  </HelpSpot>
+                </label>
                 <input id={`del-${l.id}`} name="deliveryMinutes" defaultValue={l.deliveryMinutes} className="input" inputMode="numeric" />
               </div>
               <div className="field">
@@ -66,7 +87,14 @@ export default async function AdminZones() {
           </form>
 
           <div style={{ border: "2px solid var(--color-neutral-300)", borderTop: 0, padding: 24 }}>
-            <span className="fp-kicker" style={{ marginBottom: 12 }}>Charge bands</span>
+            <span className="fp-kicker" style={{ marginBottom: 12 }}>
+              Charge bands
+              <HelpSpot title="What does Remove do?" article="delivery-zones" anchor="remove-has-no-confirmation">
+                It deletes that band the instant you press it &mdash; no confirmation, no undo, and no record
+                of what was in it. Everywhere it covered drops straight back to the shop&rsquo;s standard fee
+                and minimum, so write the row down before you press it.
+              </HelpSpot>
+            </span>
 
             {l.bands.length === 0 ? (
               <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 16px" }}>
@@ -120,7 +148,13 @@ export default async function AdminZones() {
                 <input id={`bp-${l.id}`} name="prefixes" className="input" style={{ textTransform: "uppercase" }} placeholder="RM16, RM20" required />
               </div>
               <div className="field">
-                <label htmlFor={`bf-${l.id}`}>Fee £</label>
+                <label htmlFor={`bf-${l.id}`}>
+                  Fee £
+                  <HelpSpot title="What happens if I leave this at 0.00?" article="delivery-zones" anchor="charge-bands">
+                    A band&rsquo;s fee is taken exactly as typed, so 0.00 gives that area free delivery. Min £
+                    is the odd one out: left at 0.00 it falls back to the shop&rsquo;s own minimum.
+                  </HelpSpot>
+                </label>
                 <input id={`bf-${l.id}`} name="fee" className="input" inputMode="decimal" defaultValue="0.00" />
               </div>
               <div className="field">

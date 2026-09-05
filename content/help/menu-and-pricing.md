@@ -87,8 +87,10 @@ Three things worth knowing:
   one changes nothing on this screen.
 - **Nothing clears it overnight.** An item you marked off at nine on Friday is still off on
   Saturday lunchtime. This is the single most common way a shop loses money on this system.
-- **It is set for the whole menu, not per shop.** {shop} runs one shop, so today that just
-  means everywhere. It would matter the day a second shop is added.
+- **It is set for the whole menu, not per shop.** {shop} runs two shops, Grays and
+  Basildon, and there is no per-shop switch on this screen. Mark something off and it is
+  off at both. The same goes for prices, names and Hide — one menu, both shops. If Grays
+  has run out and Basildon has not, this screen has no way to say so.
 
 ## Hiding vs sold out
 

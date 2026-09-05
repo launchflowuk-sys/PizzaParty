@@ -79,6 +79,12 @@ export const ClientSchema = z.object({
       email: z.string().default(""),
       address: z.string().default(""),
       reviewUrl: z.string().default(""),
+      /**
+       * The shop's Google Place ID, used to pull its reviews.
+       * Find it at https://developers.google.com/maps/documentation/places/web-service/place-id
+       * Leave empty and the Google review features simply stay switched off.
+       */
+      googlePlaceId: z.string().default(""),
       social: z.record(z.string()).default({}),
     })
     .default({}),

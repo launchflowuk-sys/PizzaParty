@@ -164,6 +164,45 @@ export async function deleteBand(fd: FormData) {
   revalidatePath("/admin/zones");
 }
 
+/* ---------- Reviews ---------- */
+
+/** Pull Google's current five, on demand. */
+export async function syncReviewsNow() {
+  await guard("reviews");
+  const { syncGoogleReviews } = await import("@/lib/google-reviews");
+  await syncGoogleReviews();
+  revalidatePath("/admin/reviews");
+  revalidatePath("/");
+}
+
+/**
+ * Take a review off the storefront, or put it back.
+ *
+ * Hidden, never deleted. A shop taking a bad review off its own page should be
+ * a deliberate and reversible act rather than a hole in the record - and the
+ * review is still on Google either way, so pretending otherwise helps nobody.
+ */
+export async function toggleReviewHidden(fd: FormData) {
+  const client = await guard("reviews");
+  const id = str(fd, "id");
+  const review = await prisma.review.findFirst({ where: { id, clientId: client.id }, select: { hidden: true } });
+  if (!review) return;
+  await prisma.review.updateMany({ where: { id, clientId: client.id }, data: { hidden: !review.hidden } });
+  revalidatePath("/admin/reviews");
+  revalidatePath("/");
+}
+
+/** Pin a review to the front of the storefront strip. */
+export async function toggleReviewFeatured(fd: FormData) {
+  const client = await guard("reviews");
+  const id = str(fd, "id");
+  const review = await prisma.review.findFirst({ where: { id, clientId: client.id }, select: { featured: true } });
+  if (!review) return;
+  await prisma.review.updateMany({ where: { id, clientId: client.id }, data: { featured: !review.featured } });
+  revalidatePath("/admin/reviews");
+  revalidatePath("/");
+}
+
 /* ---------- Campaigns ---------- */
 
 /**

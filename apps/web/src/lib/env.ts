@@ -20,5 +20,6 @@ export const env = {
   // at the moment a cookie is signed or read, which is when it actually matters.
   sessionSecret: trim(process.env.SESSION_SECRET),
   cronSecret: trim(process.env.CRON_SECRET),
+  googlePlacesKey: trim(process.env.GOOGLE_PLACES_API_KEY),
   isProd: process.env.NODE_ENV === "production",
 };

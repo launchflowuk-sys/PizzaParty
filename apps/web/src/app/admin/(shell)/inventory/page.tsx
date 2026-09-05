@@ -1,5 +1,6 @@
 import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 import { reorderStock, reorderAllBelowPar } from "../actions";
 
 import { requireScreen } from "@/lib/session";
@@ -29,12 +30,22 @@ export default async function InventoryPage() {
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
-          <h1>Inventory</h1>
+          <h1>
+            Inventory
+            <HelpSpot title="Does anything here stop customers ordering?" article="inventory" anchor="use-sold-out-instead">
+              No. Every line could read Out and the website would carry on selling all night. To actually stop
+              something being sold, find it on Menu &amp; pricing and press Mark sold out.
+            </HelpSpot>
+          </h1>
         </div>
         <form action={reorderAllBelowPar}>
           <button className="btn btn-primary" disabled={low.length + out.length === 0}>
             Reorder everything below par
           </button>
+          <HelpSpot title="Does Reorder send anything to the supplier?" article="inventory" anchor="reorder-does-not-order">
+            No — no email, no text, no order form. It only flags the line as On order so the next person on
+            shift knows the ringing has been done, and there is no button to clear that flag afterwards.
+          </HelpSpot>
         </form>
       </header>
 
@@ -60,7 +71,22 @@ export default async function InventoryPage() {
           <table className="table" style={{ width: "100%" }}>
             <thead>
               <tr>
-                <th>Ingredient</th><th>On hand</th><th>Par</th><th>Level</th>
+                <th>Ingredient</th>
+                <th>
+                  On hand
+                  <HelpSpot title="Is this figure live?" article="inventory" anchor="what-this-screen-is">
+                    No. Nothing counts down as you sell — sell forty margheritas and the flour figure does not
+                    move. It shows what somebody last wrote into your settings file, not what is in the cupboard.
+                  </HelpSpot>
+                </th>
+                <th>
+                  Par
+                  <HelpSpot title="Can I change a par level?" article="inventory" anchor="stock-lines-come-from-config">
+                    Not from here. The names, units, par levels and suppliers all come from your settings file,
+                    so adding a line or changing one is a ring to LaunchFlow.
+                  </HelpSpot>
+                </th>
+                <th>Level</th>
                 <th>Supplier</th><th>Status</th><th />
               </tr>
             </thead>

@@ -28,7 +28,7 @@ The last of something has gone and orders for it are still coming in.
 
 **Nothing clears it overnight.** An item marked off at nine on Friday is still off at lunchtime on Saturday.
 
-It applies to the whole menu at once, not to one shop — {shop} runs one shop, so today that simply means everywhere.
+It applies to the whole menu at once, not to one shop — {shop} runs two, so marking something sold out in Grays marks it sold out in Basildon as well. There is no way to do it for one shop only.
 
 **The Inventory screen does not do this job.** It is a shopping list you can read but not write: the only button on it is **Reorder**, which marks the line and does not message the supplier. You cannot even change the **On hand** figure — the numbers come from your setup file and never move as food sells. When a line shows **Out**, that is the screen working it out from a number nobody has updated, and it takes nothing off the website.
 

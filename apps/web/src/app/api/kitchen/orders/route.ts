@@ -4,6 +4,7 @@ import { getClientRow, getLocations } from "@/lib/menu";
 import { orderInclude, orderText } from "@/lib/orders";
 import { availability } from "@/lib/availability";
 import { kitchenOrAdmin } from "@/lib/kitchen-auth";
+import { getConfig } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +20,14 @@ export async function GET(req: NextRequest) {
     }),
     getLocations(),
   ]);
+  // The screen tells staff, in as many words, that nothing but this board is
+  // told about a new order. That is only true while all three alert channels
+  // are switched off, so the screen has to be able to read them rather than
+  // assert it and hope.
+  const n = getConfig().notifications;
   return NextResponse.json({
     now: new Date().toISOString(),
+    alerts: { sms: !!n.kitchenSms, email: !!n.kitchenEmail, printer: !!n.printerWebhook },
     orders: orders.map((o) => ({
       id: o.id, number: o.number, status: o.status, fulfilment: o.fulfilment, paymentMethod: o.paymentMethod, paid: o.payment?.status === "succeeded",
       customerName: o.customerName, customerPhone: o.customerPhone, address: [o.deliveryLine1, o.deliveryLine2, o.deliveryCity, o.deliveryPostcode].filter(Boolean).join(", "),

@@ -4,6 +4,7 @@ import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { STATUS_LABEL, STATUS_TONE, STATUS_ROW } from "@/lib/orders";
 import { requireScreen } from "@/lib/session";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 
 export const dynamic = "force-dynamic";
 const STATUSES = Object.keys(STATUS_LABEL) as OrderStatus[];
@@ -53,11 +54,25 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>
             Back office &middot; {total} order{total === 1 ? "" : "s"}
-            {needsAction > 0 ? <> &middot; <span className="fp-num-warn">{needsAction} waiting on you</span></> : null}
+            {needsAction > 0 ? (
+              <> &middot; <span className="fp-num-warn">{needsAction} waiting on you</span>
+                <HelpSpot title="Waiting on me for what?" article="orders-history" anchor="finding-an-order">
+                  Orders that have been placed and not yet accepted, so they are sitting on the kitchen board.
+                  It only counts the fifty rows on this page, not the whole book, so it starts again on page two.
+                </HelpSpot>
+              </>
+            ) : null}
           </span>
           <h1>Orders</h1>
         </div>
-        <a href={`/api/admin/orders.csv?${qs}`} className="btn btn-secondary">Export CSV</a>
+        <span style={{ display: "flex", alignItems: "center" }}>
+          <a href={`/api/admin/orders.csv?${qs}`} className="btn btn-secondary">Export CSV</a>
+          <HelpSpot title="Does this export what I am looking at?" article="orders-history" anchor="the-csv-export">
+            Only the Status and the From / To dates carry over — the Search box does not, so a search for one
+            customer still exports every order in the date range. It also stops at the newest 5,000 rows without
+            saying so, so take a long period a month at a time.
+          </HelpSpot>
+        </span>
       </header>
 
       <div className="fp-panel">
@@ -80,7 +95,13 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
               <input id="to" name="to" type="date" defaultValue={sp.to} className="input" />
             </div>
             <div className="field" style={{ minWidth: 220 }}>
-              <label htmlFor="q">Search</label>
+              <label htmlFor="q">Search
+                <HelpSpot title="Why does a phone number find nothing?" article="orders-history" anchor="phone-search-gotcha">
+                  It matches the number exactly as it was saved, and website orders are saved in the
+                  international form &mdash; <code>+447700900201</code>, no spaces. Drop the leading zero and the
+                  spaces, or just search the last six digits.
+                </HelpSpot>
+              </label>
               <input id="q" name="q" placeholder="Name, phone or postcode" defaultValue={sp.q} className="input" />
             </div>
             <button className="btn btn-primary">Filter</button>
@@ -93,7 +114,14 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
         <table className="table" style={{ width: "100%" }}>
           <thead>
             <tr>
-              <th>#</th><th>When</th><th>Customer</th><th>Type</th><th>Where</th><th>Status</th>
+              <th>#<HelpSpot title="Where does an order number go?" article="orders-history" anchor="the-order-link-is-public">
+                To the customer’s own tracking page, not an order screen. It needs no login — anyone with the
+                link can see the order and the delivery address — so open it yourself, but do not forward it.
+              </HelpSpot></th><th>When</th><th>Customer</th><th>Type</th><th>Where</th><th>Status<HelpSpot title="Can I change an order from here?" article="orders-history" anchor="this-screen-is-read-only">
+                No. Nothing on this screen changes an order — there is no edit, no note, no resend and no refund
+                button anywhere in the back office. Orders are worked on the kitchen screen, and card money goes
+                back through Stripe.
+              </HelpSpot></th>
               <th style={{ textAlign: "right" }}>Total</th>
             </tr>
           </thead>

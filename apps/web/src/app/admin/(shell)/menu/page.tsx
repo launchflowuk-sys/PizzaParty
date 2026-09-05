@@ -2,6 +2,7 @@ import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 import { MenuFilter } from "@/components/admin/MenuFilter";
 import { moveProduct, toggleModifier, toggleProduct, updateProductText, updateSizePrice } from "../actions";
 
@@ -42,13 +43,29 @@ export default async function AdminMenu() {
             Back office &middot; {all.length} items
             {soldOut > 0 ? <> &middot; <span className="fp-num-danger">{soldOut} sold out</span></> : null}
             {hidden > 0 ? <> &middot; <span className="fp-num-warn">{hidden} hidden</span></> : null}
+            <HelpSpot title="What is the difference between sold out and hidden?" article="menu-and-pricing" anchor="hiding-vs-sold-out">
+              Sold out is for tonight: the item stays on the menu with a Sold out tag where Add used to be.
+              Hide takes it off the website altogether. Neither one clears itself overnight — whatever you
+              switch off tonight is still off tomorrow lunchtime unless somebody puts it back.
+            </HelpSpot>
           </span>
-          <h1>Menu &amp; pricing</h1>
+          <h1>
+            Menu &amp; pricing
+            <HelpSpot title="Does a change here hit both shops?" article="menu-and-pricing" anchor="sold-out">
+              Yes. Prices, names, sold out and hidden are set once for the whole menu, not per shop, so every
+              branch always shows the same thing. There is no way to price one shop differently here.
+            </HelpSpot>
+          </h1>
         </div>
       </header>
 
       <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 20px", maxWidth: "78ch" }}>
         Price and name changes save the moment you press Save and are live straight away.
+        <HelpSpot title="Why has a price saved as £0.00?" article="menu-and-pricing" anchor="putting-a-price-up">
+          Each size has its own box and its own Save, and it saves that size only. If what you type is not a
+          number the screen does not refuse it — it saves £0.00 and the item goes out at nothing, so check the
+          box shows what you expect afterwards.
+        </HelpSpot>{" "}
         Adding items, categories or new option groups is a config change in{" "}
         <code>config/{client.slug}/menu.json</code> followed by a re-seed.
       </p>
@@ -152,9 +169,16 @@ export default async function AdminMenu() {
         );
       })}
 
-      <span className="fp-kicker" style={{ margin: "32px 0 12px", display: "block" }}>Options &amp; toppings</span>
+      <span className="fp-kicker" style={{ margin: "32px 0 12px", display: "block" }}>
+        Options &amp; toppings
+        <HelpSpot title="What does switching a topping off actually do?" article="menu-and-pricing" anchor="toppings-and-options">
+          There is no confirmation and no undo besides clicking it again, and nothing switches it back on
+          overnight — the group bar stays red and counts how many you have left off until somebody does.
+        </HelpSpot>
+      </span>
       <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 16px" }}>
-        Click a topping to mark it off. It disappears from every product that offers it, straight away.
+        Click a topping to mark it off. On every product that offers it, it goes pale and cannot be
+        ticked, straight away. It stays on the list rather than vanishing.
       </p>
 
       {groups.map((g) => {

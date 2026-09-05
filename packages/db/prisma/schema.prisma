@@ -610,13 +610,29 @@ model Review {
   body         String    @default("")
   /// direct | google
   source       String    @default("direct")
+  /// Google's own id, so a re-sync updates rather than duplicates. Nullable
+  /// rather than "" because it carries a unique index, and Postgres allows many
+  /// NULLs but only one "" - which would cap the shop at a single direct review.
+  externalId   String?
+  authorPhoto  String    @default("")
+  /// A link back to the review on Google, for replying where we cannot.
+  externalUrl  String    @default("")
+  /// Off the storefront. Reviews are never deleted - a shop hiding a bad one
+  /// should be a deliberate, reversible act, not a hole in the record.
+  hidden       Boolean   @default(false)
+  /// Pinned to the front of the storefront strip.
+  featured     Boolean   @default(false)
   reply        String    @default("")
   repliedAt    DateTime?
+  /// When Google says it was written, which is not when we first saw it.
+  postedAt     DateTime?
   createdAt    DateTime  @default(now())
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
+  @@unique([clientId, externalId])
   @@index([clientId, createdAt])
+  @@index([clientId, hidden, rating])
 }
 
 // ─── Marketing: lifecycle automations and attribution ────────────────────────

@@ -4,6 +4,7 @@ import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
 import { SEGMENTS, segmentWhere, segmentLabel } from "@/lib/segments";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,14 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
-          <h1>Customers</h1>
+          <h1>
+            Customers
+            <HelpSpot title="Can I fix somebody’s details here?" article="customers" anchor="read-only">
+              No. This screen only displays. There is no way to correct a misspelled name, merge two
+              records for the same person, add a note, block a nuisance customer or delete anybody
+              &mdash; that has to go to LaunchFlow, so do not promise a same-day fix.
+            </HelpSpot>
+          </h1>
         </div>
         <span style={{ fontSize: 13, color: "var(--color-neutral-700)" }}>
           {optedIn} of {shown} opted in to marketing
@@ -55,12 +63,26 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
             {s.label} &middot; {s.n}
           </a>
         ))}
+        <span style={{ display: "inline-flex", alignItems: "center" }}>
+          <HelpSpot title="Why does a chip count not match the rows?" article="customers" anchor="two-numbers-that-disagree">
+            The chip counts the people in that group you are allowed to text &mdash; the ones who
+            opted in. The table below shows everyone in the group either way, so you can still look
+            somebody up. Forty-one on the chip with sixty rows underneath is not a fault.
+          </HelpSpot>
+        </span>
       </div>
 
       <form style={{ display: "flex", gap: 8, marginBottom: 20, maxWidth: 460 }}>
         {sp.segment ? <input type="hidden" name="segment" value={sp.segment} /> : null}
         <input name="q" className="input" placeholder="Search name, phone or email" defaultValue={sp.q} />
         <button className="btn btn-secondary">Search</button>
+        <span style={{ display: "inline-flex", alignItems: "center" }}>
+          <HelpSpot title="It cannot find a number I know we have." article="customers" anchor="finding-a-customer">
+            The phone search looks for the characters you typed inside the number exactly as it was
+            saved, so 07700 900 201 and +447700900201 will not find each other. Try it again without
+            the spaces, and with +44 in place of the leading 0.
+          </HelpSpot>
+        </span>
       </form>
 
       {sp.segment ? (
@@ -77,7 +99,16 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
               <th>Name</th><th>Phone</th>
               <th style={{ textAlign: "right" }}>Orders</th>
               <th style={{ textAlign: "right" }}>Spent</th>
-              <th>Last order</th><th>Marketing</th>
+              <th>Last order</th>
+              <th>
+                Marketing
+                <HelpSpot title="Can I opt somebody out from here?" article="customers" anchor="opting-someone-out-by-hand">
+                  No, and there is no override anywhere else either. Only the customer can change it
+                  &mdash; the tick box at the checkout, or texting STOP to the shop number, which is
+                  acted on within seconds. If somebody rings to come off the list, ask them to text
+                  STOP.
+                </HelpSpot>
+              </th>
             </tr>
           </thead>
           <tbody>

@@ -1,6 +1,7 @@
 import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { setStaffRole, toggleShift } from "../actions";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 
 import { requireScreen } from "@/lib/session";
 import { can, ROLE_LABEL, SCREENS, SCREEN_LABEL, STAFF_ROLES } from "@/lib/permissions";
@@ -18,7 +19,14 @@ export default async function StaffPage() {
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
-          <h1>Staff</h1>
+          <h1>
+            Staff
+            <HelpSpot title="How do I add a starter or take a leaver off?" article="staff-roles" anchor="adding-a-starter-or-removing-a-leaver">
+              Not from here &mdash; there is no Add and no Remove. People, their numbers and their PINs live
+              in the shop&rsquo;s setup file, so it is a job for LaunchFlow, and a leaver&rsquo;s PIN keeps
+              working until they do it.
+            </HelpSpot>
+          </h1>
         </div>
         <span style={{ fontSize: 13, color: "var(--color-neutral-700)" }}>
           {staff.length} on the books · {onShift} on shift
@@ -35,7 +43,26 @@ export default async function StaffPage() {
             <div style={{ overflowX: "auto" }}>
               <table className="table" style={{ width: "100%" }}>
                 <thead>
-                  <tr><th>Name</th><th>Role</th><th style={{ textAlign: "right" }}>Hours this week</th><th>Tonight</th><th /></tr>
+                  <tr>
+                    <th>Name</th>
+                    <th>
+                      Role
+                      <HelpSpot title="When does a role change take effect?" article="staff-roles" anchor="changing-someones-role">
+                        Not until that person next signs in. Their role is fixed when they key their PIN in
+                        and a sign-in lasts up to twelve hours, so take care in your own row &mdash; demote
+                        yourself and you carry on as normal today, then lose this screen tomorrow.
+                      </HelpSpot>
+                    </th>
+                    <th style={{ textAlign: "right" }}>
+                      Hours this week
+                      <HelpSpot title="Is this a timesheet?" article="staff-roles" anchor="hours-this-week-is-decorative">
+                        No. It is a fixed number from the shop&rsquo;s setup file. Clock on and Clock off only
+                        flip the Tonight tag &mdash; no time is recorded and this figure never moves.
+                      </HelpSpot>
+                    </th>
+                    <th>Tonight</th>
+                    <th />
+                  </tr>
                 </thead>
                 <tbody>
                   {staff.map((s) => (
@@ -74,7 +101,13 @@ export default async function StaffPage() {
         </div>
 
         <div>
-          <h3 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, margin: "0 0 4px" }}>Role permissions</h3>
+          <h3 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18, margin: "0 0 4px" }}>
+            Role permissions
+            <HelpSpot title="Is every filled square really open to that role?" article="staff-roles" anchor="the-five-roles">
+              One row is not what it looks like: LaunchFlow shows filled for Manager, but that screen needs
+              LaunchFlow&rsquo;s own key on top of the sign-in, so a manager alone is still turned away.
+            </HelpSpot>
+          </h3>
           <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 12px" }}>
             Enforced. This is the same matrix the sidebar and every page guard read, so a
             square that is empty here means that role cannot open the screen, cannot see it

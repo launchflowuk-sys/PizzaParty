@@ -41,7 +41,7 @@ things:
 - **Paused** — somebody has paused ordering. It stays like this until the pause runs out or somebody presses Resume.
 - **Closed** — outside today's opening times.
 
-It reads the **first shop** in your settings. {shop} has one shop, Grays, so what it says is simply the truth. It is only worth knowing about the day a second shop is added — then this light would still be Grays' light, and somebody would have to remember that.
+It reads the **first shop** in your settings, which is Grays. {shop} has two shops, so this light is Grays' light and nothing else. Basildon can be paused, or shut for the day, while this still reads *Taking orders*. Check the kitchen screen header or Hours & pause before you trust it for the other shop.
 
 The button next to it takes you straight to Hours & pause, which is where you change any of it.
 

@@ -4,6 +4,7 @@ import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
 import { TRIGGERS, automationStats, audienceSize, marketingTotals, commissionSaved, promoWarning, audienceKind, sendBreakdown, referralStats, KIND_LABEL, SMS_COST_PENCE } from "@/lib/marketing";
 import { saveAutomation, toggleAutomation, runAutomationNow } from "../actions";
+import { HelpSpot } from "@/components/admin/HelpSpot";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,14 @@ export default async function MarketingPage() {
           <span className="n" style={{ color: "var(--color-text)" }}>{gbp(totals.spendPence)}</span>
         </div>
         <div className="fp-statcell">
-          <span className="l">Net</span>
+          <span className="l">
+            Net
+            <HelpSpot title="Is Net our profit?" article="marketing-automations" anchor="reading-the-money">
+              No. It is what the messages earned minus what the messages cost. Earned counts the
+              whole order total, so the dough, the boxes and the driver all still have to come out
+              of it.
+            </HelpSpot>
+          </span>
           <span className="n" style={{ color: net >= 0 ? "var(--color-accent)" : "var(--color-text)" }}>{gbp(net)}</span>
         </div>
         <div className="fp-statcell">
@@ -144,12 +152,26 @@ export default async function MarketingPage() {
             <thead>
               <tr>
                 <th>Automation</th><th>Trigger</th><th>Code</th>
-                <th style={{ textAlign: "right" }}>Waiting</th>
+                <th style={{ textAlign: "right" }}>
+                  Waiting
+                  <HelpSpot title="What is Waiting counting?" article="marketing-automations" anchor="nothing-runs-unless-a-schedule-was-set-up">
+                    The people this rule could text right now. If a rule has been on for weeks and
+                    dozens are still waiting, nothing is calling the runner and it has never sent on
+                    its own &mdash; ring LaunchFlow and ask about the automations schedule.
+                  </HelpSpot>
+                </th>
                 <th style={{ textAlign: "right" }}>Sent</th>
                 <th style={{ textAlign: "right" }}>Orders</th>
                 <th style={{ textAlign: "right" }}>Spent</th>
                 <th style={{ textAlign: "right" }}>Earned</th>
-                <th>Status</th><th />
+                <th>Status</th>
+                <th style={{ textAlign: "right" }}>
+                  <HelpSpot title="What does the send button do?" article="marketing-automations" anchor="firing-a-rule-by-hand">
+                    It texts everyone waiting straight away &mdash; no confirmation and no undo. It
+                    works on a paused rule too, and the number on the button ignores your &ldquo;Never
+                    send more than&rdquo; cap, so fewer may actually go.
+                  </HelpSpot>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -195,11 +217,25 @@ export default async function MarketingPage() {
         <form action={saveAutomation} style={{ display: "grid", gap: 12 }}>
           <div className="fp-fields">
             <div className="field">
-              <label htmlFor="name">Name</label>
+              <label htmlFor="name">
+                Name
+                <HelpSpot title="Does saving replace a rule or add one?" article="marketing-automations" anchor="editing-makes-a-copy">
+                  Type a name that already exists and that rule is overwritten. Type anything else
+                  and you get a second rule, with the old one still running. Either way, saving
+                  switches the rule off, so press Turn on afterwards.
+                </HelpSpot>
+              </label>
               <input id="name" name="name" className="input" required maxLength={60} placeholder="Win back after 45 days" />
             </div>
             <div className="field">
-              <label htmlFor="trigger">When it fires</label>
+              <label htmlFor="trigger">
+                When it fires
+                <HelpSpot title="Do all six triggers work?" article="marketing-automations" anchor="the-birthday-rule-never-fires">
+                  Five do. Birthday treat never fires: nothing in the system ever asks a customer
+                  for their date of birth, so it finds nobody to send to and its Waiting count stays
+                  at zero for ever.
+                </HelpSpot>
+              </label>
               <select id="trigger" name="trigger" className="input" defaultValue="win_back">
                 {TRIGGERS.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
               </select>
@@ -209,7 +245,14 @@ export default async function MarketingPage() {
               <input id="days" name="days" className="input" type="number" min={0} max={365} defaultValue={45} />
             </div>
             <div className="field">
-              <label htmlFor="cooldownDays">Do not contact again within (days)</label>
+              <label htmlFor="cooldownDays">
+                Do not contact again within (days)
+                <HelpSpot title="Is this quiet period just for this rule?" article="marketing-automations" anchor="what-an-automation-is">
+                  No. It counts any message the system has already sent that customer &mdash; another
+                  automation, a one-off campaign, even the review-request text after their last
+                  order.
+                </HelpSpot>
+              </label>
               <input id="cooldownDays" name="cooldownDays" className="input" type="number" min={1} max={365} defaultValue={30} />
             </div>
             <div className="field">
