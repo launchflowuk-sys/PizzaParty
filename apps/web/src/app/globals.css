@@ -359,3 +359,393 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
    image, because the setting is a property of the shop, not of the picture —
    and because Photo renders inside client components that cannot read config. */
 :root[data-photo="grayscale"] .fp-photo-img { filter: grayscale(1) contrast(1.08); }
+
+/* ── Hero ───────────────────────────────────────────────────────────────────
+   Full-bleed photograph with the copy laid over it. The old hero put a small
+   picture beside a paragraph, which is the wrong way round for a takeaway:
+   the food is the argument. Text sits on a scrim rather than a flat tint so
+   the top of the image stays appetising while the words stay legible. */
+.fp-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: clamp(520px, 72vh, 700px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  background: var(--color-neutral-900, #111);
+}
+/* The hero photograph is never desaturated, whatever brand.photoStyle says —
+   it is the appetite shot, and a grey one does not sell pizza. */
+.fp-hero > img { filter: none !important; z-index: 0; }
+
+.fp-hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.56) 32%, rgba(0,0,0,.12) 64%, rgba(0,0,0,0) 100%),
+    linear-gradient(to right, rgba(0,0,0,.55) 0%, rgba(0,0,0,.18) 42%, rgba(0,0,0,0) 70%);
+}
+
+.fp-hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 0 32px 56px;
+  color: #fff;
+}
+
+.fp-hero-kicker {
+  display: block;
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 16px;
+}
+.fp-hero-h1 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(40px, 6.4vw, 84px);
+  line-height: .98;
+  letter-spacing: -.03em;
+  margin: 0 0 16px;
+  color: #fff;
+  text-wrap: balance;
+}
+.fp-hero-sub {
+  font-size: clamp(15px, 1.5vw, 19px);
+  line-height: 1.55;
+  max-width: 46ch;
+  margin: 0 0 28px;
+  color: rgba(255,255,255,.92);
+}
+.fp-hero-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+/* The ghost button sits on a photograph here, so it needs its own contrast. */
+.fp-hero-cta .btn-ghost { color: #fff; border-color: rgba(255,255,255,.55); }
+.fp-hero-cta .btn-ghost:hover { background: rgba(255,255,255,.12); }
+
+/* ── Hero search ─────────────────────────────────────────────────────────── */
+.fp-herosearch { max-width: 620px; }
+.fp-herosearch-bar {
+  display: flex;
+  gap: 0;
+  background: #fff;
+  border: 2px solid #fff;
+}
+.fp-herosearch-bar input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  padding: 14px 16px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--color-text);
+  background: transparent;
+  outline-offset: -3px;
+}
+.fp-herosearch-bar input::placeholder { color: var(--color-neutral-700); }
+.fp-herosearch-bar .btn { flex: none; border: 0; padding-inline: 24px; }
+
+.fp-herosearch-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.fp-herosearch-chips button {
+  font: inherit;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.4);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.fp-herosearch-chips button:hover { background: rgba(255,255,255,.26); }
+
+.fp-visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (max-width: 700px) {
+  /* Shorter on a phone: the photograph still leads, but the search bar and the
+     first menu row have to be reachable without a long scroll. */
+  .fp-hero { min-height: 0; height: auto; padding-top: 200px; display: block; }
+  .fp-hero-inner { padding: 0 20px 32px; }
+  .fp-hero-h1 { font-size: clamp(34px, 10vw, 46px); }
+  .fp-hero-sub { font-size: 15px; margin-bottom: 20px; max-width: none; }
+  .fp-herosearch-bar { flex-wrap: wrap; }
+  .fp-herosearch-bar input { flex: 1 0 100%; padding: 13px 14px; }
+  .fp-herosearch-bar .btn { flex: 1 0 100%; }
+  .fp-hero-cta { margin-top: 16px; }
+  .fp-hero-cta .btn { flex: 1 1 auto; text-align: center; }
+}
+
+/* ── Rotating headline ──────────────────────────────────────────────────────
+   "Tonight, it's <item>". The lead and the moving word sit on their own lines
+   so a long item name cannot reflow the line above it, and the block reserves
+   its height so nothing below shifts as the text types. */
+.fp-hero-h1-lead { display: block; font-size: .46em; letter-spacing: -.01em; opacity: .88; margin-bottom: .12em; }
+.fp-hero-h1-swap {
+  display: block;
+  min-height: 1.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+/* The name burns. A warm ramp is painted through the glyphs and panned slowly,
+   so a multi-word name sits across different parts of the fire - "Farm" ember
+   red, "Pizza" orange, "Special" gold - without needing a span per word. The
+   glow underneath flickers on its own, slower cycle so the two never sync into
+   an obvious pulse. Only background-position and text-shadow animate, both
+   cheap, so it stays smooth over a full-bleed photograph. */
+.fp-hero-h1-word {
+  font-variant-ligatures: none;
+  background-image: linear-gradient(
+    100deg,
+    #ffe9b8 0%, #ffc247 14%, #ff8a1f 30%, #f4441d 46%,
+    #ff8a1f 62%, #ffc247 78%, #ffe9b8 92%, #ffc247 100%
+  );
+  background-size: 260% 100%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: fp-flame-pan 7s linear infinite, fp-flame-glow 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 2px 20px rgba(0,0,0,.5));
+}
+@keyframes fp-flame-pan { to { background-position: 260% 50%; } }
+@keyframes fp-flame-glow {
+  0%, 100% { text-shadow: 0 0 18px rgba(255,138,31,.34), 0 0 44px rgba(244,68,29,.16); }
+  50%      { text-shadow: 0 0 26px rgba(255,194,71,.46), 0 0 62px rgba(244,68,29,.24); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fp-hero-h1-word { animation: none; background-position: 40% 50%; }
+}
+.fp-hero-caret {
+  display: inline-block;
+  width: .06em;
+  height: .78em;
+  margin-left: .06em;
+  vertical-align: baseline;
+  background: var(--brand-primary, var(--color-accent));
+  opacity: 0;
+}
+/* Only blinks while it is actually typing. */
+.fp-hero-caret[data-on] { animation: fp-caret 1.05s steps(1) infinite; }
+@keyframes fp-caret { 0%, 50% { opacity: 1 } 50.01%, 100% { opacity: 0 } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-hero-caret { animation: none; opacity: 1; }
+}
+
+/* ── Steam ──────────────────────────────────────────────────────────────────
+   Three blurred plumes drifting up off the pizza, sat between the photograph
+   and the scrim so the copy stays crisp on top of it. Built from gradients
+   rather than an image or a video: no download, no decode, and it composites
+   on the GPU because only transform and opacity animate. */
+.fp-hero-steam {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: .5;
+}
+.fp-hero-steam span {
+  position: absolute;
+  bottom: -22%;
+  width: 46vmin;
+  height: 62vmin;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,255,255,.34), rgba(255,255,255,.12) 46%, rgba(255,255,255,0) 72%);
+  will-change: transform, opacity;
+  contain: strict;
+  animation: fp-steam 15s ease-in-out infinite;
+}
+/* Offset in time and space so they read as three separate wisps, not a pulse. */
+.fp-hero-steam span:nth-child(1) { left: 52%; animation-duration: 15s; animation-delay: 0s; }
+.fp-hero-steam span:nth-child(2) { left: 68%; width: 36vmin; height: 52vmin; animation-duration: 19s; animation-delay: -6s; }
+.fp-hero-steam span:nth-child(3) { left: 80%; width: 42vmin; height: 58vmin; animation-duration: 23s; animation-delay: -12s; }
+
+@keyframes fp-steam {
+  0%   { transform: translate3d(0, 12%, 0) scale(.82); opacity: 0; }
+  18%  { opacity: .85; }
+  60%  { opacity: .5; }
+  100% { transform: translate3d(-7%, -95%, 0) scale(1.5); opacity: 0; }
+}
+
+@media (max-width: 700px) {
+  /* Narrower frame: keep the plumes over the food rather than the text. */
+  .fp-hero-steam { opacity: .42; }
+  .fp-hero-steam span { width: 62vmin; height: 70vmin; }
+  .fp-hero-steam span:nth-child(1) { left: 34%; }
+  .fp-hero-steam span:nth-child(2) { left: 56%; }
+  .fp-hero-steam span:nth-child(3) { left: 74%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-hero-steam { display: none; }
+}
+
+/* ── The 20-inch stamp ──────────────────────────────────────────────────────
+   The shop's one genuinely unusual claim, set as a rubber stamp: bold, tilted,
+   and printed unevenly, the way a real one lands on a menu or a box. It does
+   not spin - a stamp is struck, not spun - and the whole mark is one SVG with
+   a static filter, so it paints once and never animates. */
+.fp-stamp {
+  position: absolute;
+  z-index: 3;
+  right: clamp(16px, 4vw, 72px);
+  top: clamp(64px, 11vh, 120px);
+  width: clamp(230px, 26vw, 380px);
+  aspect-ratio: 1;
+  pointer-events: none;
+  transform: rotate(-11deg);
+}
+/* A dark bloom behind the ink so the mark holds its own over the bright middle
+   of the pizza. Without it the white washes out exactly where the food is most
+   appetising, which is where the stamp wants to sit. */
+.fp-stamp::after {
+  content: "";
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(10,6,4,.66), rgba(10,6,4,.4) 62%, rgba(10,6,4,0) 100%);
+  z-index: 0;
+}
+.fp-stamp-ink { position: relative; z-index: 1; width: 100%; height: 100%; overflow: visible; }
+.fp-stamp-edge { fill: none; stroke: #fff; stroke-width: 9; }
+.fp-stamp-edge-thin { stroke-width: 3.5; }
+.fp-stamp-text {
+  fill: #fff;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: .19em;
+}
+.fp-stamp-size {
+  fill: #fff;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 68px;
+  letter-spacing: -.045em;
+}
+.fp-stamp-under {
+  fill: #fff;
+  font-family: var(--font-heading), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: .22em;
+}
+
+@media (max-width: 900px) {
+  .fp-stamp {
+    position: relative;
+    right: auto; top: auto;
+    width: 168px;
+    margin: 0 -6px 10px auto;
+    transform: rotate(-9deg);
+  }
+}
+
+/* ══ Back office: a working layer over the Modernist system ═══════════════════
+   The storefront is meant to be austere — one accent, flat greys, no colour
+   doing any work. That is right for a menu somebody reads for two minutes and
+   wrong for a screen a kitchen stares at for eight hours. Rows all weigh the
+   same, a rejected order looks like a completed one, and there is nothing to
+   scan by. So the back office keeps the type, the zero radius and the 2px
+   rules, and adds the one thing it was missing: colour that means something.
+
+   Scoped to .fp-admin and .fp-kitchenwrap so none of this reaches the
+   storefront. */
+.fp-admin, .fp-kitchenwrap {
+  --ok:      #0f7b3d;  --ok-bg:      #e7f5ec;  --ok-line:      #9ed3b4;
+  --warn:    #8a5a00;  --warn-bg:    #fdf3dc;  --warn-line:    #e6c67a;
+  --danger:  #b3261e;  --danger-bg:  #fdeceb;  --danger-line:  #efb0ac;
+  --info:    #1b4f9c;  --info-bg:    #e9f0fb;  --info-line:    #a8c3e8;
+  --busy:    #6b3fa0;  --busy-bg:    #f2ecfa;  --busy-line:    #c6b0e2;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────────────────
+   Striping, a heavier header, and a hover row. Cheap, and it is the difference
+   between reading a table and counting down it with a finger. */
+.fp-admin .table, .fp-kitchenwrap .table { border-collapse: separate; border-spacing: 0; }
+.fp-admin .table thead th, .fp-kitchenwrap .table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-text);
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  padding: 9px 10px;
+  border: 0;
+  white-space: nowrap;
+}
+.fp-admin .table tbody td, .fp-kitchenwrap .table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid var(--color-divider);
+  vertical-align: middle;
+}
+.fp-admin .table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--color-text) 3%, transparent); }
+.fp-admin .table tbody tr:hover { background: color-mix(in srgb, var(--brand-primary, #ec3013) 8%, transparent); }
+/* A row that needs attention says so before you read a word of it. */
+.fp-admin .table tbody tr[data-row="danger"] { box-shadow: inset 4px 0 0 var(--danger); }
+.fp-admin .table tbody tr[data-row="warn"]   { box-shadow: inset 4px 0 0 var(--warn); }
+.fp-admin .table tbody tr[data-row="ok"]     { box-shadow: inset 4px 0 0 var(--ok); }
+.fp-admin .table tbody tr[data-row="info"]   { box-shadow: inset 4px 0 0 var(--info); }
+
+/* ── Status pills ───────────────────────────────────────────────────────────
+   Every state a shop cares about gets its own colour, and the same colour
+   everywhere it appears. */
+.fp-admin .tag, .fp-kitchenwrap .tag {
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+.tag-ok      { background: var(--ok-bg);     color: var(--ok);     border-color: var(--ok-line) !important; }
+.tag-warn    { background: var(--warn-bg);   color: var(--warn);   border-color: var(--warn-line) !important; }
+.tag-danger  { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-line) !important; }
+.tag-info    { background: var(--info-bg);   color: var(--info);   border-color: var(--info-line) !important; }
+.tag-busy    { background: var(--busy-bg);   color: var(--busy);   border-color: var(--busy-line) !important; }
+
+/* ── Panels ─────────────────────────────────────────────────────────────────
+   Screens were one long column of forms with nothing separating them. A titled
+   panel tells you where one job ends and the next begins. */
+.fp-panel { border: 2px solid var(--color-text); margin-bottom: 24px; background: var(--color-bg); }
+.fp-panel > header {
+  background: var(--color-text);
+  color: #fff;
+  padding: 9px 14px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.fp-panel > .body { padding: 18px; }
+.fp-panel[data-tone="danger"] > header { background: var(--danger); }
+.fp-panel[data-tone="warn"]   > header { background: var(--warn); }
+.fp-panel[data-tone="ok"]     > header { background: var(--ok); }
+
+/* ── Action buttons ─────────────────────────────────────────────────────────
+   A kitchen hits these with a thumb, often with flour on it. Bigger, and the
+   destructive one no longer looks identical to the one next to it. */
+.fp-admin .btn, .fp-kitchenwrap .btn { min-height: 38px; font-weight: 700; }
+.btn-ok      { background: var(--ok);     color: #fff; border-color: var(--ok); }
+.btn-warn    { background: var(--warn);   color: #fff; border-color: var(--warn); }
+.btn-danger  { background: var(--danger); color: #fff; border-color: var(--danger); }
+.btn-ok:hover, .btn-warn:hover, .btn-danger:hover { filter: brightness(1.12); }
+
+/* Numbers that carry meaning get the meaning. */
+.fp-num-ok     { color: var(--ok); font-weight: 700; }
+.fp-num-warn   { color: var(--warn); font-weight: 700; }
+.fp-num-danger { color: var(--danger); font-weight: 700; }

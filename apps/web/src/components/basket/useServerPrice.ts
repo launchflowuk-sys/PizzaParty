@@ -3,7 +3,21 @@ import { useEffect, useRef, useState } from "react";
 import type { PricedBasket } from "@/lib/basket-types";
 import { useBasket } from "./store";
 
-export type ServerPrice = PricedBasket & { location: { key: string; name: string; deliveryFee: number; minOrder: number; open: boolean; paused: boolean } | null };
+export type ServerPrice = PricedBasket & {
+  location: {
+    key: string;
+    name: string;
+    /** Banded for this postcode, so it always matches what the summary charges. */
+    deliveryFee: number;
+    minOrder: number;
+    /** The band's name, empty when no band covers this postcode. */
+    band?: string;
+    /** The shop's delivery time plus the band's extra minutes. */
+    etaMinutes?: number;
+    open: boolean;
+    paused: boolean;
+  } | null;
+};
 
 /** Re-prices the basket on the server whenever lines/fulfilment/postcode/promo change. Drops lines the server rejected. */
 export function useServerPrice() {

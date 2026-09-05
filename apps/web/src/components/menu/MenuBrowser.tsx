@@ -30,9 +30,14 @@ const TAG_LABEL: Record<string, string> = { vegetarian: "V", vegan: "VG", spicy:
 /** Menu screen from `Farm Pizza.dc.html`: sticky category rail, search, and a 3-up
  *  ruled grid. Filtering is client-side to match the prototype's live behaviour; the
  *  full menu still ships in the page's JSON-LD for search engines. */
-export function MenuBrowser({ categories, items }: { categories: TileCategory[]; items: TileItem[] }) {
+export function MenuBrowser({ categories, items, initialQuery = "" }: {
+  categories: TileCategory[];
+  items: TileItem[];
+  /** Seeded from ?q= so the hero search lands on results rather than the top of the menu. */
+  initialQuery?: string;
+}) {
   const [cat, setCat] = useState(categories[0]?.slug ?? "");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const add = useBasket((s) => s.add);
   const [added, setAdded] = useState("");
 

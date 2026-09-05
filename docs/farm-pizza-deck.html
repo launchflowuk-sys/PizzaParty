@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farm Pizza × LaunchFlow</title>
+<!-- Archivo is the product's typeface. Loaded non-blocking: if the room has no wifi
+     the request simply never resolves and the grotesque fallback below carries the deck. -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" media="print" onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">
+<style>
+:root{
+  --bg:#f3f2f2; --surface:#eae9e9; --ink:#201e1d; --accent:#ec3013; --accent-700:#ae1800;
+  --n300:#d7d3d3; --n500:#9b9797; --n700:#605d5d; --n800:#444141;
+  --rule:rgba(32,30,29,.4);
+  /* Archivo first; the fallbacks are grotesques so an offline render still reads
+     like the product rather than like Segoe UI. */
+  --sans:"Archivo","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --pad:clamp(24px,4.5vw,72px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+h1,h2,h3,h4{font-family:var(--sans);font-weight:800;line-height:1.06;letter-spacing:-.022em;margin:0}
+p{margin:0}
+b,strong{font-weight:700}
+:where(button,a){font-family:inherit}
+::selection{background:var(--accent);color:#fff}
+
+/* ── deck frame ───────────────────────────────────────────── */
+#deck{position:relative;height:100dvh;width:100%}
+.slide{
+  position:absolute;inset:0;display:none;
+  padding:var(--pad) var(--pad) 88px;
+  overflow-y:auto;overflow-x:hidden;
+}
+.slide.on{display:block}
+.wrap{max-width:1180px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+
+/* ── type ─────────────────────────────────────────────────── */
+.kicker{
+  display:block;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent-700);margin:0 0 18px;
+}
+.kicker .n{color:var(--n500);margin-right:10px}
+h2.big{font-size:clamp(30px,5.1vw,62px);max-width:19ch;margin:0 0 8px}
+h2.big.tight{font-size:clamp(28px,4vw,48px)}
+h2.big.w22{max-width:22ch}h2.big.w24{max-width:24ch}h2.big.w27{max-width:27ch}
+h1.title{font-size:clamp(38px,7.4vw,92px);max-width:14ch;margin:0 0 20px}
+.lede{font-size:clamp(16px,1.5vw,20px);color:var(--n800);max-width:62ch;margin-top:14px}
+.rule{height:2px;background:var(--rule);margin:28px 0;flex:none}
+.rule.thin{height:1px;background:var(--n300)}
+.acc{color:var(--accent-700)}
+.mono{font-family:var(--mono);font-size:12px;letter-spacing:.02em}
+.small{font-size:13px;color:var(--n700)}
+.tag{
+  display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  border:2px solid var(--accent);color:var(--accent-700);padding:2px 7px;vertical-align:2px;margin-left:10px;
+}
+.tag.grey{border-color:var(--n300);color:var(--n700)}
+
+/* ── ruled lists ──────────────────────────────────────────── */
+ul.ruled{list-style:none;margin:0;padding:0;border-top:2px solid var(--rule)}
+ul.ruled li{padding:15px 0;border-bottom:1px solid var(--n300);display:grid;grid-template-columns:150px 1fr;gap:28px;align-items:baseline}
+ul.ruled li:last-child{border-bottom:2px solid var(--rule)}
+ul.ruled .h{font-weight:700;letter-spacing:-.01em}
+ul.ruled .d{color:var(--n800)}
+ul.plain{list-style:none;margin:0;padding:0}
+ul.plain li{padding:9px 0 9px 20px;position:relative;color:var(--n800);border-bottom:1px solid var(--n300)}
+ul.plain li:last-child{border-bottom:0}
+ul.plain li::before{content:"";position:absolute;left:0;top:17px;width:9px;height:2px;background:var(--accent)}
+
+/* ── grids ────────────────────────────────────────────────── */
+.cols{display:grid;gap:clamp(24px,3.4vw,52px)}
+.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.c2-7-5{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.colhead{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--n700);padding-bottom:10px;border-bottom:2px solid var(--rule);margin-bottom:6px}
+
+.cells{display:grid;border-top:2px solid var(--rule);border-left:2px solid var(--rule);grid-template-columns:repeat(4,minmax(0,1fr))}
+.cell{border-right:2px solid var(--rule);border-bottom:2px solid var(--rule);padding:20px;display:grid;gap:6px;align-content:start}
+.cell .n{font-weight:800;font-size:clamp(30px,3.6vw,44px);line-height:1;letter-spacing:-.03em;color:var(--accent)}
+.cell .l{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--n700)}
+
+/* ── figures table ────────────────────────────────────────── */
+table.fig{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.fig th{
+  text-align:left;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--n700);
+  padding:0 0 10px;border-bottom:2px solid var(--rule)
+}
+table.fig td{padding:13px 0;border-bottom:1px solid var(--n300);vertical-align:baseline}
+table.fig td:last-child,table.fig th:last-child{text-align:right;font-family:var(--mono);font-size:14px}
+table.fig tr.total td{border-top:2px solid var(--rule);border-bottom:2px solid var(--rule);font-weight:800;font-size:17px}
+table.fig tr.total td:last-child{font-size:19px;color:var(--accent-700)}
+table.fig td .sub{display:block;color:var(--n700);font-size:12.5px;margin-top:3px}
+
+.quote{
+  border-left:2px solid var(--accent);padding:4px 0 4px 22px;
+  font-size:clamp(17px,2.1vw,25px);font-weight:700;letter-spacing:-.015em;line-height:1.28;max-width:34ch
+}
+.box{border:2px solid var(--rule);padding:20px 22px}
+.box.acc{border-color:var(--accent)}
+.box h4{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-700);margin-bottom:10px;font-weight:700}
+.fill{
+  font-family:var(--mono);border-bottom:2px solid var(--accent);min-width:74px;display:inline-block;
+  padding:0 4px;outline:none;color:var(--accent-700)
+}
+.fill:focus{background:#ffe0d9}
+.spacer{flex:1;min-height:16px}
+.footline{
+  display:flex;flex-wrap:wrap;gap:8px 26px;padding-top:16px;border-top:2px solid var(--rule);
+  font-family:var(--mono);font-size:11.5px;color:var(--n700);letter-spacing:.02em
+}
+
+/* ── chrome ───────────────────────────────────────────────── */
+#bar{position:fixed;top:0;left:0;height:3px;background:var(--accent);width:0;z-index:40;transition:width .18s ease}
+#hud{
+  position:fixed;right:var(--pad);bottom:20px;z-index:43;display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:11px;color:var(--n700)
+}
+#hud button{
+  background:var(--bg);border:2px solid var(--rule);color:var(--ink);width:30px;height:30px;
+  font-size:14px;line-height:1;cursor:pointer;padding:0
+}
+#hud button:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+#hud .count{min-width:52px;text-align:right}
+#hud .nkey{border:2px solid var(--n300);padding:3px 8px;cursor:pointer}
+#hud .nkey.live{border-color:var(--accent);color:var(--accent-700)}
+#notes{
+  position:fixed;left:0;right:0;bottom:0;z-index:42;display:none;
+  background:var(--surface);border-top:2px solid var(--ink);
+  padding:18px var(--pad) 60px;max-height:46dvh;overflow:auto
+}
+body.notes-on #notes{display:block}
+#notes h5{
+  margin:0 0 8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-700);font-weight:700
+}
+#notes .body{max-width:900px;font-size:14px;line-height:1.6;color:var(--n800)}
+#notes .body p{margin:0 0 8px}
+#notes .body p:last-child{margin:0}
+.notes-src{display:none}
+
+/* ── short screens ────────────────────────────────────────────
+   A 1366x768 laptop is the likeliest machine in the room. Rather than let the
+   dense slides scroll, tighten the whole scale so each one still fits on screen. */
+@media (max-height:850px){
+  :root{--pad:clamp(20px,3.2vw,44px)}
+  .slide{padding-bottom:70px}
+  h1.title{font-size:clamp(32px,5.8vw,68px);margin:0 0 14px}
+  h2.big{font-size:clamp(26px,3.9vw,46px)}
+  h2.big.tight{font-size:clamp(24px,3.2vw,38px)}
+  .lede{font-size:clamp(15px,1.3vw,17px);margin-top:10px}
+  .kicker{margin-bottom:12px}
+  .rule{margin:16px 0}
+  ul.ruled li{padding:10px 0}
+  ul.plain li{padding:6px 0 6px 20px}
+  ul.plain li::before{top:14px}
+  table.fig td{padding:9px 0}
+  table.fig td .sub{font-size:11.5px;margin-top:2px}
+  table.fig tr.total td{font-size:15px}
+  table.fig tr.total td:last-child{font-size:17px}
+  .box{padding:13px 16px}
+  .box h4{margin-bottom:7px}
+  .cell{padding:14px}
+  .cell .n{font-size:clamp(26px,3vw,36px)}
+  .quote{font-size:clamp(16px,1.8vw,21px)}
+  .cols{gap:clamp(20px,2.6vw,40px)}
+  .footline{padding-top:12px}
+}
+
+@media (max-width:900px){
+  .c2,.c3,.c2-7-5{grid-template-columns:minmax(0,1fr)}
+  .cells{grid-template-columns:repeat(2,minmax(0,1fr))}
+  ul.ruled li{grid-template-columns:minmax(0,1fr);gap:4px}
+  #hud{right:16px}
+}
+@media print{
+  body{overflow:visible}
+  .slide{position:static;display:block!important;page-break-after:always;min-height:auto;padding:24px}
+  #hud,#bar,#notes{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<div id="bar"></div>
+<div id="deck">
+
+<!-- 01 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker">LaunchFlow &times; Farm Pizza &middot; September 2026</span>
+    <h1 class="title">Your shop.<br>Your customers.<br>Your list.</h1>
+    <p class="lede">The ordering system you have already seen &mdash; and what it means for the commission you are handing over on every delivery order.</p>
+    <div class="spacer"></div>
+    <div class="cells">
+      <div class="cell"><span class="n">68</span><span class="l">Your products, live</span></div>
+      <div class="cell"><span class="n">8</span><span class="l">Meal deals, your prices</span></div>
+      <div class="cell"><span class="n">16</span><span class="l">Back-office screens</span></div>
+      <div class="cell"><span class="n">0%</span><span class="l">Commission on an order</span></div>
+    </div>
+    <div class="footline">
+      <span>Farm Pizza &middot; 7 Derby Road, Grays RM17 6QD &middot; 01375 383877</span>
+      <span>farm-pizza.com</span>
+      <span>&larr; &rarr; to move &middot; N for my notes</span>
+    </div>
+  </div>
+  <div class="notes-src"><p>Opening line: "You have seen it work. Today is about the money and the decision, not another demo."</p><p>Do not re-demo unless he asks. He was blown away already &mdash; the job now is to convert that into a yes on a fee and a go-live date.</p><p>If he opens with "how much" &mdash; jump straight to slide 14, then come back.</p></div>
+</section>
+
+<!-- 02 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">01</span> The problem</span>
+    <h2 class="big">You are renting your own customers.</h2>
+    <div class="rule"></div>
+    <div class="cols c2-7-5">
+      <div>
+        <ul class="ruled">
+          <li><span class="h">The commission</span><span class="d">Just Eat's delivery-order rate for UK partners sits around <b>14%, plus VAT on top of that</b>. It comes off every order, on the food and the delivery charge, every week, forever. It does not fall when you get busier.</span></li>
+          <li><span class="h">The list</span><span class="d">The customer ordered your pizza, but the customer is theirs. You cannot text last month's regulars. You cannot see who used to order every Friday and stopped six weeks ago.</span></li>
+          <li><span class="h">The shelf</span><span class="d">Your shop sits between two other pizza places on their page, sorted by their rules. Next time that customer is hungry they open the app, not your website.</span></li>
+        </ul>
+      </div>
+      <div>
+        <p class="quote">Every order on there you pay for twice. Once in commission &mdash; and again by never being able to reach that customer directly.</p>
+        <div class="rule thin"></div>
+        <p class="small">None of this is an argument for switching the aggregator off. It is an argument for owning the orders you can own, and letting the aggregator be the shop window it is good at being.</p>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>Do not slag off Just Eat. He will have heard it and he still needs them for discovery. The line is: keep them for new faces, take the repeat trade direct.</p><p>Ask here, and write the answer down: "Roughly how many delivery orders a week come through Just Eat, and what's a typical basket?" You need those two numbers for the next slide &mdash; the figures on it are placeholders until he gives you his.</p></div>
+</section>
+
+<!-- 03 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">02</span> The arithmetic</span>
+    <h2 class="big">What 14% plus VAT actually takes.<span class="tag">Estimate</span></h2>
+    <div class="cols c2-7-5" style="margin-top:26px">
+      <div>
+        <table class="fig">
+          <tr><th>Working</th><th>Figure</th></tr>
+          <tr><td>Delivery orders through the aggregator, per week<span class="sub">Assumption &mdash; replace with your real number</span></td><td>60</td></tr>
+          <tr><td>Average order value<span class="sub">Assumption &mdash; a 13&Prime; pizza, a side and a drink</span></td><td>&pound;24.00</td></tr>
+          <tr><td>Food value per week</td><td>&pound;1,440.00</td></tr>
+          <tr><td>Food value per month <span class="mono">(&times; 52 &divide; 12)</span></td><td>&pound;6,240.00</td></tr>
+          <tr><td>Commission at 14%</td><td>&pound;873.60</td></tr>
+          <tr><td>VAT on the commission, at 20%</td><td>&pound;174.72</td></tr>
+          <tr class="total"><td>Handed over, per month</td><td>&pound;1,048.32</td></tr>
+          <tr class="total"><td>Handed over, per year</td><td>&pound;12,579.84</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="box acc">
+          <h4>Read this honestly</h4>
+          <p class="small">Both top figures are my guesses, not your books. Give me your real weekly count and average basket and the whole table moves with them &mdash; and it will still be a four-figure number a month.</p>
+          <div class="rule thin"></div>
+          <p class="small">Rates vary by contract and some partners are on more than 14%. Check your own statement. Whatever the rate is, the shape of the argument does not change: it is a percentage of everything, for as long as you trade.</p>
+        </div>
+        <div class="rule thin"></div>
+        <p class="small">Every order that moves off the aggregator and onto your own site keeps <b>16.8%</b> of its value in the shop.</p>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>Do the maths out loud with his numbers if he gives them. Writing it on a napkin is more persuasive than the slide.</p><p>If he says "but they bring me the customers" &mdash; agree. Answer: they bring the first order. You are paying full price for the fifth, the twentieth and the fiftieth from the same person. That is what this fixes.</p><p>16.8% = 14% + VAT. Say "near enough seventeen pence in every pound".</p></div>
+</section>
+
+<!-- 04 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">03</span> What is built</span>
+    <h2 class="big">Not a mock-up. Your shop, running.</h2>
+    <p class="lede">Your menu was imported from your own listing &mdash; 68 products, your categories, your prices, your photography. What you clicked through was the real thing reading a real database.</p>
+    <div class="rule"></div>
+    <div class="cols c3">
+      <div>
+        <div class="colhead">The storefront</div>
+        <ul class="plain">
+          <li>Menu, search, product options</li>
+          <li>Basket priced on the server</li>
+          <li>Delivery or collection, now or later</li>
+          <li>Live order tracker and texts</li>
+          <li>Accounts, reorder, refer a friend</li>
+        </ul>
+      </div>
+      <div>
+        <div class="colhead">The back office</div>
+        <ul class="plain">
+          <li>Kitchen queue on the pass</li>
+          <li>Prices, sold-out, deals, offer codes</li>
+          <li>Opening hours and a pause button</li>
+          <li>Delivery districts and charge bands</li>
+          <li>Order history and CSV export</li>
+        </ul>
+      </div>
+      <div>
+        <div class="colhead">The marketing engine</div>
+        <ul class="plain">
+          <li>Your customer list, nine segments</li>
+          <li>Five automatic text rules</li>
+          <li>One-off campaigns to a segment</li>
+          <li>Offer codes with real rules</li>
+          <li>Money in, money out, per rule</li>
+        </ul>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="small">Everything on the next ten slides exists in the build you have already used. The things that are half-finished get two slides of their own near the end, in plain English.</p>
+  </div>
+  <div class="notes-src"><p>Purpose of this slide is scope, not detail. Three seconds each column, then move.</p><p>If he starts poking at a feature here, park it: "That's coming up in two slides."</p></div>
+</section>
+
+<!-- 05 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">04</span> The menu</span>
+    <h2 class="big">Your real menu, at your real prices.</h2>
+    <div class="rule"></div>
+    <div class="cols c2-7-5">
+      <div>
+        <ul class="ruled">
+          <li><span class="h">68 products</span><span class="d">Across seven sections: Pizzas, Starters, Sides, Chicken, Pasta, Desserts, Drinks.</span></li>
+          <li><span class="h">30 pizzas</span><span class="d">Five sizes each &mdash; 7&Prime; Small, 10&Prime; Medium, 13&Prime; Large, 15&Prime; X-Large and the 20&Prime; XX-Large.</span></li>
+          <li><span class="h">Options</span><span class="d">A base choice with three options, and 16 extra toppings, each carrying its own surcharge. The price on screen moves as they pick.</span></li>
+          <li><span class="h">8 meal deals</span><span class="d">At your prices. Meal for 1 &pound;15.39 &middot; Meal for 2 &pound;29.69 &middot; Family Meal 3 &pound;37.39 &middot; Any 3 &times; 20&Prime; &pound;51.69. The builder only lets a customer pick what the deal actually covers.</span></li>
+          <li><span class="h">Prices</span><span class="d">&pound;1.09 through to &pound;20.98, taken straight from your listing rather than typed from memory.</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="box">
+          <h4>Photography</h4>
+          <p class="small"><b>46 of the 68</b> have a real photograph. The other 22 show a designed initials tile rather than an empty grey box &mdash; so a half-photographed menu still looks deliberate.</p>
+          <div class="rule thin"></div>
+          <p class="small">Give me a morning with the remaining 22 items and the menu is complete. That is the single cheapest thing on the whole list that lifts orders.</p>
+        </div>
+        <div class="rule thin"></div>
+        <p class="small">Allergens are listed per product on an allergen page. <b>Ten are still blank</b> &mdash; nine of them soft drinks, which is harmless, and the Milkshake, which is not. A blank shows as a dash today, which reads as &ldquo;no allergens&rdquo; rather than &ldquo;not recorded&rdquo;. Both need fixing before launch.</p>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>This is the slide that earned "his whole shop on there". Let it land.</p><p>Ask for the photo session here &mdash; 22 items, one morning, his kitchen. Get a date if you can.</p><p>Be straight about the 10 missing allergen entries. A food business owner respects you for raising it before it bites.</p></div>
+</section>
+
+<!-- 06 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">05</span> The storefront</span>
+    <h2 class="big">Browse, choose, pay, watch it come.</h2>
+    <div class="rule"></div>
+    <ul class="ruled">
+      <li><span class="h">Menu</span><span class="d">Sticky category rail, a search box that filters the whole menu as they type, and a photo grid. Anything with no choices to make gets a one-tap <b>Add</b>. Sold-out items say so and cannot be ordered.</span></li>
+      <li><span class="h">Product</span><span class="d">Size, base and the 16 extra toppings as ruled rows with the surcharges shown, and a running price. Sensible defaults are pre-selected &mdash; 7&Prime; Small, tomato base &mdash; so nobody gets stuck on a choice, and Add will not enable if a required one is left empty. Quantity stepper, and a note for the kitchen.</span></li>
+      <li><span class="h">Basket</span><span class="d">Every change is re-priced on your server from the live menu &mdash; not on their phone. Anything sold out or off the menu is removed with a plain-English reason. Offer-code box, and a "goes well with" row of drinks and sides.</span></li>
+      <li><span class="h">Checkout</span><span class="d">One screen: delivery or collection, as soon as possible or a 15-minute slot for today or tomorrow, name and mobile, then pay. No account needed. If you are shut, they book a time instead of leaving.</span></li>
+      <li><span class="h">Tracker</span><span class="d">Received, accepted, in the oven, on its way, done &mdash; updating on its own as the kitchen taps through, with a text at each step. That is the screen that stops the "where's my food?" phone calls.</span></li>
+    </ul>
+    <div class="spacer"></div>
+    <p class="small"><b>The price is always worked out again on your server.</b> Nothing a customer's browser sends about money is trusted &mdash; so nobody pays &pound;3 for a 20&Prime; because they know how to open a developer console.</p>
+  </div>
+  <div class="notes-src"><p>The server-repricing point matters more than it sounds. Every cheap website builder gets this wrong. Say it plainly: "the phone asks, the server decides."</p><p>The tracker is the one customers rave about. Tie it to his staff time: fewer calls on a Friday night.</p><p>Revenue lever worth raising if there is time: the size defaults to 7&Prime; Small because it is first in the list. Defaulting to 10&Prime; or 13&Prime; instead would lift the average basket on every pizza. Cheap change, his call, not mine to make.</p><p>The tracker texts need the text account live &mdash; slide 15. Do not let him think the texts are running today.</p></div>
+</section>
+
+<!-- 07 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">06</span> Delivery and hours</span>
+    <h2 class="big">Your patch, priced your way.</h2>
+    <div class="rule"></div>
+    <div class="cols c2">
+      <div>
+        <div class="colhead">Delivery charge bands &mdash; Grays</div>
+        <table class="fig" style="margin-top:14px">
+          <tr><th>Area</th><th>Fee / minimum</th></tr>
+          <tr><td><b>RM17</b><span class="sub">Grays &amp; Little Thurrock</span></td><td>&pound;1.99 / &pound;9.99</td></tr>
+          <tr><td><b>RM16, RM20</b><span class="sub">Chafford &amp; West Thurrock &mdash; plus 15 min on the quote</span></td><td>&pound;3.49 / &pound;14.99</td></tr>
+          <tr><td><b>RM15, RM18, RM19</b><span class="sub">Standard rate for the rest of the patch</span></td><td>&pound;1.99 / &pound;9.99</td></tr>
+        </table>
+        <p class="small" style="margin-top:16px">A customer types their postcode and is told straight away whether you deliver, which shop cooks it, what it costs and roughly how long. The same rules set the fee they are actually charged at checkout, and the band's extra minutes feed the time the kitchen promises.</p>
+        <div class="rule thin"></div>
+        <p class="small"><span class="tag grey">On the punch list</span> One line at checkout has not caught up: the note under the address box still reads the headline &pound;1.99 / &pound;9.99 / 35 min for everyone. A Chafford customer is <b>charged</b> &pound;3.49 correctly in the summary beside it, but reads the wrong figure above. Small fix, and it is mine, not yours.</p>
+      </div>
+      <div>
+        <div class="colhead">Hours and control</div>
+        <ul class="plain" style="margin-top:14px">
+          <li>Open 11:00 to 02:00, and to 03:00 on Friday and Saturday</li>
+          <li>The after-midnight hours are handled properly &mdash; and that logic is one of the few parts with automated tests behind it</li>
+          <li>15 minutes prep, 35 minutes on the road, quoted before they order</li>
+          <li>Slammed? One button pauses new orders for 15, 30 or 60 minutes, or the rest of the night, with a reason customers can see</li>
+          <li>While you are paused or shut, customers get pre-order slots instead of going elsewhere</li>
+          <li>You edit the hours and the bands yourself, in the back office &mdash; with one caveat about redeploys, on the straight-talk slides</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>The band table is the detail that proves this is his shop and not a template. He set those prices; the system enforces them.</p><p>Pause button: sell it as the Friday-night pressure valve. Every takeaway owner has had a night where they wanted to stop the phone.</p><p>A second branch is not in here yet &mdash; that is on the straight-talk slide. Do not let him think it is already configured.</p></div>
+</section>
+
+<!-- 08 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">07</span> The pass</span>
+    <h2 class="big">One screen, order in to order out.</h2>
+    <div class="rule"></div>
+    <div class="cols c2-7-5">
+      <div>
+        <ul class="ruled">
+          <li><span class="h">Four columns</span><span class="d">New, In the oven, Ready, Out for delivery. A ticket carries the items with their sizes and options, deal contents, the customer's note, whether it is paid or cash, and the phone number as a tap-to-call.</span></li>
+          <li><span class="h">It nags</span><span class="d">A new order beeps, and keeps beeping every 20 seconds while anything is sitting unaccepted. The minutes-waiting timer turns red past 20.</span></li>
+          <li><span class="h">Accept with a time</span><span class="d">Defaulted from your prep and delivery minutes, plus the band's extra 15 where it applies. A pre-order defaults to the booked slot.</span></li>
+          <li><span class="h">Reject with a reason</span><span class="d">And if it was paid by card, the refund goes back automatically.</span></li>
+          <li><span class="h">Written down</span><span class="d">Every step records who did it and when &mdash; which is what you want the day a customer says they never got it.</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="box acc">
+          <h4>Say this out loud</h4>
+          <p class="small">Right now, a new order appears <b>on that screen and nowhere else</b>. No text to the shop, no email, no printer &mdash; those are switched off because I do not have your numbers yet.</p>
+          <div class="rule thin"></div>
+          <p class="small">If the tablet is asleep, nobody knows an order came in. Give me a mobile number for the kitchen and that is fixed the same day.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>Do not skip the red box. If he discovers this himself on night one, you lose the trust you have built. Raising it first is what makes the rest of the deck believable.</p><p>Get the kitchen mobile number in the room. Write it down.</p><p>If he wants a receipt printer, the hook for it is built &mdash; it just needs a printer that can take a webhook, or a cheap bridge. Price that separately, do not promise it today.</p></div>
+</section>
+
+<!-- 09 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">08</span> The back office</span>
+    <h2 class="big">Sixteen screens. Five roles. A PIN each.</h2>
+    <div class="rule"></div>
+    <div class="cols c3">
+      <div>
+        <div class="colhead">You change these yourself</div>
+        <ul class="plain" style="margin-top:12px">
+          <li>Prices, item by item, and the description with them</li>
+          <li>Sold out / back on, in one tap</li>
+          <li>Deal prices, and whether a deal is on at all</li>
+          <li>Offer codes &mdash; percentage, pounds off or free delivery, with a minimum, an end date and a usage cap</li>
+          <li>Opening hours, and the pause button</li>
+          <li>Delivery districts, fees, minimums and bands</li>
+          <li>Staff roles and who is on shift</li>
+          <li>Order history: search by name, phone or postcode, export for the accountant</li>
+        </ul>
+      </div>
+      <div>
+        <div class="colhead">These still come through me</div>
+        <ul class="plain" style="margin-top:12px">
+          <li>Adding a brand-new product, size or category</li>
+          <li>Changing what is inside a meal deal</li>
+          <li>Allergen data</li>
+          <li>Photographs</li>
+          <li>The referral amounts</li>
+        </ul>
+      </div>
+      <div>
+        <div class="colhead">Who sees what</div>
+        <ul class="plain" style="margin-top:12px">
+          <li><b>Manager</b> &mdash; everything</li>
+          <li><b>Shift lead</b> &mdash; dashboard, pass, orders, dispatch, stock, hours, reviews</li>
+          <li><b>Kitchen</b> &mdash; the pass, and nothing else</li>
+          <li><b>Driver</b> &mdash; the pass and dispatch</li>
+          <li><b>Front of house</b> &mdash; dashboard, orders, the pass</li>
+        </ul>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="small">One permission table drives the menu they see, the pages that open and the buttons that work &mdash; so a kitchen hand cannot reach your prices by typing a web address. <span class="tag" style="margin-left:0;margin-right:6px">Important</span>Changes on the first list are <b>reverted whenever I push an update</b>, because your settings file is still the master copy &mdash; in full on the second straight-talk slide.</p>
+  </div>
+  <div class="notes-src"><p>Read the red box out. It is the least comfortable thing in the deck and the most important to say first &mdash; if he changes a price, I redeploy, and it flips back, that is the end of his trust in the whole system.</p><p>Honest framing: the file is the master copy today. Fixing it properly means making the database the master and the file the seed &mdash; a real job, not a five-minute one. Do not quote it off the cuff.</p><p>Also true and worth knowing yourself: re-saving a disabled offer code switches it back on, because the save always writes "active". Avoid editing a code you have deliberately turned off &mdash; make a new one.</p><p>The right-hand "comes through me" column is deliberate. Do not hide it &mdash; it sets expectations for support, and it is genuinely a small list.</p><p>If he asks "why can't I add a product myself?" &mdash; honest answer: the menu is rebuilt from one file so it can never drift, and a product-editor screen is on the list. Do not promise a date you have not costed.</p></div>
+</section>
+
+<!-- 10 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">09</span> The asset</span>
+    <h2 class="big">The list is the thing you cannot buy back.</h2>
+    <div class="rule"></div>
+    <div class="cols c2-7-5">
+      <div>
+        <p class="lede" style="margin-top:0">Every order writes a customer record: name, mobile, lifetime orders, lifetime spend, when they last ordered, and whether they agreed to hear from you. Nine ready-made cuts of that list are one click away.</p>
+        <div class="rule thin"></div>
+        <div class="cols c2">
+          <ul class="plain">
+            <li>Everyone opted in</li>
+            <li>Ordered in the last 30 days</li>
+            <li>Not ordered in 60+ days</li>
+            <li>Not ordered in 120+ days</li>
+            <li>Ordered once only</li>
+          </ul>
+          <ul class="plain">
+            <li>Regulars &mdash; 5 or more orders</li>
+            <li>Big spenders &mdash; &pound;250+ lifetime</li>
+            <li>Grays &amp; Little Thurrock (RM17)</li>
+            <li>Chafford &amp; West Thurrock (RM16/RM20)</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <p class="quote">&ldquo;Ordered once only&rdquo; is the biggest pot of untapped money in most takeaways &mdash; and on the aggregator you cannot even see who they are.</p>
+        <div class="rule thin"></div>
+        <p class="small">Customers tick a marketing box at checkout &mdash; unticked by default &mdash; every text carries the STOP line, and a reply of STOP takes them off automatically with a record of when they did it. That is what keeps you the right side of the rules <b>on text</b>.</p>
+        <div class="rule thin"></div>
+        <p class="small">Marketing <b>email</b> does not carry an unsubscribe link yet. Until it does, we send offers by text only &mdash; which is what you would want anyway.</p>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>This is the real pitch. Commission is the number; the list is the asset. If he only remembers one slide, make it this one.</p><p>Concrete example to use: "Twenty people who ordered once in June and never came back. One text on a wet Tuesday costs you 80p."</p><p>Consent: the opt-in box is unticked by default and STOP is honoured. Say it &mdash; he may have been burned by someone spamming his customers before.</p></div>
+</section>
+
+<!-- 11 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">10</span> The marketing engine</span>
+    <h2 class="big tight w24">Five rules that run without you.</h2>
+    <p class="small" style="margin-top:8px">All five ship <b>switched off</b>. You turn them on one at a time, after you have read the wording.</p>
+    <div class="rule" style="margin:20px 0"></div>
+    <table class="fig">
+      <tr><th>Rule</th><th>When it fires</th><th>Code</th></tr>
+      <tr><td><b>Chase an abandoned checkout</b><span class="sub">They picked their food and never paid</span></td><td>25 to 110 minutes after</td><td>COMEBACK15</td></tr>
+      <tr><td><b>Win back</b><span class="sub">Your lapsed regulars</span></td><td>45 days quiet</td><td>COMEBACK15</td></tr>
+      <tr><td><b>Second-order nudge</b><span class="sub">Ordered once, never came back</span></td><td>14 days after the first</td><td>COMEBACK15</td></tr>
+      <tr><td><b>Thank a new customer</b><span class="sub">Goodwill, no discount</span></td><td>1 day after</td><td>&mdash;</td></tr>
+      <tr><td><b>Quiet-night filler</b></td><td>30 days quiet</td><td>FREEDEL</td></tr>
+    </table>
+    <p class="small" style="margin-top:12px"><b><span class="mono">COMEBACK15</span> is 15% off a &pound;12 basket</b> &mdash; &pound;3.60 on a &pound;24 order. <b><span class="mono">FREEDEL</span> is free delivery over &pound;20.</b> Change either before we turn a rule on.</p>
+    <div class="spacer" style="flex:0;min-height:2px"></div>
+    <div class="cols c2">
+      <div class="box">
+        <h4>Guard rails</h4>
+        <p class="small">Opted-in customers only, on every rule without exception, and each run is capped so a misfire cannot text your whole list. On four of the five, nobody gets a second message inside the cool-off window &mdash; even from a different rule. The abandoned-checkout chase is outside that window on purpose: it fires <b>once per unpaid basket and never again</b>, but it can land on somebody texted yesterday.</p>
+      </div>
+      <div class="box">
+        <h4>Or send one by hand</h4>
+        <p class="small">Pick a segment, see the headcount and the cost before you press send, write the message, attach a code. If the code cannot work for that audience &mdash; a first-order code sent to regulars, say &mdash; it warns you before you spend the money. A hand-sent campaign does <b>not</b> check the cool-off window; that one is your judgement, not the system's.</p>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>Emphasise "ships switched off". He is not being volunteered into texting his customers on day one.</p><p>Say out loud that the codes in the third column are what each rule gives away today, and he can change any of them before a single rule goes on. COMEBACK15 is 15% off a £12 basket &mdash; on a £24 order that is £3.60. Make sure he has done that sum in his head.</p><p>Recommend the order to turn them on: abandoned checkout first (highest return, smallest audience), then second-order nudge, then win-back. Quiet-night filler last, once he trusts it.</p><p>These need a scheduler set up on the server &mdash; that is my job at go-live, not his. Until then they only fire when someone presses Send now.</p></div>
+</section>
+
+<!-- 12 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">11</span> Did it work?</span>
+    <h2 class="big">Measured, not guessed at.</h2>
+    <div class="rule"></div>
+    <div class="cols c2-7-5">
+      <div>
+        <ul class="ruled">
+          <li><span class="h">Every text</span><span class="d">costs <b>4p</b>, recorded against that message as it goes &mdash; not estimated at the end of the month. A message sent with an offer code on it can also be measured.</span></li>
+          <li><span class="h">When an order uses that code</span><span class="d">the order's value is stamped back onto the exact message that carried it, for that customer.</span></li>
+          <li><span class="h">The screen then shows</span><span class="d">for each rule and each campaign: how many were sent, how many turned into orders, what it cost, and what came back.</span></li>
+        </ul>
+        <div class="rule thin"></div>
+        <p class="small">Worked example: 200 win-back texts cost <b>&pound;8.00</b>. Twelve come back at &pound;24 &mdash; <b>&pound;288</b> of trade. <span class="mono">COMEBACK15</span> is <b>15% off</b>, so &pound;3.60 goes back on each: &pound;43.20 of discount. <b>&pound;236.80</b> of trade for &pound;8.00 of texts. That is the sum the screen does for you, with your real numbers.</p>
+      </div>
+      <div>
+        <div class="box acc">
+          <h4>What these numbers are not</h4>
+          <p class="small"><b>Revenue is the whole order</b>, not your margin. The food still has to be made.</p>
+          <div class="rule thin"></div>
+          <p class="small"><b>Someone who would have ordered anyway</b> still counts as marketing revenue. Treat it as a strong signal, not gospel.</p>
+          <div class="rule thin"></div>
+          <p class="small"><b>The &ldquo;commission saved&rdquo; tile</b> applies a flat 14% to the month's direct orders. It is an estimate, and the screen says so on its face.</p>
+          <div class="rule thin"></div>
+          <p class="small"><b>A message with no code cannot be measured.</b> The thank-you rule is deliberately one of those.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>The caveats box is the trust play. Any other supplier would show him the big green number and shut up. Reading the caveats out loud is what buys you the benefit of the doubt on everything else.</p><p>If he pushes on the commission-saved tile: it is the same 14% from slide 3, applied to direct orders that month. Useful as a running tally, not something to put in the accounts.</p></div>
+</section>
+
+<!-- 13 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">12</span> Word of mouth</span>
+    <h2 class="big">You only pay after they have spent.</h2>
+    <div class="rule"></div>
+    <div class="cols c2">
+      <div>
+        <ul class="ruled">
+          <li><span class="h">Their own code</span><span class="d">Every customer who logs in gets a readable one &mdash; <span class="mono">DAVE-7K2Q</span> &mdash; built from letters that survive being read out over the phone, with a copy button and a share link.</span></li>
+          <li><span class="h">The friend</span><span class="d">gets <b>&pound;5 off</b> their first order over &pound;15. First order only, checked against a phone number you have never seen before.</span></li>
+          <li><span class="h">The referrer</span><span class="d">gets <b>&pound;5 back</b> &mdash; but only once that friend's first order has actually been paid for. It arrives by text as a single-use code locked to them, good for 90 days.</span></li>
+          <li><span class="h">No fiddling it</span><span class="d">Referring yourself is blocked, and a personal reward code is refused to anyone else.</span></li>
+        </ul>
+      </div>
+      <div>
+        <p class="quote">A tenner of discount, paid out only after &pound;15 has come in, to bring you a customer whose details you keep.</p>
+        <div class="rule thin"></div>
+        <p class="small">Compare that with the cost of the same new customer arriving through an aggregator, where you pay a percentage on that order and every order after it.</p>
+        <div class="rule thin"></div>
+        <p class="small">The amounts &mdash; &pound;5, &pound;5, &pound;15 minimum, 90 days &mdash; are set today. Changing them is a small job for me, not a screen for you. If you want different numbers, say so before we go live.</p>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>Ask him directly whether £5/£5 is right for his margins. Some owners prefer a free garlic bread to cash off. That is a config change, cheap to do now, annoying later.</p><p>Weak spot, only if pressed: a customer has to log in to get their code, and nothing on the site currently advertises the scheme. Adding a prompt after ordering is on the list.</p></div>
+</section>
+
+<!-- 14 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">13</span> What it costs</span>
+    <h2 class="big w27">A flat fee against a percentage that never stops.</h2>
+    <div class="cols c2" style="margin-top:26px">
+      <div>
+        <div class="colhead">Through the aggregator, per month</div>
+        <table class="fig" style="margin-top:14px">
+          <tr><td>Commission at 14% on &pound;6,240</td><td>&pound;873.60</td></tr>
+          <tr><td>VAT on that commission</td><td>&pound;174.72</td></tr>
+          <tr><td>Your customer list</td><td>Theirs</td></tr>
+          <tr class="total"><td>Cost</td><td>&pound;1,048.32</td></tr>
+        </table>
+        <p class="small" style="margin-top:14px">Next month it is the same percentage. If you double your trade, it doubles.</p>
+      </div>
+      <div>
+        <div class="colhead">Through your own site, per month</div>
+        <table class="fig" style="margin-top:14px">
+          <tr><td>Platform fee, flat<span class="sub">Hosting, updates and support included</span></td><td>&pound;<span class="fill" contenteditable="true" spellcheck="false">___</span></td></tr>
+          <tr><td>Card fees on &pound;6,240<span class="sub">Stripe's published UK rate, 1.5% + 20p &mdash; I will confirm it on your account. Paid to Stripe, not to me</span></td><td>&pound;145.60</td></tr>
+          <tr><td>Texts, 500 in a month at 4p<span class="sub">Billed at what they cost</span></td><td>&pound;20.00</td></tr>
+          <tr><td>Your customer list</td><td>Yours</td></tr>
+          <tr class="total"><td>Cost</td><td>&pound;<span class="fill" contenteditable="true" spellcheck="false">___</span></td></tr>
+        </table>
+        <p class="small" style="margin-top:14px">Card fees would be payable on the aggregator's orders too &mdash; they are simply buried inside the commission. The flat fee does not move when you have a good month.</p>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="small"><span class="tag grey">Estimate</span> The &pound;6,240 comes from slide 3 and moves with your real figures. Card and text costs are pass-through: they go to Stripe and to the phone network, not to LaunchFlow.</p>
+  </div>
+  <div class="notes-src"><p>The two blanks are editable &mdash; click and type the fee live, in front of him. Fill the top one, do the sum out loud, fill the total.</p><p>Do not undersell it to win the room. The comparison does the work: even a fee several hundred a month sits well under £1,048, and it is fixed.</p><p>If he asks about card fees: confirm Stripe's published UK rate before you commit to 1.5% + 20p in writing. Say "standard rate, I'll confirm the exact figure on your account."</p><p>Offer the safe version if he hesitates: run both for a month. Keep Just Eat for new faces, push repeat customers to the site with a card in every box.</p></div>
+</section>
+
+<!-- 15 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">14</span> Straight talk &middot; one of two</span>
+    <h2 class="big">What is stopping you going live.</h2>
+    <p class="lede">Four things, and every one of them needs something from you rather than more building from me.</p>
+    <div class="rule"></div>
+    <div class="cols c2">
+      <div>
+        <ul class="ruled">
+          <li><span class="h">Card payments</span><span class="d">Built and working, but <b>your Stripe account is not connected yet</b>. Until it is, card money would not land in your bank &mdash; the only live way to pay today is cash on collection. That is a go-live job: an afternoon, and I need your details.</span></li>
+          <li><span class="h">Kitchen alerts</span><span class="d">Off. A new order shows on the kitchen screen and nowhere else. Needs your kitchen mobile.</span></li>
+        </ul>
+      </div>
+      <div>
+        <ul class="ruled">
+          <li><span class="h">Texts and logins</span><span class="d">All of it &mdash; order updates, login codes, marketing &mdash; runs through a text account that is not live yet. Until it is, messages go to a log, not a phone, and the system still records them as sent. Nobody can log in to their account either, because the code never arrives.</span></li>
+          <li><span class="h">Basildon</span><span class="d">The system is set up for <b>Grays only</b> today: address, hours, phone, six postcode districts, two charge bands. A second branch is the same block of settings written again &mdash; a small job, but it is not done, and nothing on the site mentions Basildon at present.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <p class="small">None of these is a rebuild. They are switches waiting on your details &mdash; which is why the next slide, the one about what will surprise you later, matters more.</p>
+  </div>
+  <div class="notes-src"><p>Read this slide slowly. It is the one that separates you from whoever pitched him last.</p><p>Do not apologise through it. Frame as: "here is the punch list, here is what each costs in time."</p><p>Stripe is the blocker for taking money. If nothing else comes out of this meeting, come away with the Stripe go-ahead and the kitchen mobile number.</p><p>Cash on collection is genuinely the only live payment route today &mdash; cash on delivery is switched off in his config. Do not let him think he could trade tomorrow without Stripe.</p><p>If he asks about the aggregator's own reliability &mdash; be fair. They have a call centre and years of hardening. What we have is his shop, his list and no commission.</p></div>
+</section>
+
+<!-- 16 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">15</span> Straight talk &middot; two of two</span>
+    <h2 class="big w22">What you'd have found on your own.</h2>
+    <p class="lede" style="margin-top:6px">You are hearing these from me first. That is the whole point of the slide.</p>
+    <div class="rule" style="margin:18px 0"></div>
+    <div class="cols c2">
+      <div>
+        <ul class="ruled">
+          <li><span class="h">Your settings file is the master copy</span><span class="d">Menu, hours and bands are rebuilt from that file every time I push an update &mdash; so a price you change or an item you mark sold out <b>is reverted at the next redeploy</b>. A Friday toggle holds all weekend; it bites when I ship. Until I fix it, tell me and I will put it in the file the same day. Making the back office the master is the first job on my list.</span></li>
+          <li><span class="h">Your offer codes are public</span><span class="d">The deals page lists <b>every live code</b> for anyone to copy &mdash; including <span class="mono">COMEBACK15</span>, the one the win-back texts use. Before we switch marketing on, that list needs to show only the codes you mean to publish, or you are discounting people who were never texted and the measuring is wrong too.</span></li>
+          <li><span class="h">Sample data in the back office</span><span class="d">Dispatch, Stock and Reviews run on made-up rows so the screens are not empty &mdash; four invented drivers, sixteen stock lines, eight reviews. Ignore what is in them. Stock does not count down as you sell, and reviews are not connected to Google in either direction.</span></li>
+        </ul>
+      </div>
+      <div>
+        <ul class="ruled">
+          <li><span class="h">Build your own pizza</span><span class="d">Deliberately kept out of the menu, because the screen does not exist. <b>Half &amp; Half is on there</b> and priced per size, &pound;8.39 to &pound;20.98 &mdash; but the customer types the two halves into the kitchen note. Nothing checks the pair and toppings are not priced per half. Workable; not a proper picker.</span></li>
+          <li><span class="h">Crust Club points</span><span class="d">Written but switched off, and there is no way to spend points yet. I have left it off rather than advertise something that cannot pay out.</span></li>
+          <li><span class="h">Testing</span><span class="d">Hours, postcodes and delivery bands have automated tests behind them. Checkout and payment have been checked by hand, not by machine, and there are no automated tests over pricing. I would want a fortnight of real orders watched closely before you lean on it.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="notes-src"><p>This is the slide that buys you everything else in the deck. Do not rush it and do not soften it.</p><p>The settings-file item is the one to lead with and the one he is most likely to hit. Say plainly: "if you change a price and I push an update that week, it goes back. Tell me and I'll make it stick." Do not quote a fix price off the cuff &mdash; making the database the master copy is a proper job.</p><p>Public codes: this one costs him real money if marketing goes on before it is fixed. Frame it as a fortnight of work before the first campaign, not a blocker for taking orders.</p><p>If he asks "what else don't I know?" &mdash; that is a good sign. Tell him the punch list is written down and he gets it in writing with the quote.</p></div>
+</section>
+
+<!-- 17 ─────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="wrap">
+    <span class="kicker"><span class="n">16</span> What happens next</span>
+    <h2 class="big">What I need from you. What you get back.</h2>
+    <div class="rule"></div>
+    <div class="cols c2">
+      <div>
+        <div class="colhead">From you</div>
+        <ul class="plain" style="margin-top:12px">
+          <li>Stripe account details, so card money lands in your bank</li>
+          <li>A mobile number for the kitchen, for order alerts</li>
+          <li>A decision on Basildon &mdash; both shops from day one, or Grays first</li>
+          <li>A morning for the 22 missing photographs</li>
+          <li>Your real staff list and their PINs &mdash; the ones in there now are samples</li>
+          <li>Confirmation of your Google review link &mdash; and a yes or no on review-request texts, which go out 45 minutes after every completed order, to everyone, including anyone who has replied STOP</li>
+          <li>The referral amounts, if &pound;5 / &pound;5 is not right</li>
+        </ul>
+      </div>
+      <div>
+        <div class="colhead">From me</div>
+        <ul class="plain" style="margin-top:12px">
+          <li>Stripe connected and tested end to end, including a refund</li>
+          <li>Kitchen alerts wired to your phone</li>
+          <li>Texts live &mdash; order updates and customer logins</li>
+          <li>Basildon added, with its own hours, districts and bands</li>
+          <li>farm-pizza.com pointed here, and the three old addresses forwarded</li>
+          <li>The five text rules read through with you, then switched on one at a time</li>
+          <li>Half an hour on the pass with whoever works Friday night</li>
+        </ul>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="footline">
+      <span>Fee agreed: &pound;<span class="fill" contenteditable="true" spellcheck="false">___</span> / month</span>
+      <span>Target go-live: <span class="fill" contenteditable="true" spellcheck="false">______</span></span>
+      <span>LaunchFlow &middot; Shoji</span>
+    </div>
+  </div>
+  <div class="notes-src"><p>Review-request texts: they currently ignore the marketing opt-out because they are treated as part of the order, not marketing. Arguably that is the wrong side of PECR. Do not decide it for him &mdash; put it to him and record the answer. Turning them off entirely is one blank field in the config.</p><p>Close on the two blanks at the bottom. Fill them in front of him. A date written down in the room is worth more than any slide in this deck.</p><p>Minimum acceptable outcome: Stripe go-ahead, kitchen number, and a date to switch Grays on. Photos can follow.</p><p>Leave him the tracker link and let him place a real order himself over the weekend.</p></div>
+</section>
+
+</div>
+
+<div id="hud">
+  <span class="nkey" id="nkey">N &middot; notes</span>
+  <button id="prev" aria-label="Previous slide">&larr;</button>
+  <button id="next" aria-label="Next slide">&rarr;</button>
+  <span class="count"><span id="cur">1</span> / <span id="tot">16</span></span>
+</div>
+
+<div id="notes"><h5>Presenter notes</h5><div class="body" id="notesBody"></div></div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var i = 0;
+  var bar = document.getElementById('bar');
+  var cur = document.getElementById('cur');
+  var body = document.getElementById('notesBody');
+  document.getElementById('tot').textContent = slides.length;
+
+  function show(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, k){ s.classList.toggle('on', k === i); });
+    slides[i].scrollTop = 0;
+    cur.textContent = i + 1;
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+    var src = slides[i].querySelector('.notes-src');
+    body.innerHTML = src ? src.innerHTML : '<p>&mdash;</p>';
+    try { location.hash = String(i + 1); } catch (e) {}
+  }
+  function move(d){ show(i + d); }
+
+  document.getElementById('next').addEventListener('click', function(e){ e.stopPropagation(); move(1); });
+  document.getElementById('prev').addEventListener('click', function(e){ e.stopPropagation(); move(-1); });
+  document.getElementById('nkey').addEventListener('click', function(e){ e.stopPropagation(); toggleNotes(); });
+
+  function toggleNotes(){
+    var on = document.body.classList.toggle('notes-on');
+    document.getElementById('nkey').classList.toggle('live', on);
+  }
+
+  function editable(el){
+    if (!el) return false;
+    if (el.isContentEditable) return true;
+    var t = el.tagName;
+    return t === 'INPUT' || t === 'TEXTAREA' || t === 'BUTTON' || t === 'A';
+  }
+
+  document.addEventListener('keydown', function(e){
+    if (editable(document.activeElement) && e.key !== 'Escape') return;
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': case ' ': case 'Enter':
+        e.preventDefault(); move(1); break;
+      case 'ArrowLeft': case 'PageUp': case 'Backspace':
+        e.preventDefault(); move(-1); break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End': e.preventDefault(); show(slides.length - 1); break;
+      case 'n': case 'N': e.preventDefault(); toggleNotes(); break;
+      case 'f': case 'F':
+        e.preventDefault();
+        if (document.fullscreenElement) { document.exitFullscreen(); }
+        else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+        break;
+      case 'Escape':
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+        break;
+    }
+  });
+
+  document.getElementById('deck').addEventListener('click', function(e){
+    if (editable(e.target) || e.target.closest('.notes-src')) return;
+    if (window.getSelection && String(window.getSelection()).length > 0) return;
+    move(1);
+  });
+
+  /* The fee blanks get typed into live, in front of the client, so the placeholder
+     rule has to get out of the way or "450" comes out as "450___". Cleared on the
+     first keystroke rather than on focus, so a stray click does not wipe it, and
+     put back if he tabs out having typed nothing. */
+  Array.prototype.forEach.call(document.querySelectorAll('.fill'), function(el){
+    var ph = el.textContent;
+    function clearPlaceholder(){
+      if (el.textContent !== ph) return;
+      el.textContent = '';
+      var r = document.createRange(); r.selectNodeContents(el);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    }
+    el.addEventListener('beforeinput', clearPlaceholder);
+    el.addEventListener('keydown', function(e){
+      /* Enter commits and hands the keyboard back to the deck. Without this it
+         would drop a line break into a one-line blank, and the arrow keys would
+         stay captured by the field for the rest of the meeting. */
+      if (e.key === 'Enter') { e.preventDefault(); el.blur(); return; }
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) clearPlaceholder();
+    });
+    el.addEventListener('blur', function(){
+      if (!el.textContent.trim()) el.textContent = ph;
+    });
+  });
+
+  var start = parseInt((location.hash || '').replace('#', ''), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>

@@ -5,7 +5,11 @@ import { availability } from "@/lib/availability";
 import { restaurantJsonLd } from "@/lib/seo";
 import { gbpShort } from "@/lib/money";
 import { JsonLd } from "@/components/JsonLd";
+import Image from "next/image";
 import { Photo } from "@/components/Photo";
+import { MenuSearchPill } from "@/components/MenuSearchPill";
+import { TypewriterTitle } from "@/components/TypewriterTitle";
+import { HeroStamp } from "@/components/HeroStamp";
 
 export const dynamic = "force-dynamic";
 
@@ -20,38 +24,64 @@ export default async function Home() {
   const featured = topSellers(menu, 4);
   const deals = menu.deals.slice(0, 4);
   const towns = cfg.seo.locality.join(" · ");
+  // Chips under the search bar: the shop's own best sellers, so the suggestions
+  // are things it actually makes rather than generic pizza words.
+  const heroSuggestions = featured.slice(0, 4).map((f) => f.product.name);
+  // The headline is "Tonight, it's <thing>", so the rotating half has to be a
+  // noun that finishes that sentence. Best sellers first, then a spread across
+  // the rest of the menu so it is not eight pizzas in a row.
+  // Every pizza on the menu, best sellers first so the good ones are seen even
+  // if nobody watches the whole cycle.
+  const heroRotation = (() => {
+    const top = featured.map((f) => f.product.name);
+    const rest = (menu.categories.find((c) => c.slug === "pizzas")?.products ?? [])
+      .map((p) => p.name)
+      .filter((n) => !top.includes(n));
+    return [...top, ...rest];
+  })();
 
   return (
     <>
       <JsonLd data={restaurantJsonLd(cfg, locations)} />
 
-      {/* hero */}
-      <section
-        className="fp-wrap fp-split-hero"
-        style={{ padding: "72px 32px 56px" }}
-      >
-        <div className="fp-hero-copy">
-          <span className="fp-kicker" style={{ marginBottom: 20 }}>{towns}</span>
-          <h1 className="fp-hero-title">
-            Real pizza.<br />From a real farm.
-          </h1>
-          <p style={{ fontSize: 17, lineHeight: 1.65, maxWidth: "50ch", margin: "0 0 28px", color: "var(--color-neutral-800)" }}>
-            {cfg.brand.tagline || `Order direct from ${cfg.name}. Fresh, fast and no app fees.`}
-          </p>
-          <div style={{ display: "flex", gap: 12 }}>
+      {/* hero — full-bleed photograph, because the first thing that sells a
+          takeaway is the food, not a paragraph about it */}
+      <section className="fp-hero">
+        <Image
+          src={assetUrl(cfg.brand.hero)}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          quality={82}
+          style={{ objectFit: "cover", objectPosition: "center" }}
+        />
+        {/* Steam. Three slow, blurred plumes rising off the pizza - pure CSS,
+            so it costs nothing to download and stops dead for anyone who has
+            asked for reduced motion. */}
+        <div className="fp-hero-steam" aria-hidden="true">
+          <span /><span /><span />
+        </div>
+        <div className="fp-hero-scrim" />
+
+        <div className="fp-wrap fp-hero-inner">
+          <HeroStamp />
+
+          <span className="fp-hero-kicker">
+            {towns}
+            {avail ? <> &middot; {avail.open ? "Open now" : "Pre-order for later"}</> : null}
+          </span>
+
+          <TypewriterTitle prefix="Tonight, it&rsquo;s" items={heroRotation} />
+
+          <p className="fp-hero-sub">Order direct. No app fees, no middleman.</p>
+
+          <MenuSearchPill suggestions={heroSuggestions} />
+
+          <div className="fp-hero-cta">
             <Link href="/menu" className="btn btn-primary">See the menu</Link>
             <Link href="/deals" className="btn btn-ghost">Tonight&rsquo;s deals &rarr;</Link>
           </div>
-        </div>
-        <div className="fp-hero-photo">
-          <Photo
-            src={assetUrl(cfg.brand.hero)}
-            alt={`${cfg.name} kitchen`}
-            caption="hero photograph &middot; pizza on the pass &middot; b/w"
-            height={440}
-            priority
-            sizes="(max-width: 1000px) 100vw, 450px"
-          />
         </div>
       </section>
 

@@ -16,7 +16,8 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export default async function MenuPage() {
+export default async function MenuPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q } = await searchParams;
   const cfg = getConfig();
   const menu = await getMenu();
 
@@ -55,7 +56,7 @@ export default async function MenuPage() {
       {/* The browser filters client-side like the prototype, so the complete menu is
           published here for search engines regardless of what is on screen. */}
       <JsonLd data={menuJsonLd(cfg, menu)} />
-      <MenuBrowser categories={categories} items={items} />
+      <MenuBrowser categories={categories} items={items} initialQuery={(q ?? "").slice(0, 60)} />
     </>
   );
 }

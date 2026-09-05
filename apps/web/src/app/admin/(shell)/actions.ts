@@ -220,7 +220,7 @@ export async function sendCampaign(fd: FormData) {
     await prisma.marketingSend.create({
       data: {
         clientId: client.id, campaignId: campaign.id, customerId: c.id, channel,
-        promoCode, costPence: ok ? unit : 0,
+        kind: "campaign", promoCode, costPence: ok ? unit : 0,
         status: ok ? "sent" : "failed", error: error.slice(0, 300),
       },
     });

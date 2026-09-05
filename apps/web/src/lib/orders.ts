@@ -22,6 +22,34 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
   cancelled: "Cancelled",
 };
 
+/**
+ * The colour every status wears, everywhere it appears.
+ *
+ * One map, so the dashboard, the orders table, the dispatch board and the
+ * kitchen can never disagree about what "ready" looks like. Consistency is the
+ * whole point: staff learn the colours in a shift and stop reading the words.
+ */
+export const STATUS_TONE: Record<OrderStatus, "ok" | "warn" | "danger" | "info" | "busy" | "neutral"> = {
+  pending_payment: "warn",      // money not taken yet
+  placed: "info",               // needs a human to accept it
+  accepted: "info",
+  preparing: "busy",            // in the oven
+  ready: "ok",                  // waiting to go out
+  out_for_delivery: "busy",
+  completed: "ok",
+  rejected: "danger",
+  cancelled: "danger",
+};
+
+/** Rows that want the eye first: something is waiting on a person. */
+export const STATUS_ROW: Partial<Record<OrderStatus, "danger" | "warn" | "ok" | "info">> = {
+  placed: "info",
+  pending_payment: "warn",
+  ready: "ok",
+  rejected: "danger",
+  cancelled: "danger",
+};
+
 const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   pending_payment: ["placed", "cancelled"],
   placed: ["accepted", "rejected", "cancelled"],

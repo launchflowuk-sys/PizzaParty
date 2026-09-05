@@ -140,7 +140,12 @@ export function CheckoutFlow() {
                       </div>
                     </div>
                     {price?.location ? (
-                      <p style={NOTE}>Delivering from {price.location.name} &middot; about {location?.deliveryMinutes} min &middot; {gbp(price.location.deliveryFee)} delivery, {gbp(price.location.minOrder)} minimum.</p>
+                      <p style={NOTE}>
+                        Delivering from {price.location.name}
+                        {price.location.band ? <> &middot; {price.location.band}</> : null}
+                        {" "}&middot; about {price.location.etaMinutes ?? location?.deliveryMinutes} min
+                        {" "}&middot; {gbp(price.location.deliveryFee)} delivery, {gbp(price.location.minOrder)} minimum.
+                      </p>
                     ) : form.postcode.length >= 5 && !loading ? (
                       <p style={{ ...NOTE, color: "var(--color-accent-700)" }}>We don&apos;t deliver to that postcode. Try collection.</p>
                     ) : null}

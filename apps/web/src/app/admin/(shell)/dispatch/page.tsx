@@ -8,6 +8,8 @@ import { requireScreen } from "@/lib/session";
 export const dynamic = "force-dynamic";
 
 const STATUS_LABEL: Record<string, string> = { available: "Available", on_delivery: "On delivery", off: "Off shift" };
+/** Driver states, not order states - a free driver is the one you want to spot. */
+const DRIVER_TONE: Record<string, string> = { available: "ok", on_delivery: "busy", off: "neutral" };
 
 /** Dispatch from `Farm Pizza Admin.dc.html`: map placeholder and driver table on the
  *  left, orders waiting on the pass on the right. Assigning a driver marks them out
@@ -84,7 +86,7 @@ export default async function DispatchPage() {
                       <td className="text-muted">{d.vehicle || "—"}</td>
                       <td>
                         <span className={d.status === "on_delivery" ? "tag tag-accent" : d.status === "available" ? "tag tag-neutral" : "tag tag-outline"}>
-                          {STATUS_LABEL[d.status] ?? d.status}
+                          <span className={`tag tag-${DRIVER_TONE[d.status] ?? "neutral"}`}>{STATUS_LABEL[d.status] ?? d.status}</span>
                         </span>
                       </td>
                       <td style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13 }}>

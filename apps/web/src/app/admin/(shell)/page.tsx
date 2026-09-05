@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@launchflow/db";
 import { getClientRow, getLocations } from "@/lib/menu";
 import { gbp } from "@/lib/money";
-import { STATUS_LABEL } from "@/lib/orders";
+import { STATUS_LABEL, STATUS_TONE } from "@/lib/orders";
 import { availability } from "@/lib/availability";
 
 import { requireScreen } from "@/lib/session";
@@ -79,7 +79,7 @@ export default async function AdminHome() {
                     <td>{o.customerName}</td>
                     <td>{o.fulfilment === "delivery" ? "Delivery" : "Collection"}</td>
                     <td>{o.location.name}</td>
-                    <td>{STATUS_LABEL[o.status]}</td>
+                    <td><span className={`tag tag-${STATUS_TONE[o.status]}`}>{STATUS_LABEL[o.status]}</span></td>
                     <td style={{ textAlign: "right", fontWeight: 600 }}>{gbp(o.total)}</td>
                   </tr>
                 ))}
