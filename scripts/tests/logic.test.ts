@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { isOpenAt, nextOpening, preorderSlots, zonedParts } from "../../apps/web/src/lib/availability";
-import { matchLocation, normalisePostcode, outwardCode } from "../../apps/web/src/lib/postcode";
+import { matchLocation, matchBand, deliveryTermsFor, normalisePostcode, outwardCode } from "../../apps/web/src/lib/postcode";
 import { toE164 } from "../../apps/web/src/lib/phone";
 
 const tz = "Europe/London";
@@ -54,4 +54,51 @@ test("toE164 normalises UK numbers", () => {
   assert.equal(toE164("+44 7700 900123"), "+447700900123");
   assert.equal(toE164("447700900123"), "+447700900123");
   assert.equal(toE164("123"), null);
+});
+
+/* ── Banded delivery ──────────────────────────────────────────────────────── */
+
+const band = (name: string, prefixes: string[], fee: number, minOrder = 0, extraMinutes = 0, sortOrder = 0) =>
+  ({ name, prefixes, fee, minOrder, extraMinutes, sortOrder });
+
+test("a district band beats an area band that also covers it", () => {
+  // The far district is listed precisely because it costs more, so a broad
+  // catch-all must not undercut it.
+  const bands = [band("All Essex", ["RM"], 199, 0, 0, 0), band("Chafford", ["RM20"], 349, 0, 15, 1)];
+  assert.equal(matchBand("RM20 4XX", bands)?.name, "Chafford");
+  assert.equal(matchBand("RM17 5AA", bands)?.name, "All Essex");
+});
+
+test("band order decides between two equally specific area bands", () => {
+  const bands = [band("Second", ["RM"], 299, 0, 0, 1), band("First", ["RM"], 199, 0, 0, 0)];
+  assert.equal(matchBand("RM17 5AA", bands)?.name, "First");
+});
+
+test("no band means the shop's own fee and minimum", () => {
+  const t = deliveryTermsFor("SS99 9ZZ", { deliveryFee: 199, minOrder: 999 }, [band("Town", ["SS13"], 149)]);
+  assert.deepEqual(t, { fee: 199, minOrder: 999, extraMinutes: 0, bandName: "" });
+});
+
+test("a band with no minimum of its own inherits the shop's", () => {
+  const t = deliveryTermsFor("SS13 1AA", { deliveryFee: 199, minOrder: 999 }, [band("Town", ["SS13"], 149, 0, 5)]);
+  assert.equal(t.fee, 149);
+  assert.equal(t.minOrder, 999, "0 must inherit, not remove the minimum");
+  assert.equal(t.extraMinutes, 5);
+});
+
+test("a band's own minimum wins when it sets one", () => {
+  const t = deliveryTermsFor("RM20 3AA", { deliveryFee: 199, minOrder: 999 }, [band("Far", ["RM20"], 349, 1499, 15)]);
+  assert.equal(t.minOrder, 1499);
+});
+
+test("bands are matched on the outward code, whatever the customer types", () => {
+  const bands = [band("Town", ["SS14"], 149)];
+  for (const typed of ["SS14 2AB", "ss142ab", "SS14  2AB"]) {
+    assert.equal(matchBand(normalisePostcode(typed), bands)?.name, "Town", typed);
+  }
+});
+
+test("a shop with no bands at all is unaffected", () => {
+  const t = deliveryTermsFor("RM17 5AA", { deliveryFee: 250, minOrder: 1200 }, []);
+  assert.deepEqual(t, { fee: 250, minOrder: 1200, extraMinutes: 0, bandName: "" });
 });

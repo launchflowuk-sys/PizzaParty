@@ -6,6 +6,7 @@ import { getConfig } from "./config";
 import { gbp } from "./money";
 import { escapeHtml, postPrinter, sendEmail, sendSms } from "./notify";
 import { formatTime } from "./availability";
+import { deliveryTermsFor } from "./postcode";
 import { revalidateTag } from "next/cache";
 import { MENU_TAG } from "./menu";
 
@@ -107,12 +108,23 @@ export async function markPlaced(orderId: string, actor: string, paymentData?: P
 }
 
 export async function transitionOrder(orderId: string, to: OrderStatus, actor: string, opts: { etaMinutes?: number; reason?: string } = {}) {
-  const current = await prisma.order.findUnique({ where: { id: orderId }, select: { status: true, scheduledFor: true, location: { select: { deliveryMinutes: true, prepMinutes: true } }, fulfilment: true } });
+  const current = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: {
+      status: true, scheduledFor: true, fulfilment: true, deliveryPostcode: true,
+      location: { select: { deliveryMinutes: true, prepMinutes: true, deliveryFee: true, minOrder: true, bands: true } },
+    },
+  });
   if (!current) throw new Error("Order not found");
   if (!TRANSITIONS[current.status].includes(to)) throw new Error(`Cannot go from ${current.status} to ${to}`);
   const data: Prisma.OrderUpdateInput = { status: to };
   if (to === "accepted") {
-    const eta = opts.etaMinutes ?? (current.fulfilment === "delivery" ? current.location.deliveryMinutes : current.location.prepMinutes);
+    // Further-out bands carry extra minutes, so the promised time matches the
+    // distance the driver actually has to cover.
+    const extra = current.fulfilment === "delivery"
+      ? deliveryTermsFor(current.deliveryPostcode, current.location, current.location.bands).extraMinutes
+      : 0;
+    const eta = opts.etaMinutes ?? (current.fulfilment === "delivery" ? current.location.deliveryMinutes + extra : current.location.prepMinutes);
     data.etaMinutes = eta;
     // Pre-orders: ETA is the booked slot unless the kitchen explicitly overrides it.
     data.etaAt = current.scheduledFor && opts.etaMinutes === undefined && current.scheduledFor.getTime() > Date.now() ? current.scheduledFor : new Date(Date.now() + eta * 60_000);

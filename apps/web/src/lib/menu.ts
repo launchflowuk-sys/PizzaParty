@@ -68,5 +68,5 @@ export function topSellers(menu: Menu, n = 6): { product: MenuProduct; category:
 
 export async function getLocations() {
   const client = await getClientRow();
-  return prisma.location.findMany({ where: { clientId: client.id, active: true }, orderBy: { sortOrder: "asc" }, include: { hours: true } });
+  return prisma.location.findMany({ where: { clientId: client.id, active: true }, orderBy: { sortOrder: "asc" }, include: { hours: true, bands: { orderBy: { sortOrder: "asc" } } } });
 }

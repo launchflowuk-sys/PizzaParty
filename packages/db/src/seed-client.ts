@@ -49,6 +49,25 @@ export async function seedClient(slug: string, opts: { reset?: boolean } = {}) {
     await prisma.openingHours.deleteMany({ where: { locationId: loc.id } });
     const rows = hoursRows(l.hours);
     if (rows.length) await prisma.openingHours.createMany({ data: rows.map((r) => ({ ...r, locationId: loc.id })) });
+
+    // Bands are replaced wholesale, like opening hours: they have no natural key
+    // and config is the source of truth. A shop editing them in the back office
+    // is editing the database, so re-seeding is what pushes config over the top -
+    // which is why the admin screen writes to both.
+    await prisma.deliveryBand.deleteMany({ where: { locationId: loc.id } });
+    if (l.deliveryBands.length) {
+      await prisma.deliveryBand.createMany({
+        data: l.deliveryBands.map((b, bi) => ({
+          locationId: loc.id,
+          name: b.name,
+          prefixes: b.prefixes.map((x) => x.toUpperCase().replace(/\s+/g, "")),
+          fee: toPence(b.fee),
+          minOrder: toPence(b.minOrder),
+          extraMinutes: b.extraMinutes,
+          sortOrder: bi,
+        })),
+      });
+    }
   }
   if (opts.reset) {
     await prisma.location.updateMany({

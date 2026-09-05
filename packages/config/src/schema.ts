@@ -28,6 +28,25 @@ export const LocationSchema = z.object({
   minOrder: money.default(0),
   prepMinutes: z.number().int().positive().default(15),
   deliveryMinutes: z.number().int().positive().default(35),
+  /**
+   * Delivery charges that vary by area.
+   *
+   * Optional: a shop charging one price everywhere leaves this out and
+   * `deliveryFee` applies to its whole patch. Where bands exist, `deliveryFee`
+   * becomes the fallback for districts no band names.
+   */
+  deliveryBands: z
+    .array(
+      z.object({
+        name: z.string().default(""),
+        prefixes: z.array(z.string().min(2)).min(1),
+        fee: money.default(0),
+        /** 0 inherits the location's minimum rather than removing it. */
+        minOrder: money.default(0),
+        extraMinutes: z.number().int().min(0).default(0),
+      }),
+    )
+    .default([]),
   hours: z.record(z.enum(dayKeys), dayHours).default({}),
 });
 

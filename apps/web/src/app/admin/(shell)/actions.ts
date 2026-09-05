@@ -119,6 +119,51 @@ export async function updateZone(fd: FormData) {
   revalidateTag(CLIENT_TAG); revalidatePath("/admin/zones");
 }
 
+/**
+ * Add or update one delivery band.
+ *
+ * Scoped through the location's clientId so one tenant cannot reprice another
+ * shop's deliveries by posting a stray id.
+ */
+export async function saveBand(fd: FormData) {
+  const client = await guard("zones");
+  const locationId = str(fd, "locationId");
+  const location = await prisma.location.findFirst({ where: { id: locationId, clientId: client.id }, select: { id: true } });
+  if (!location) return;
+
+  const prefixes = str(fd, "prefixes")
+    .split(/[,\s]+/).map((x) => x.toUpperCase().replace(/[^A-Z0-9]/g, "")).filter(Boolean);
+  if (!prefixes.length) return;
+
+  const data = {
+    name: str(fd, "name").slice(0, 60),
+    prefixes,
+    fee: toPence(num(fd, "fee")),
+    minOrder: toPence(num(fd, "minOrder")),
+    extraMinutes: Math.max(0, Math.round(num(fd, "extraMinutes"))),
+  };
+
+  const id = str(fd, "id");
+  if (id) {
+    await prisma.deliveryBand.updateMany({ where: { id, locationId: location.id }, data });
+  } else {
+    const count = await prisma.deliveryBand.count({ where: { locationId: location.id } });
+    await prisma.deliveryBand.create({ data: { ...data, locationId: location.id, sortOrder: count } });
+  }
+  revalidateTag(CLIENT_TAG);
+  revalidatePath("/admin/zones");
+}
+
+export async function deleteBand(fd: FormData) {
+  const client = await guard("zones");
+  const id = str(fd, "id");
+  const location = await prisma.location.findFirst({ where: { id: str(fd, "locationId"), clientId: client.id }, select: { id: true } });
+  if (!location || !id) return;
+  await prisma.deliveryBand.deleteMany({ where: { id, locationId: location.id } });
+  revalidateTag(CLIENT_TAG);
+  revalidatePath("/admin/zones");
+}
+
 /* ---------- Campaigns ---------- */
 
 /**

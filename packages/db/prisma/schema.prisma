@@ -79,8 +79,35 @@ model Location {
 
   hours  OpeningHours[]
   orders Order[]
+  bands  DeliveryBand[]
 
   @@unique([clientId, key])
+}
+
+/// A delivery charge for part of a shop's area.
+///
+/// Most takeaways do not charge one flat fee to everywhere they deliver - the
+/// far end of the patch costs more to reach and often carries a higher minimum.
+/// `Location.deliveryFee` remains the fee for anywhere not covered by a band,
+/// so a shop that charges one price everywhere simply has no bands.
+model DeliveryBand {
+  id         String   @id @default(cuid())
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  /// Shown to the customer, e.g. "Grays & Chafford" - never a bare postcode list.
+  name       String   @default("")
+  /// Districts this band covers. "RM20" matches that district; "RM" matches the
+  /// whole area, and loses to a district that names itself.
+  prefixes   String[] @default([])
+  /// Pence.
+  fee        Int      @default(0)
+  /// Pence. 0 means fall back to the location's minimum.
+  minOrder   Int      @default(0)
+  /// Added to the location's delivery time, because further away takes longer.
+  extraMinutes Int    @default(0)
+  sortOrder  Int      @default(0)
+
+  @@index([locationId])
 }
 
 model OpeningHours {

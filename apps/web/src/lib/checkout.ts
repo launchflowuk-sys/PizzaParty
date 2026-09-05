@@ -4,7 +4,7 @@ import { prisma } from "@launchflow/db";
 import { getMenu, getLocations, getClientRow } from "./menu";
 import { priceBasket, type PricingPromo } from "./pricing";
 import { availability } from "./availability";
-import { matchLocation, normalisePostcode } from "./postcode";
+import { matchLocation, normalisePostcode, deliveryTermsFor } from "./postcode";
 import { referrerFor, refereePromo, promoBelongsTo } from "./referral";
 import type { BasketLine } from "./basket-types";
 
@@ -39,6 +39,22 @@ export async function resolveLocation(body: Pick<BasketBodyT, "fulfilment" | "po
   }
   const byKey = body.locationKey ? locations.find((l) => l.key === body.locationKey) : undefined;
   return { location: byKey ?? locations[0] ?? null, locations, postcodeOk: body.fulfilment !== "delivery" };
+}
+
+/**
+ * What delivery costs for this basket.
+ *
+ * Collection has no fee and no band, and a shop with no bands charges its one
+ * flat rate - so this collapses to the old behaviour unless someone has
+ * actually set bands up.
+ */
+export function deliveryTerms(
+  body: Pick<BasketBodyT, "fulfilment" | "postcode">,
+  location: { deliveryFee: number; minOrder: number; deliveryMinutes: number; bands?: { name: string; prefixes: string[]; fee: number; minOrder: number; extraMinutes: number; sortOrder: number }[] } | null,
+) {
+  if (!location) return { fee: 0, minOrder: 0, extraMinutes: 0, bandName: "" };
+  if (body.fulfilment !== "delivery") return { fee: 0, minOrder: location.minOrder, extraMinutes: 0, bandName: "" };
+  return deliveryTermsFor(normalisePostcode(body.postcode ?? ""), location, location.bands ?? []);
 }
 
 /**
@@ -93,10 +109,14 @@ export async function priceRequest(body: BasketBodyT, opts: { customerPhone?: st
     effective = null;
   }
 
+  // Banded delivery: the fee and minimum come from whichever band covers this
+  // postcode, falling back to the shop's own figures when none does.
+  const terms = deliveryTerms(body, location);
+
   const priced = priceBasket(menu, body.lines as BasketLine[], {
     fulfilment: body.fulfilment,
-    deliveryFee: location?.deliveryFee ?? 0,
-    minOrder: location?.minOrder ?? 0,
+    deliveryFee: terms.fee,
+    minOrder: terms.minOrder,
     promo: effective ?? (promoCode ? rejectedPromo(promoCode) : null),
     isFirstOrder,
   });
@@ -105,7 +125,7 @@ export async function priceRequest(body: BasketBodyT, opts: { customerPhone?: st
   }
   if (body.fulfilment === "delivery" && body.postcode && !postcodeOk) priced.errors.unshift("We don't deliver to that postcode. Switch to collection or try another postcode.");
   return {
-    priced, location, locations, postcodeOk,
+    priced, location, locations, postcodeOk, terms,
     promo: priced.promoCode ? promo : null,
     /** Set when the code used was a referral code that priced successfully. */
     referrerId: priced.promoCode && referrerId ? referrerId : "",

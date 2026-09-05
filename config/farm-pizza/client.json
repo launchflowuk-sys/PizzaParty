@@ -86,6 +86,28 @@
         "Noak Bridge",
         "Crays Hill",
         "Nevendon"
+      ],
+      "deliveryBands": [
+        {
+          "name": "Basildon town",
+          "prefixes": [
+            "SS13",
+            "SS14"
+          ],
+          "fee": 1.99,
+          "minOrder": 9.99,
+          "extraMinutes": 0
+        },
+        {
+          "name": "Pitsea & Laindon",
+          "prefixes": [
+            "SS15",
+            "SS16"
+          ],
+          "fee": 2.99,
+          "minOrder": 12.99,
+          "extraMinutes": 10
+        }
       ]
     },
     {
@@ -148,6 +170,27 @@
         "Purfleet-on-Thames",
         "Aveley",
         "South Ockendon"
+      ],
+      "deliveryBands": [
+        {
+          "name": "Grays & Little Thurrock",
+          "prefixes": [
+            "RM17"
+          ],
+          "fee": 1.99,
+          "minOrder": 9.99,
+          "extraMinutes": 0
+        },
+        {
+          "name": "Chafford & West Thurrock",
+          "prefixes": [
+            "RM16",
+            "RM20"
+          ],
+          "fee": 3.49,
+          "minOrder": 14.99,
+          "extraMinutes": 15
+        }
       ]
     }
   ],
