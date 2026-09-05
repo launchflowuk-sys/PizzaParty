@@ -41,7 +41,7 @@ A shop with three orders on the dashboard does not sell itself. This builds one
 worth showing:
 
 ```bash
-pnpm demo-data farm-pizza          # 850 customers, ~9 months of orders
+pnpm demo-data farm-pizza           # 850 customers, ~9 months of orders
 pnpm demo-data farm-pizza --wipe    # clear what it made, then rebuild
 ```
 
@@ -65,14 +65,42 @@ The back office earns its keep here rather than just taking orders.
   Point a daily scheduler at `POST /api/cron/automations` with
   `Authorization: Bearer $CRON_SECRET`.
 - **Campaigns** (`/admin/campaigns`) go out once, to one of nine segments.
-- **Attribution** is the point of both. Every message carries an offer code and
-  writes a `MarketingSend` row; when an order redeems that code the money is
-  credited back to the message that caused it, so a campaign's revenue is
-  measured rather than claimed. Both screens check the code against the audience
-  first — a first-order-only code sent to a win-back list is a silent, expensive
-  failure, because pricing drops an inapplicable promo without erroring.
-- Only customers who opted in are ever contacted, and every SMS gets
-  "Reply STOP to opt out" appended. Both are legal requirements, not settings.
+- **Abandoned checkouts** are chased once, 25 minutes in. An unpaid order is
+  someone who chose the food and typed in their number; before this the only
+  thing that happened to them was a sweep cancelling the order at two hours.
+- **Referrals**: a customer gets a code on `/account` and shares `/r/THEIRCODE`.
+  The friend's discount is waiting at the checkout; the referrer's thank-you is
+  minted only once that friend's first order is paid for, so an introduction
+  that never buys anything costs nothing. Rewards are bound to the person they
+  were issued to. Configure under `referral` in `client.json`.
+- **Attribution** is the point of all of it. Every message carries an offer code
+  and writes a `MarketingSend` row; when an order redeems that code the money is
+  credited back to the message that caused it, so revenue is measured rather
+  than claimed. The screens check the code against the audience first — a
+  first-order-only code sent to a win-back list is a silent, expensive failure,
+  because pricing drops an inapplicable promo without erroring.
+- **Review requests** go out regardless of marketing consent (they are service
+  messages) but are recorded alongside everything else, so the shop sees its
+  real SMS bill and the shared cooldown stops a win-back text landing the same
+  afternoon. Needs `contact.reviewUrl` set, or the engine stays dormant.
+
+### Opting out
+
+Only customers who opted in are ever contacted, and every SMS gets "Reply STOP
+to opt out" appended. That promise is only worth something if something is
+listening, so point the number's inbound webhook at it:
+
+```
+Twilio → Phone Numbers → your number → A MESSAGE COMES IN
+POST https://<host>/api/sms/inbound
+```
+
+The endpoint verifies Twilio's signature and refuses outright when
+`TWILIO_AUTH_TOKEN` is unset — it is public by necessity, and without the check
+anyone who found the URL could opt customers in and out at will. STOP, START and
+the usual variants are honoured, the request is timestamped as evidence, and the
+reply is kept. Keywords are matched on the first word of a short message only:
+"stop putting olives on it" is a complaint, not an unsubscribe.
 
 ## New client in 4 steps
 
