@@ -22,4 +22,11 @@ if [ -n "$DATABASE_URL" ]; then
     ./node_modules/.bin/tsx scripts/seed-client.ts "$CLIENT_SLUG" || echo "[entrypoint] seed failed (continuing)"
   fi
 fi
+# Encode the image variants before customers ask for them. In the background,
+# because the site should start serving now, not in two minutes - the script
+# waits for /api/health itself and then works through the list one at a time.
+if [ "${WARM_IMAGES:-true}" = "true" ]; then
+  sh scripts/warm-images.sh &
+fi
+
 exec node apps/web/server.js

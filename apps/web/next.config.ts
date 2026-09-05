@@ -20,13 +20,22 @@ const nextConfig: NextConfig = {
    * pays again. Eight widths across fifty-odd product photographs is roughly
    * four hundred encodes waiting to happen.
    *
-   * These four cover what the layouts actually request: a card thumbnail, a
-   * phone, a tablet, and a full-width hero. `minimumCacheTTL` keeps what has
-   * been encoded for a year rather than the default hour.
+   * These cover what the layouts actually request: a card thumbnail, a phone,
+   * a tablet, and the largest the photographs actually are. `minimumCacheTTL`
+   * keeps what has been encoded for a year rather than the default hour.
+   *
+   * 1920 used to be in this list and was pure waste. No source photograph is
+   * wider than 1200, and Next never upscales - so w=1920 and w=1200 returned
+   * byte-identical files (143942 bytes each, measured), while costing a second
+   * three-second AVIF encode and a second cache entry. Every product page was
+   * paying for the same image twice.
+   *
+   * Adding a photograph wider than 1200 means adding the width back here, and
+   * warming it - see scripts/warm-images.sh.
    */
   images: {
     formats: ["image/avif", "image/webp"],
-    deviceSizes: [414, 828, 1200, 1920],
+    deviceSizes: [414, 828, 1200],
     imageSizes: [96, 256],
     minimumCacheTTL: 31536000,
   },
