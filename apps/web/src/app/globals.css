@@ -410,7 +410,7 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   text-transform: uppercase;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .fp-hero-h1 {
   font-family: var(--font-heading);
@@ -426,16 +426,19 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   font-size: clamp(15px, 1.5vw, 19px);
   line-height: 1.55;
   max-width: 46ch;
-  margin: 0 0 28px;
+  margin: 0 0 26px;
   color: rgba(255,255,255,.92);
 }
-.fp-hero-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+.fp-hero-cta { display: flex; gap: 14px; flex-wrap: wrap; margin: 0 0 34px; }
 /* The ghost button sits on a photograph here, so it needs its own contrast. */
 .fp-hero-cta .btn-ghost { color: #fff; border-color: rgba(255,255,255,.55); }
 .fp-hero-cta .btn-ghost:hover { background: rgba(255,255,255,.12); }
 
 /* ── Hero search ─────────────────────────────────────────────────────────── */
-.fp-herosearch { max-width: 620px; }
+.fp-herosearch { max-width: 620px; position: relative; }
+/* Set apart from the buttons above it: searching and ordering are two different
+   intentions and should not read as one control group. */
+.fp-herosearch-bar { margin-top: 4px; }
 .fp-herosearch-bar {
   display: flex;
   gap: 0;
@@ -456,17 +459,23 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
 .fp-herosearch-bar input::placeholder { color: var(--color-neutral-700); }
 .fp-herosearch-bar .btn { flex: none; border: 0; padding-inline: 24px; }
 
-.fp-herosearch-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.fp-herosearch-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+/* These are plain buttons, not .btn, so the pill rule further up never reached
+   them - which is why they were still square next to rounded everything else. */
 .fp-herosearch-chips button {
   font: inherit;
   font-size: 13px;
+  font-weight: 600;
   color: #fff;
-  background: rgba(255,255,255,.14);
-  border: 1px solid rgba(255,255,255,.4);
-  padding: 6px 12px;
+  background: rgba(255,255,255,.16);
+  border: 1.5px solid rgba(255,255,255,.45);
+  border-radius: var(--radius-pill);
+  padding: 9px 18px;
   cursor: pointer;
+  backdrop-filter: blur(3px);
+  transition: background .12s ease, border-color .12s ease;
 }
-.fp-herosearch-chips button:hover { background: rgba(255,255,255,.26); }
+.fp-herosearch-chips button:hover { background: rgba(255,255,255,.3); border-color: rgba(255,255,255,.75); }
 
 .fp-visually-hidden {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -480,7 +489,6 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   .fp-hero-inner { padding: 0 20px 32px; }
   .fp-hero-h1 { font-size: clamp(34px, 10vw, 46px); }
   .fp-hero-sub { font-size: 15px; margin-bottom: 20px; max-width: none; }
-  .fp-hero-cta { margin-top: 16px; }
   .fp-hero-cta .btn { flex: 1 1 auto; text-align: center; }
 }
 
@@ -1006,7 +1014,8 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   .fp-hero-sub { font-size: 14px; margin-bottom: 16px; }
 
   /* Buttons first, full width, thumb-sized. */
-  .fp-hero-cta { margin: 0 0 14px; gap: 10px; }
+  .fp-hero-cta { margin: 4px 0 20px; gap: 10px; }
+  .fp-herosearch-chips { margin-top: 14px; gap: 8px; }
   .fp-hero-cta .btn { width: 100%; min-height: 56px; font-size: 16px; }
 
   /* The stamp is illegible at this size over a bright photograph, and it was
@@ -1121,3 +1130,123 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
 /* The back office has no fixed bottom bar, but long forms still want a little
    room under the final control so it is never flush to the viewport edge. */
 .fp-admin main { padding-bottom: 64px; }
+
+/* ══ Home: why order direct ══════════════════════════════════════════════════
+   The page was a hero, four pizzas and a call to action, which gave a
+   first-time visitor no reason to pick this shop over the app already on their
+   phone. Every number in this band is counted from the live menu and config,
+   so it cannot quietly become untrue. */
+.fp-story-h2 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(30px, 4.2vw, 46px);
+  line-height: 1.06;
+  letter-spacing: -.02em;
+  margin: 0 0 36px;
+}
+.fp-story-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  background: var(--color-divider);
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.fp-story-card {
+  background: var(--color-bg);
+  padding: 26px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background .18s ease;
+  /* Staggered rise on first paint. Cheap: transform and opacity only, and it
+     runs once rather than looping. */
+  animation: fp-rise .5s cubic-bezier(.2,.7,.3,1) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+.fp-story-card:hover { background: var(--color-surface); }
+.fp-story-big {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(38px, 4.4vw, 58px);
+  line-height: .95;
+  letter-spacing: -.03em;
+  color: var(--color-accent);
+}
+.fp-story-label { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: var(--color-text); }
+.fp-story-note { margin: 0; font-size: 13px; line-height: 1.55; color: var(--color-neutral-700); }
+
+@keyframes fp-rise {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fp-story-card { animation: none; }
+}
+
+/* ── Refer a friend ─────────────────────────────────────────────────────── */
+.fp-refer {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+  background: var(--color-accent-2);   /* basil — the one place green leads */
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 48px;
+  overflow: hidden;
+}
+.fp-refer-h2 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(34px, 4.6vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -.02em;
+  margin: 0 0 16px;
+  color: #fff;
+}
+.fp-refer .fp-kicker { color: rgba(255,255,255,.82); }
+.fp-refer-body { font-size: 16px; line-height: 1.6; margin: 0 0 26px; color: rgba(255,255,255,.94); max-width: 46ch; }
+.fp-refer .btn-primary { background: #fff; color: var(--color-accent-2-800); border-color: #fff; }
+.fp-refer .btn-primary:hover { background: rgba(255,255,255,.9); border-color: rgba(255,255,255,.9); }
+.fp-refer .btn-secondary { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.6); }
+.fp-refer .btn-secondary:hover { background: rgba(255,255,255,.14); }
+
+/* Two coupons and a ring, drawn rather than photographed. */
+.fp-refer-art { position: relative; min-height: 200px; display: grid; place-items: center; }
+.fp-refer-coupon {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 132px; height: 132px;
+  border-radius: 50%;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 34px;
+  letter-spacing: -.02em;
+  box-shadow: 0 12px 30px rgba(0,0,0,.24);
+}
+.fp-refer-coupon-a { background: #fff; color: var(--color-accent-2-800); transform: translate(-38px, -14px) rotate(-9deg); }
+.fp-refer-coupon-b { background: var(--color-accent); color: #fff; transform: translate(46px, 24px) rotate(7deg); }
+.fp-refer-ring {
+  position: absolute;
+  width: 232px; height: 232px;
+  border: 2px dashed rgba(255,255,255,.4);
+  border-radius: 50%;
+  animation: fp-refer-spin 34s linear infinite;
+}
+@keyframes fp-refer-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fp-refer-ring { animation: none; } }
+
+@media (max-width: 1000px) {
+  .fp-story-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fp-refer { grid-template-columns: minmax(0, 1fr); padding: 36px 28px; gap: 28px; }
+  .fp-refer-art { min-height: 210px; order: -1; }
+}
+@media (max-width: 700px) {
+  .fp-story-grid { grid-template-columns: minmax(0, 1fr); }
+  .fp-story-card { padding: 22px 18px; }
+  .fp-refer { padding: 28px 20px; }
+  .fp-refer .btn { width: 100%; }
+}

@@ -9,6 +9,7 @@ import Image from "next/image";
 import { Photo } from "@/components/Photo";
 import { MenuSearchPill, type SearchItem } from "@/components/MenuSearchPill";
 import { ReviewStrip } from "@/components/ReviewStrip";
+import { HomeStory } from "@/components/HomeStory";
 import { publicReviews, reviewSummary } from "@/lib/google-reviews";
 import { TypewriterTitle } from "@/components/TypewriterTitle";
 import { HeroStamp } from "@/components/HeroStamp";
@@ -52,6 +53,21 @@ export default async function Home() {
       };
     }),
   );
+
+  // Counted from the live menu so the band cannot drift out of date.
+  const pizzaCategory = menu.categories.find((c) => c.slug === "pizzas");
+  const pizzaCount = pizzaCategory?.products.length ?? 0;
+  const itemCount = menu.categories.reduce((n, c) => n + c.products.length, 0);
+  // The largest size anywhere on the menu, if there is one worth boasting about.
+  const biggestSize = (() => {
+    const inches = menu.categories
+      .flatMap((c) => c.products)
+      .flatMap((p) => p.sizes)
+      .map((sz) => Number(/(\d+)\s*"/.exec(sz.name)?.[1] ?? 0))
+      .filter((n) => n > 0);
+    const max = inches.length ? Math.max(...inches) : 0;
+    return max >= 16 ? `${max}"` : "";
+  })();
 
   const heroRotation = (() => {
     const top = featured.map((f) => f.product.name);
@@ -113,7 +129,8 @@ export default async function Home() {
         {[
           [primary ? `${primary.deliveryMinutes} min` : "—", "Average delivery time"],
           [featured[0] ? gbpShort(featured[0].product.sizes[0]?.price ?? 0) : "—", `A ${featured[0]?.product.name ?? "pizza"}, always`],
-          ["0", "Frozen ingredients on site"],
+          [reviewStats.count > 0 ? `${reviewStats.average}` : "—",
+            reviewStats.count > 0 ? `Out of 5, from ${reviewStats.count} reviews` : "No reviews yet"],
           [avail?.open ? "Open" : "Pre-order", avail?.open ? "Taking orders right now" : "Order ahead for later"],
         ].map(([big, label]) => (
           <div key={label}>
@@ -188,6 +205,24 @@ export default async function Home() {
       ) : null}
 
       {/* the one red field on the page */}
+      <div className="fp-rule" />
+
+      <HomeStory
+        pizzaCount={pizzaCount}
+        itemCount={itemCount}
+        biggestSize={biggestSize}
+        towns={cfg.seo.locality}
+        referral={
+          cfg.referral.enabled
+            ? {
+                refereeDiscount: `£${cfg.referral.refereeDiscount.toFixed(2)}`,
+                referrerReward: `£${cfg.referral.referrerReward.toFixed(2)}`,
+                minOrder: `£${cfg.referral.minOrder.toFixed(2)}`,
+              }
+            : null
+        }
+      />
+
       <div className="fp-rule" />
 
       <ReviewStrip reviews={reviews} summary={reviewStats} reviewUrl={cfg.contact.reviewUrl} />
