@@ -46,7 +46,18 @@ COPY --from=build /app/content ./content
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/package.json ./package.json
 COPY docker/entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh && addgroup -S app && adduser -S app -G app && chown -R app:app /app
+# The optimised-image cache directory is created here, empty, on purpose.
+#
+# Next writes encoded AVIF/WebP into it at runtime, and in production it wants
+# to be a mounted volume so a deploy does not throw away every encode - roughly
+# half a second of CPU per image per size, paid again by whoever browses next.
+#
+# Docker seeds a named volume's contents and ownership from the image, but only
+# if the path already exists in the image. If it does not, the volume is created
+# root-owned, this container runs as `app`, and Next silently cannot write - so
+# caching switches itself off with no error anywhere and every request re-encodes.
+# Creating it before the chown is what makes the volume come up writable.
+RUN mkdir -p /app/apps/web/.next/cache/images  && chmod +x ./entrypoint.sh  && addgroup -S app && adduser -S app -G app && chown -R app:app /app
 USER app
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s CMD wget -qO- http://127.0.0.1:3000/api/health || exit 1
