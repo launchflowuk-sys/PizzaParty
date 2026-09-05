@@ -30,9 +30,10 @@ services:
       # stack to it - which is exactly how an admin panel ends up on "admin".
       CLIENT_SLUG: farm-pizza
       DATABASE_URL: postgresql://postgres:postgres@db:5432/farm_pizza
-      # Falls back to the container's own address, but ../.env wins - point it
-      # at the tunnel or domain when the stack is reachable from outside.
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      # NEXT_PUBLIC_SITE_URL is deliberately not here either. Compose only
+      # interpolates ${...} from its own directory's .env and the shell, never
+      # from the service's env_file, so a default written here would win over
+      # ../.env and pin every canonical redirect back to localhost.
     ports: ["${WEB_PORT:-3000}:3000"]
     depends_on:
       db:

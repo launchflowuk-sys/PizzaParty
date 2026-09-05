@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@launchflow/db";
 import { COOKIE, cookieOptions, safeEqual, sha256, signToken } from "@/lib/auth";
 import { getClientRow } from "@/lib/menu";
-import { STAFF_ROLES, type StaffRole } from "@/lib/permissions";
+import { STAFF_ROLES, can, type StaffRole } from "@/lib/permissions";
 import { env } from "@/lib/env";
 
 /**
@@ -37,6 +37,13 @@ export async function POST(req: NextRequest) {
     if (member) {
       const role: StaffRole = (STAFF_ROLES as readonly string[]).includes(member.role) ? (member.role as StaffRole) : "kitchen";
       res.cookies.set(COOKIE.admin, await signToken({ role: "admin", sub: member.id, sr: role, nm: member.name }), cookieOptions("admin"));
+      // The kitchen screen sits behind its own cookie so a shared tablet can be
+      // signed in once and left alone. Someone whose role includes the kitchen
+      // has already proved who they are, so give them that cookie too rather
+      // than bouncing them to a second login.
+      if (can(role, "kitchen")) {
+        res.cookies.set(COOKIE.kitchen, await signToken({ role: "kitchen", sub: member.id }), cookieOptions("kitchen"));
+      }
       return res;
     }
   }

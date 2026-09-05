@@ -48,6 +48,26 @@ export function can(role: StaffRole, screen: Screen): boolean {
   return GRANTS[role].includes(screen);
 }
 
+/** Where a screen actually lives, since two of them are not under /admin/<screen>. */
+export function pathForScreen(screen: Screen): string {
+  if (screen === "dashboard") return "/admin";
+  if (screen === "kitchen") return "/kitchen";
+  return `/admin/${screen}`;
+}
+
+/**
+ * The first screen this role can open.
+ *
+ * Needed because turning someone away has to send them somewhere they are
+ * allowed to be. Sending every denial to /admin loops forever for a role that
+ * cannot see the dashboard - which is most of them.
+ */
+export function landingFor(role: StaffRole): string {
+  if (role === "manager") return "/admin";
+  const first = GRANTS[role][0];
+  return first ? pathForScreen(first) : "/admin/login";
+}
+
 /** Maps a back-office path to the screen it belongs to, for guards and the sidebar. */
 export function screenForPath(path: string): Screen | null {
   if (path === "/admin" || path === "/admin/") return "dashboard";

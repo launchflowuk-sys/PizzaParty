@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@launchflow/db";
 import { COOKIE, verifyToken, type Role } from "./auth";
-import { can, STAFF_ROLES, type Screen, type StaffRole } from "./permissions";
+import { can, landingFor, STAFF_ROLES, type Screen, type StaffRole } from "./permissions";
 
 export async function requireRole(role: Exclude<Role, "customer">) {
   const jar = await cookies();
@@ -42,6 +42,11 @@ export async function currentStaff(): Promise<CurrentStaff | null> {
 export async function requireScreen(screen: Screen): Promise<CurrentStaff> {
   const staff = await currentStaff();
   if (!staff) redirect("/admin/login");
-  if (!can(staff.role, screen)) redirect("/admin?denied=" + screen);
+  // Send them to somewhere they can actually be. Redirecting every denial to
+  // /admin loops for any role without dashboard access.
+  if (!can(staff.role, screen)) {
+    const home = landingFor(staff.role);
+    redirect(home === "/admin" ? `/admin?denied=${screen}` : `${home}?denied=${screen}`);
+  }
   return staff;
 }
