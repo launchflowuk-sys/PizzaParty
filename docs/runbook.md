@@ -198,3 +198,49 @@ turns up.
 2 vCPU makes every deploy a ten-minute wait. CX32 (4 vCPU / 8GB) would roughly
 halve it. Resizing keeps the IP and the disk, so nothing here needs
 reconfiguring.
+
+## Moving the shop onto the client's own domain
+
+`farm-pizza.shop` is ours, bought to build on. Farm Pizza already own a domain,
+and the intention has always been to move onto it once they buy. This is the
+list, because half of it is invisible until it is wrong.
+
+Nothing here is hard. What makes it painful is doing eight of the ten and
+discovering the other two from a customer.
+
+**1. Coolify — the application**
+- Add the new domain alongside the old one. Do not remove `farm-pizza.shop`
+  until the new one is serving; keeping both means no window with neither.
+- Let Traefik issue the certificate, then check `https://` before going on.
+- Set `NEXT_PUBLIC_SITE_URL` to the new origin, no trailing slash. This is not
+  cosmetic: it is what order-tracking links, the kitchen link in the order
+  email and every canonical tag are built from. Wrong here and the emails point
+  at a domain the shop no longer uses.
+- Redeploy. `NEXT_PUBLIC_*` is baked in at build time - changing it without a
+  rebuild changes nothing.
+
+**2. DNS on the new domain**
+- `A` (and `AAAA` if used) to the server.
+- Leave the mail records alone if their email already works. Moving the website
+  does not move the mailboxes, and rewriting MX to "tidy up" takes the shop's
+  email down.
+
+**3. Email**
+- `MAIL_FROM` and `SMTP_USER` move to the new domain.
+- `SPF`, `DKIM` and `DMARC` must exist on the *new* domain. They do not follow
+  the website. Receipts sent as `@newdomain` with SPF only on the old one go
+  to spam, and the shop finds out from a customer who never got a receipt.
+
+**4. Stripe**
+- Webhook endpoint URL changes. The old one keeps returning 200 from the old
+  domain while it still resolves, so this fails quietly rather than loudly.
+
+**5. Google Places**
+- Nothing. The key is restricted by server IP, not by domain, and the calls are
+  made server-side. Listed here only so nobody goes looking.
+
+**6. Afterwards**
+- Reissue any QR codes, printed menus or Google Business links pointing at the
+  old domain.
+- Keep `farm-pizza.shop` pointed at the app and redirecting for as long as it is
+  cheap. Somebody has it bookmarked.
