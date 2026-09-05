@@ -35,10 +35,16 @@ export function MenuSearchPill({ suggestions = [] }: { suggestions?: string[] })
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search the menu — pepperoni, garlic bread, lasagne"
+          placeholder="Search the menu"
           autoComplete="off"
         />
-        <button type="submit" className="btn btn-primary">Search</button>
+        {/* Icon only. A word here forced the bar to wrap onto two rows on a
+            phone, which is what made it look bolted together. */}
+        <button type="submit" aria-label="Search the menu">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" />
+          </svg>
+        </button>
       </form>
 
       {suggestions.length > 0 ? (

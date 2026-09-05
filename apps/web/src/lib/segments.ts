@@ -18,6 +18,7 @@ export const SEGMENTS: { key: string; label: string; help: string }[] = [
   { key: "big_spenders", label: "Big spenders (£250+ lifetime)", help: "Worth protecting. A thank-you lands better here than an offer." },
   { key: "grays", label: "Grays & Little Thurrock (RM17)", help: "The doorstep trade, closest to the shop." },
   { key: "thurrock", label: "Chafford & West Thurrock (RM16/RM20)", help: "The further patch, where delivery costs more." },
+  { key: "basildon", label: "Basildon shop (SS)", help: "Everyone the Basildon branch delivers to." },
 ];
 
 export function segmentWhere(key: string): Prisma.CustomerWhereInput {
@@ -31,6 +32,7 @@ export function segmentWhere(key: string): Prisma.CustomerWhereInput {
     case "big_spenders": return { totalSpent: { gte: 25000 } };
     case "grays": return { lastPostcode: { startsWith: "RM17" } };
     case "thurrock": return { OR: [{ lastPostcode: { startsWith: "RM16" } }, { lastPostcode: { startsWith: "RM20" } }] };
+    case "basildon": return { OR: [{ lastPostcode: { startsWith: "SS" } }, { lastPostcode: { startsWith: "CM11" } }] };
     default: return {};
   }
 }

@@ -1,10 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo } from "next/font/google";
+import { Calistoga, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-/* The design system is set entirely in Archivo (400/600/800). Self-hosted through
-   next/font so there is no render-blocking Google Fonts request. */
-const archivo = Archivo({ subsets: ["latin"], weight: ["400", "600", "800"], variable: "--font-archivo", display: "swap" });
+/* Calistoga for headlines, Plus Jakarta Sans for everything else. Both are
+   self-hosted through next/font, so there is no render-blocking Google Fonts
+   request and the Lighthouse score survives the change of family.
+   Calistoga ships one weight only - it is a display face and does not need
+   more, and asking for weights it lacks would silently synthesise them. */
+const display = Calistoga({ subsets: ["latin"], weight: ["400"], variable: "--font-display", display: "swap" });
+const sans = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-sans", display: "swap" });
 import { contrastInk } from "@launchflow/ui";
 import { getConfig, assetUrl, localityPath } from "@/lib/config";
 import { env } from "@/lib/env";
@@ -37,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     "--brand-secondary": cfg.brand.secondary,
   } as React.CSSProperties;
   return (
-    <html lang="en-GB" className={archivo.variable} style={style} data-photo={cfg.brand.photoStyle}>
+    <html lang="en-GB" className={`${display.variable} ${sans.variable}`} style={style} data-photo={cfg.brand.photoStyle}>
       <body style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
         <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} fulfilment={cfg.fulfilment} />
         <main style={{ flex: 1 }}>{children}</main>

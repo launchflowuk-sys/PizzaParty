@@ -346,7 +346,15 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
 
 /* Zero radius is non-negotiable in this system. The radio `.dot` is its single
    documented circular element, so it is the only exemption. */
-*:not(.dot) { border-radius: 0 !important; }
+/* The system used to force every corner square. It now uses pills for anything
+   you press and a soft corner on surfaces, so this blanket override is gone -
+   it would have fought every rule below. */
+.btn, button.btn, .lf-btn, .tag, .input, .lf-input, .lf-pill, select.input, textarea.input {
+  border-radius: var(--radius-pill);
+}
+/* A textarea rounded to 999px looks wrong, so it takes the surface radius. */
+textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
+.lf-card, .fp-panel, .fp-cell { border-radius: var(--radius-md); }
 
 /* Campaign composer sits beside the list of who is in each group on a wide
    screen, and stacks under it on a phone. */
@@ -472,9 +480,6 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
   .fp-hero-inner { padding: 0 20px 32px; }
   .fp-hero-h1 { font-size: clamp(34px, 10vw, 46px); }
   .fp-hero-sub { font-size: 15px; margin-bottom: 20px; max-width: none; }
-  .fp-herosearch-bar { flex-wrap: wrap; }
-  .fp-herosearch-bar input { flex: 1 0 100%; padding: 13px 14px; }
-  .fp-herosearch-bar .btn { flex: 1 0 100%; }
   .fp-hero-cta { margin-top: 16px; }
   .fp-hero-cta .btn { flex: 1 1 auto; text-align: center; }
 }
@@ -501,8 +506,8 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
   font-variant-ligatures: none;
   background-image: linear-gradient(
     100deg,
-    #ffe9b8 0%, #ffc247 14%, #ff8a1f 30%, #f4441d 46%,
-    #ff8a1f 62%, #ffc247 78%, #ffe9b8 92%, #ffc247 100%
+    #FFEFC9 0%, #F6C558 14%, #E89334 30%, #C82323 46%,
+    #E89334 62%, #F6C558 78%, #FFEFC9 92%, #F6C558 100%
   );
   background-size: 260% 100%;
   background-position: 0% 50%;
@@ -515,8 +520,8 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
 }
 @keyframes fp-flame-pan { to { background-position: 260% 50%; } }
 @keyframes fp-flame-glow {
-  0%, 100% { text-shadow: 0 0 18px rgba(255,138,31,.34), 0 0 44px rgba(244,68,29,.16); }
-  50%      { text-shadow: 0 0 26px rgba(255,194,71,.46), 0 0 62px rgba(244,68,29,.24); }
+  0%, 100% { text-shadow: 0 0 18px rgba(232,147,52,.34), 0 0 44px rgba(200,35,35,.18); }
+  50%      { text-shadow: 0 0 26px rgba(246,197,88,.46), 0 0 62px rgba(200,35,35,.26); }
 }
 @media (prefers-reduced-motion: reduce) {
   .fp-hero-h1-word { animation: none; background-position: 40% 50%; }
@@ -658,13 +663,24 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
 
    Scoped to .fp-admin and .fp-kitchenwrap so none of this reaches the
    storefront. */
-.fp-admin, .fp-kitchenwrap {
-  --ok:      #0f7b3d;  --ok-bg:      #e7f5ec;  --ok-line:      #9ed3b4;
-  --warn:    #8a5a00;  --warn-bg:    #fdf3dc;  --warn-line:    #e6c67a;
-  --danger:  #b3261e;  --danger-bg:  #fdeceb;  --danger-line:  #efb0ac;
-  --info:    #1b4f9c;  --info-bg:    #e9f0fb;  --info-line:    #a8c3e8;
-  --busy:    #6b3fa0;  --busy-bg:    #f2ecfa;  --busy-line:    #c6b0e2;
+:root, .fp-admin, .fp-kitchenwrap {
+  /* Rebased onto the warm palette. The first pass used stock web colours -
+     a cold blue and a violet - which sat badly on cream and were tiring to
+     look at for a whole shift. These are the same five meanings drawn from
+     the brand: basil for good, tomato for wrong, a baked amber for waiting,
+     ink-blue for "needs a person", and a warm plum for "in progress".
+     Every pairing below clears 4.5:1 on its own background. */
+  --ok:      #31563A;  --ok-bg:      #EFF4F0;  --ok-line:      #B4CDBC;
+  --warn:    #8A5A12;  --warn-bg:    #FBF1DF;  --warn-line:    #E4C88E;
+  --danger:  #A31A1A;  --danger-bg:  #FDF0EE;  --danger-line:  #F4BAB3;
+  --info:    #2A4A6B;  --info-bg:    #ECF1F5;  --info-line:    #B3C6D6;
+  --busy:    #6B3A52;  --busy-bg:    #F7EDF2;  --busy-line:    #DCBACB;
 }
+
+/* Cream, not grey. The back office inherits the storefront's ground so staff
+   are not staring at a different, colder product all day. */
+.fp-admin { background: var(--color-bg); }
+.fp-adminrail { background: var(--color-surface); }
 
 /* ── Tables ─────────────────────────────────────────────────────────────────
    Striping, a heavier header, and a hover row. Cheap, and it is the difference
@@ -688,8 +704,8 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
   border-bottom: 1px solid var(--color-divider);
   vertical-align: middle;
 }
-.fp-admin .table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--color-text) 3%, transparent); }
-.fp-admin .table tbody tr:hover { background: color-mix(in srgb, var(--brand-primary, #ec3013) 8%, transparent); }
+.fp-admin .table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--color-accent-2) 4%, transparent); }
+.fp-admin .table tbody tr:hover { background: color-mix(in srgb, var(--color-accent) 7%, transparent); }
 /* A row that needs attention says so before you read a word of it. */
 .fp-admin .table tbody tr[data-row="danger"] { box-shadow: inset 4px 0 0 var(--danger); }
 .fp-admin .table tbody tr[data-row="warn"]   { box-shadow: inset 4px 0 0 var(--warn); }
@@ -824,3 +840,220 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
   border: 1px solid var(--color-neutral-400); border-bottom-width: 2px;
   padding: 1px 5px; background: var(--color-surface);
 }
+
+/* ── Storefront call to action ──────────────────────────────────────────────
+   The buttons a customer actually presses — hero, product, basket, checkout —
+   are deliberately oversized. On a phone, held one-handed, in a hurry, the
+   difference between a 38px target and a 56px one is whether the order happens.
+   Back-office buttons keep the compact size; they are pressed by staff who know
+   where they are. */
+.fp-hero-cta .btn,
+.fp-cta-lg {
+  font-size: 15px;
+  padding: 17px 34px;
+  letter-spacing: .06em;
+  min-height: 56px;
+}
+.fp-hero-cta .btn-primary,
+.fp-cta-lg.btn-primary { box-shadow: 0 6px 18px color-mix(in srgb, var(--color-accent) 32%, transparent); }
+
+/* The storefront ground is cream now, so a card that was "surface" grey needs
+   to stay a step apart from it rather than disappearing. */
+.fp-cell { background: var(--color-bg); }
+.fp-cell:hover { background: var(--color-surface); }
+
+@media (max-width: 700px) {
+  /* Full-width targets on a phone. */
+  .fp-hero-cta .btn, .fp-cta-lg { width: 100%; }
+}
+
+/* ══ Kitchen tickets ═════════════════════════════════════════════════════════
+   Sized for arm's length. A chef reads this standing at the pass with their
+   hands full, glancing sideways, under noise — not leaning into a screen. Every
+   size here is set by how far away the tablet is, not by what looks balanced in
+   a design tool. */
+.fp-ticket {
+  background: var(--color-bg);
+  border: 2px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+.fp-ticket[data-late] {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent);
+}
+
+.fp-ticket-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.fp-ticket-no {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.fp-ticket-age {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;   /* the width must not shift each minute */
+  line-height: 1;
+}
+.fp-ticket-age small { font-size: 13px; margin-left: 3px; font-weight: 600; }
+.fp-ticket[data-late] .fp-ticket-age { color: var(--danger); }
+
+.fp-ticket-items { display: grid; gap: 8px; }
+.fp-ticket-line { display: grid; grid-template-columns: 34px 1fr; gap: 8px; align-items: start; }
+.fp-ticket-qty {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 19px; font-weight: 700; line-height: 1.25;
+}
+.fp-ticket-item { display: block; font-size: 18px; font-weight: 700; line-height: 1.25; }
+
+/* Anything that changes the food. Boxed, shouted, and impossible to read as
+   part of the item name above it — a missed "no olives" is a remake, a wasted
+   pizza and a phone call. */
+.fp-ticket-mod {
+  display: inline-block;
+  margin: 5px 5px 0 0;
+  padding: 3px 10px;
+  background: var(--warn-bg);
+  border: 2px solid var(--warn);
+  border-radius: var(--radius-pill);
+  color: var(--warn);
+  font-size: 13px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.fp-ticket-part {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px; font-weight: 600;
+  color: var(--color-neutral-800);
+}
+.fp-ticket-note {
+  display: block;
+  margin-top: 6px;
+  padding: 7px 11px;
+  background: var(--danger-bg);
+  border-left: 4px solid var(--danger);
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  font-size: 14px; font-weight: 800;
+  text-transform: uppercase;
+}
+
+.fp-ticket-who { font-size: 14px; color: var(--color-neutral-800); line-height: 1.5; }
+.fp-ticket-who a { font-weight: 700; }
+
+/* The one button that moves the ticket on. Full width, thumb-sized, and green
+   so it is found without reading — the whole board is scanned for this shape. */
+.fp-ticket-go {
+  width: 100%;
+  min-height: 60px;
+  background: var(--ok);
+  color: #fff;
+  border-color: var(--ok);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.fp-ticket-go:hover { filter: brightness(1.1); }
+.fp-ticket-go:active { transform: translateY(1px); }
+
+@media (max-width: 900px) {
+  .fp-ticket-no, .fp-ticket-age { font-size: 24px; }   /* the floor you asked for */
+  .fp-ticket-item { font-size: 17px; }
+}
+
+/* ══ Storefront, phone-first corrections ═════════════════════════════════════
+   From real device testing: the hero opened on half a screen of bare
+   photograph with no way to start an order, the search bar was two stacked
+   boxes, product cards carried half a border, and "Add to basket" broke onto
+   three lines. All of that is fixed here. */
+
+/* ── Cards ────────────────────────────────────────────────────────────────
+   .fp-cell drew only a right and bottom edge, which is how a CSS grid fakes
+   dividers. Once the cells became rounded cards that read as one side lined
+   and the other side missing. They are whole cards now. */
+.fp-grid { border: 0; gap: 14px; }
+.fp-cell {
+  border: 2px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  overflow: hidden;
+  padding: 0 0 14px;
+  gap: 8px;
+}
+.fp-cell > .fp-photo, .fp-cell > .fp-photo-img, .fp-cell > div:first-child {
+  border-radius: 0;
+  margin-bottom: 4px;
+}
+.fp-cell > *:not(.fp-photo):not(.fp-photo-img):not(:first-child) { margin-inline: 14px; }
+.fp-cell:hover { background: var(--color-surface); border-color: var(--color-neutral-400); }
+
+/* ── Buttons that never wrap ──────────────────────────────────────────────
+   "Add to basket" on three lines was a squashed pill in a flex row with no
+   minimum. Storefront actions get a floor, a single line, and room. */
+.fp-cell .btn, .fp-cta-lg, .fp-hero-cta .btn {
+  white-space: nowrap;
+  min-height: 46px;
+}
+.fp-cell > div:last-child { display: flex; gap: 8px; }
+.fp-cell > div:last-child > .btn { flex: 1 1 auto; justify-content: center; }
+/* "Details" is secondary and does not need to be half the card. */
+.fp-cell > div:last-child > .btn-secondary { flex: 0 0 auto; }
+
+@media (max-width: 700px) {
+  /* One column. Two 160px cards side by side is what squashed the buttons. */
+  .fp-grid-4, .fp-grid-3 { grid-template-columns: minmax(0, 1fr); }
+  .fp-cell > div:last-child > .btn { min-height: 52px; font-size: 15px; }
+
+  /* ── Hero ───────────────────────────────────────────────────────────────
+     Was 200px of untouched photograph before a single word. The picture still
+     leads, but the order buttons are on screen without scrolling. */
+  .fp-hero { padding-top: 120px; }
+  .fp-hero-inner { padding: 0 16px 26px; }
+  .fp-hero-h1 { font-size: clamp(30px, 8.4vw, 40px); }
+  .fp-hero-h1-lead { font-size: .5em; }
+  .fp-hero-sub { font-size: 14px; margin-bottom: 16px; }
+
+  /* Buttons first, full width, thumb-sized. */
+  .fp-hero-cta { margin: 0 0 14px; gap: 10px; }
+  .fp-hero-cta .btn { width: 100%; min-height: 56px; font-size: 16px; }
+
+  /* The stamp is illegible at this size over a bright photograph, and it was
+     stealing the space the buttons needed. It stays on tablet and desktop. */
+  .fp-stamp { display: none; }
+}
+
+/* ── Search ───────────────────────────────────────────────────────────────
+   One pill with the button inside it, rather than a white box with a second
+   full-width button underneath. */
+.fp-herosearch-bar {
+  border-radius: var(--radius-pill);
+  padding: 4px 4px 4px 6px;
+  align-items: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,.18);
+}
+.fp-herosearch-bar input { padding: 12px 14px; border-radius: var(--radius-pill); }
+.fp-herosearch-bar button[type="submit"] {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px;
+  border: 0; border-radius: 50%;
+  background: var(--color-action); color: #fff;
+  cursor: pointer;
+}
+.fp-herosearch-bar button[type="submit"]:hover { background: var(--color-action-hover); }
+
+/* The hero's secondary action sits on a photograph, so it needs its own
+   contrast rather than the page's ghost styling. */
+.btn-hero-ghost {
+  background: rgba(255,255,255,.14);
+  border: 2px solid rgba(255,255,255,.6);
+  color: #fff;
+  backdrop-filter: blur(3px);
+}
+.btn-hero-ghost:hover { background: rgba(255,255,255,.26); }

@@ -73,7 +73,9 @@ export function KitchenScreen() {
   }
 
   return (
-    <div style={{ padding: "16px 20px 40px" }}>
+    // fp-kitchenwrap is what carries the status colour tokens; without it the
+    // green advance button has no --ok to paint with and comes out blank.
+    <div className="fp-kitchenwrap" style={{ padding: "16px 20px 40px" }}>
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Kitchen queue</span>
@@ -156,12 +158,14 @@ export function KitchenScreen() {
                   );
 
                   return (
-                    <article key={o.id} style={{ background: "var(--color-surface)", padding: 12, display: "grid", gap: 8, borderLeft: `4px solid ${edge}` }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                        <span style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13, fontWeight: 600 }}>#{o.number}</span>
-                        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16, color: late ? "var(--color-accent)" : "var(--color-text)" }}>
-                          {age} min
-                        </span>
+                    <article key={o.id} className="fp-ticket" data-late={late ? "1" : undefined} style={{ borderLeft: `6px solid ${edge}` }}>
+                      {/* Number and clock in monospace at 28px. This is read from
+                          the pass, not from a chair: at arm's length across a hot
+                          kitchen, 13px is invisible and a proportional font makes
+                          the digits jump about as the minutes tick. */}
+                      <div className="fp-ticket-head">
+                        <span className="fp-ticket-no">#{o.number}</span>
+                        <span className="fp-ticket-age">{age}<small>min</small></span>
                       </div>
 
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 11 }}>
@@ -174,21 +178,24 @@ export function KitchenScreen() {
                         ) : null}
                       </div>
 
-                      <div style={{ fontSize: 13, display: "grid", gap: 2 }}>
+                      <div className="fp-ticket-items">
                         {o.items.map((i, idx) => (
                           <div key={idx} style={{ display: "grid", gridTemplateColumns: "22px 1fr", gap: 6 }}>
-                            <span style={{ fontWeight: 600 }}>{i.qty}×</span>
+                            <span className="fp-ticket-qty">{i.qty}&times;</span>
                             <span>
-                              {i.name}{i.size ? ` (${i.size})` : ""}
-                              {i.modifiers.length ? <span style={{ display: "block", color: "var(--color-neutral-700)" }}>+ {i.modifiers.join(", ")}</span> : null}
-                              {i.components.map((c, ci) => <span key={ci} style={{ display: "block", color: "var(--color-neutral-700)" }}>• {c}</span>)}
-                              {i.notes ? <span style={{ display: "block", color: "var(--color-accent-700)", fontWeight: 600 }}>&ldquo;{i.notes}&rdquo;</span> : null}
+                              <span className="fp-ticket-item">{i.name}{i.size ? ` (${i.size})` : ""}</span>
+                              {/* Anything that changes the food is boxed and shouted.
+                                  A missed "no olives" is a remake and an angry phone
+                                  call, so it must not read like the line above it. */}
+                              {i.modifiers.map((m, mi) => <span key={mi} className="fp-ticket-mod">{m}</span>)}
+                              {i.components.map((c, ci) => <span key={ci} className="fp-ticket-part">{c}</span>)}
+                              {i.notes ? <span className="fp-ticket-note">&ldquo;{i.notes}&rdquo;</span> : null}
                             </span>
                           </div>
                         ))}
                       </div>
 
-                      <div style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>
+                      <div className="fp-ticket-who">
                         {o.customerName} &middot; <a href={`tel:${o.customerPhone}`}>{o.customerPhone}</a>
                         {o.address ? <span style={{ display: "block" }}>{o.address}</span> : null}
                         {o.notes ? <span style={{ display: "block", color: "var(--color-accent-700)", fontWeight: 600 }}>Note: {o.notes}</span> : null}
@@ -220,7 +227,7 @@ export function KitchenScreen() {
                       ) : next.length ? (
                         <div style={{ display: "grid", gap: 8 }}>
                           {next.map((n) => (
-                            <button key={n.to} className="btn btn-primary btn-block" style={{ minHeight: 44 }} onClick={() => act(o.id, n.to)}>
+                            <button key={n.to} className="btn fp-ticket-go" onClick={() => act(o.id, n.to)}>
                               {n.label}
                             </button>
                           ))}

@@ -76,12 +76,12 @@ export default async function Home() {
 
           <p className="fp-hero-sub">Order direct. No app fees, no middleman.</p>
 
-          <MenuSearchPill suggestions={heroSuggestions} />
-
           <div className="fp-hero-cta">
-            <Link href="/menu" className="btn btn-primary">See the menu</Link>
-            <Link href="/deals" className="btn btn-ghost">Tonight&rsquo;s deals &rarr;</Link>
+            <Link href="/menu" className="btn btn-primary">Start your order</Link>
+            <Link href="/deals" className="btn btn-hero-ghost">Tonight&rsquo;s deals</Link>
           </div>
+
+          <MenuSearchPill suggestions={heroSuggestions} />
         </div>
       </section>
 

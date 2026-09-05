@@ -6,48 +6,66 @@
 /* Modernist — design-system tokens and component classes. This file is the source of truth for the system's look; retune it here and see readme.md. */
 
 :root {
-  --color-bg: #f3f2f2;
-  --color-surface: #eae9e9;
-  --color-text: #201e1d;
-  --color-accent: #ec3013;
-  --color-accent-2: #e15b47;
-  --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
+  /* Warm palette. The system was flat grey with one hot red, which read as
+     architectural and cold - correct for a gallery, wrong for a pizza shop, and
+     hard on staff who look at the back office all shift. Cream ground, ink that
+     is warm rather than black, a tomato red that belongs on food, and a basil
+     green that carries "this is fine" without shouting. */
+  --color-bg: #FAF6F0;         /* cream */
+  --color-surface: #F2EBE1;    /* one step down, for panels and inset areas */
+  --color-text: #1C1A17;       /* rich charcoal, never pure black */
+  --color-accent: #C82323;     /* tomato — brand, headings, highlights */
+  --color-accent-2: #3E6B48;   /* basil — quiet supporting green */
 
-  /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
-     same step of any role matches the others in visual value. */
-  --color-neutral-100: #f8f4f4;
-  --color-neutral-200: #eae7e7;
-  --color-neutral-300: #d7d3d3;
-  --color-neutral-400: #bab6b6;
-  --color-neutral-500: #9b9797;
-  --color-neutral-600: #7d7979;
-  --color-neutral-700: #605d5d;
-  --color-neutral-800: #444141;
-  --color-neutral-900: #2d2b2b;
+  /* The button green. Every takeaway app in the country uses a confident green
+     for "do the thing", because it reads as go and it does not compete with the
+     food. Basil is too muted to carry a call to action, and tomato red on a
+     photograph of tomato-red pizza disappears into it.
+     #0F7A3D against white is 5.0:1, so it clears AA at button size. */
+  --color-action: #0F7A3D;
+  --color-action-hover: #14914A;
+  --color-action-dark: #0B5C2E;
+  --color-divider: color-mix(in srgb, #1C1A17 24%, transparent);
 
-  --color-accent-100: #fff2ef;
-  --color-accent-200: #ffe0d9;
-  --color-accent-300: #ffc4b8;
-  --color-accent-400: #ff9783;
-  --color-accent-500: #ff563c;
-  --color-accent-600: #dd2b0f;
-  --color-accent-700: #ae1800;
-  --color-accent-800: #7c1405;
-  --color-accent-900: #4d170e;
+  /* Tonal ramps, warmed to sit on cream. A neutral with no warmth in it looks
+     dirty against #FAF6F0, which is why these are not greys. */
+  --color-neutral-100: #FBF8F3;
+  --color-neutral-200: #F1EAE0;
+  --color-neutral-300: #E1D8CA;
+  --color-neutral-400: #C7BCAA;
+  --color-neutral-500: #A49885;
+  --color-neutral-600: #857A69;
+  --color-neutral-700: #6A6053;
+  --color-neutral-800: #4A433A;
+  --color-neutral-900: #2A2620;
 
-  --color-accent-2-100: #fff2ef;
-  --color-accent-2-200: #ffe0da;
-  --color-accent-2-300: #ffc4b9;
-  --color-accent-2-400: #ff9784;
-  --color-accent-2-500: #ef6853;
-  --color-accent-2-600: #c94b39;
-  --color-accent-2-700: #9e3526;
-  --color-accent-2-800: #71261b;
-  --color-accent-2-900: #471d16;
+  /* Tomato */
+  --color-accent-100: #FDF0EE;
+  --color-accent-200: #FADCD8;
+  --color-accent-300: #F4BAB3;
+  --color-accent-400: #E98B82;
+  --color-accent-500: #DB4F44;
+  --color-accent-600: #C82323;
+  --color-accent-700: #A31A1A;
+  --color-accent-800: #7A1414;
+  --color-accent-900: #4E1010;
 
-  --font-heading: var(--font-archivo), "Archivo", system-ui, sans-serif;
-  --font-heading-weight: 800;
-  --font-body: var(--font-archivo), "Archivo", system-ui, sans-serif;
+  /* Basil */
+  --color-accent-2-100: #EFF4F0;
+  --color-accent-2-200: #D8E5DC;
+  --color-accent-2-300: #B4CDBC;
+  --color-accent-2-400: #83AC90;
+  --color-accent-2-500: #558864;
+  --color-accent-2-600: #3E6B48;
+  --color-accent-2-700: #31563A;
+  --color-accent-2-800: #26422C;
+  --color-accent-2-900: #1B2E1F;
+
+  /* Headlines in a soft serif, body in a warm geometric sans. The serif is what
+     stops the page reading as a tech product. */
+  --font-heading: var(--font-display), "Calistoga", Georgia, serif;
+  --font-heading-weight: 400;
+  --font-body: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
 
   --space-1: 4.0px;
   --space-2: 8.0px;
@@ -56,15 +74,16 @@
   --space-6: 24.0px;
   --space-8: 32.0px;
 
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
+  /* Pills. Buttons and inputs are fully rounded; surfaces keep a soft corner
+     rather than the hard 0 the system used everywhere. */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
 
-  /* Elevation — derived from the ground: soft ink-tinted shadows on a
-     light theme, a hairline edge + ambient darkness on a dark one. */
-  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
-  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
-  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2A2620 12%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2A2620 14%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2A2620 18%, transparent);
 }
 
 body {
@@ -118,12 +137,15 @@ figcaption {
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   cursor: pointer; text-decoration: none;
-  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
-  font-size: 14px; line-height: 1.2; color: var(--color-text); /* matches the .input's 14px —
-     the pair sits side by side in sign-up rows */
+  /* Buttons take the body face, not the display serif: Calistoga has one weight
+     and no small-caps, and a serif set in caps at button size reads as a sign
+     rather than something you press. */
+  font-family: var(--font-body); font-weight: 700;
+  font-size: 14px; line-height: 1.2; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--color-text);
   background: transparent; border: 1px solid transparent;
-  padding: var(--space-2) calc(var(--space-3) * 1.2);
-  border-radius: var(--radius-md);
+  padding: 11px 22px;
+  border-radius: var(--radius-pill);
 }
 .btn svg { display: block; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -132,9 +154,9 @@ figcaption {
    says as much about the accent/ground pair, but the primary button inverts it. The
    fill uses the deep step instead: 6.41:1. Hover and pressed step down from there so
    the interaction still reads. Everything else keeps the bright accent. */
-.btn-primary { background: var(--color-accent-700); color: var(--color-bg); }
-.btn-primary:hover { background: var(--color-accent-800); }
-.btn-primary:active { background: var(--color-accent-900); }
+.btn-primary { background: var(--color-action); color: #fff; border-color: var(--color-action); }
+.btn-primary:hover { background: var(--color-action-hover); border-color: var(--color-action-hover); }
+.btn-primary:active { background: var(--color-action-dark); border-color: var(--color-action-dark); }
 .btn-secondary { border-color: var(--color-divider); }
 .btn-secondary:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
 .btn-secondary:active { background: color-mix(in srgb, var(--color-text) 14%, transparent); }

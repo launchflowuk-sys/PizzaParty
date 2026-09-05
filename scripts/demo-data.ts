@@ -39,11 +39,13 @@ const daysAgo = (d: number) => new Date(Date.now() - d * 86400_000);
 
 const FIRST = ["Dave","Sarah","Mo","Emma","Liam","Aisha","Tony","Chloe","Ryan","Nicola","Kev","Priya","Jack","Leanne","Sam","Hannah","Gary","Amber","Josh","Steph","Darren","Yasmin","Callum","Rachel","Terry","Bev","Owen","Sonia","Craig","Freya","Nathan","Kirsty","Dean","Maria","Luke","Jade","Paul","Toni","Ben","Georgia","Adam","Lisa","Scott","Nadia","Wayne","Ellie","Marcus","Donna","Reece","Katie"];
 const LAST = ["Wright","Patel","Osei","Cooper","Byrne","Khan","Adams","Nolan","Fletcher","Hughes","Boateng","Marsh","Doyle","Reid","Kaur","Baxter","Ellis","Chowdhury","Ward","Pike","Hastings","Nkemdirim","Groves","Sharma","Ives","Bramble","Quinn","Lawal","Timms","Ferris"];
-/** Grays and the Thurrock patch around it, which is where the shop delivers. */
+/** Both shops' patches: the Thurrock side around Grays, and Basildon. */
 const AREAS = [
   { city: "Grays", codes: ["RM17 5","RM17 6"], streets: ["Orsett Road","Bridge Road","Hathaway Road","Lodge Lane","Palmers Avenue","Dell Road","Argent Street","Clarence Road"] },
   { city: "Chafford Hundred", codes: ["RM16 6","RM16 2"], streets: ["Drake Road","Mayflower Road","Fleethall Grove","Kestrel Close","Sandpiper Close"] },
   { city: "West Thurrock", codes: ["RM20 3","RM20 4"], streets: ["London Road","Stonehouse Lane","Whitehall Lane","Crammavill Street","Oliver Road"] },
+  { city: "Basildon", codes: ["SS13 1","SS14 2","SS14 3"], streets: ["Clay Hill Road","Whitmore Way","Broadmayne","Long Riding","Timberlog Lane"] },
+  { city: "Pitsea", codes: ["SS15 5","SS16 4","SS16 5"], streets: ["Church Road","Rectory Road","Nevendon Road","High Road","Kenneth Road"] },
 ];
 
 async function main() {

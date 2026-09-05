@@ -9,8 +9,8 @@
     "farmpizzatakeaway.co.uk"
   ],
   "brand": {
-    "primary": "#C8322B",
-    "secondary": "#111318",
+    "primary": "#C82323",
+    "secondary": "#3E6B48",
     "logo": "assets/logo.png",
     "og": "assets/og.jpg",
     "hero": "assets/hero.webp",
@@ -107,6 +107,91 @@
           "extraMinutes": 15
         }
       ]
+    },
+    {
+      "id": "basildon",
+      "name": "Basildon",
+      "address": "467 Clay Hill Road, Basildon SS16 4EX",
+      "phone": "01268 554034",
+      "timezone": "Europe/London",
+      "postcodePrefixes": [
+        "SS13",
+        "SS14",
+        "SS15",
+        "SS16",
+        "SS12",
+        "CM11"
+      ],
+      "deliveryFee": 1.99,
+      "minOrder": 9.99,
+      "prepMinutes": 15,
+      "deliveryMinutes": 35,
+      "hours": {
+        "mon": [
+          "12:00",
+          "23:00"
+        ],
+        "tue": [
+          "12:00",
+          "23:00"
+        ],
+        "wed": [
+          "12:00",
+          "23:00"
+        ],
+        "thu": [
+          "12:00",
+          "00:00"
+        ],
+        "fri": [
+          "12:00",
+          "23:00"
+        ],
+        "sat": [
+          "12:00",
+          "23:00"
+        ],
+        "sun": [
+          "12:00",
+          "23:00"
+        ]
+      },
+      "deliveryAreas": [
+        "Basildon",
+        "Pitsea",
+        "Vange",
+        "Laindon",
+        "Fryerns",
+        "Lee Chapel",
+        "Kingswood",
+        "Langdon Hills",
+        "Dry Street",
+        "Noak Bridge",
+        "Crays Hill",
+        "Nevendon"
+      ],
+      "deliveryBands": [
+        {
+          "name": "Basildon town",
+          "prefixes": [
+            "SS13",
+            "SS14"
+          ],
+          "fee": 1.99,
+          "minOrder": 9.99,
+          "extraMinutes": 0
+        },
+        {
+          "name": "Pitsea & Laindon",
+          "prefixes": [
+            "SS15",
+            "SS16"
+          ],
+          "fee": 2.99,
+          "minOrder": 12.99,
+          "extraMinutes": 10
+        }
+      ]
     }
   ],
   "fulfilment": [
@@ -120,7 +205,8 @@
   },
   "seo": {
     "locality": [
-      "Grays"
+      "Grays",
+      "Basildon"
     ],
     "cuisine": "Pizza",
     "primaryKeyword": "pizza delivery grays"
