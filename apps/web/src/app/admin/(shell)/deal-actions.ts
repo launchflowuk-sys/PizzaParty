@@ -41,8 +41,10 @@ function target(fd: FormData, param: "m" | "e", message: string): never {
   const back = /^\/admin\/deals(\/[A-Za-z0-9_-]+)?$/.test(raw) ? raw : "/admin/deals";
   redirect(`${back}?${param}=${encodeURIComponent(message)}`);
 }
-const refuse = (fd: FormData, message: string): never => target(fd, "e", message);
-const done = (fd: FormData, message: string): never => target(fd, "m", message);
+// Declared as functions, not arrow consts: TypeScript only narrows past a
+// `never` return for a function declaration, and these are used as guards.
+function refuse(fd: FormData, message: string): never { target(fd, "e", message); }
+function done(fd: FormData, message: string): never { target(fd, "m", message); }
 
 function slugify(name: string): string {
   return name.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);

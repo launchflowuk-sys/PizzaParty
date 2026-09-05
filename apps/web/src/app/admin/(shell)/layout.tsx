@@ -17,6 +17,7 @@ const NAV: { href: string; label: string; screen: Screen }[] = [
   { screen: "menu", href: "/admin/menu", label: "Menu & pricing" },
   { screen: "deals", href: "/admin/deals", label: "Deals" },
   { screen: "promos", href: "/admin/promos", label: "Promotions" },
+  { screen: "loyalty", href: "/admin/loyalty", label: "Rewards club" },
   { screen: "inventory", href: "/admin/inventory", label: "Inventory" },
   { screen: "customers", href: "/admin/customers", label: "Customers" },
   { screen: "campaigns", href: "/admin/campaigns", label: "Campaigns" },

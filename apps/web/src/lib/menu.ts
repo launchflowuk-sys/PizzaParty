@@ -55,6 +55,25 @@ export function findProduct(menu: Menu, slug: string): { product: MenuProduct; c
   return null;
 }
 
+/**
+ * The deals a customer can actually buy right now.
+ *
+ * Day restrictions were enforced at the basket - a deal not running today was
+ * stripped out with an apology at checkout - but nothing stopped it being
+ * advertised in the first place. That was harmless while no deal used the
+ * restriction; now that the shop can set one from the back office, a Tuesday
+ * deal would otherwise sit on the deals page all week and be snatched away at
+ * the till.
+ *
+ * Deliberately not folded into `getMenu`: that result is cached for a minute
+ * under a key with no date in it, so a list filtered inside it would be one day
+ * stale either side of midnight. This is applied at render instead.
+ */
+export function dealsToday<T extends { daysOfWeek: number[] }>(deals: T[], now = new Date()): T[] {
+  const day = now.getDay();
+  return deals.filter((d) => d.daysOfWeek.length === 0 || d.daysOfWeek.includes(day));
+}
+
 export const minPrice = (p: MenuProduct) => Math.min(...p.sizes.map((s) => s.price));
 export const productPath = (category: { slug: string }, product: { slug: string }) => `/menu/${category.slug}/${product.slug}`;
 

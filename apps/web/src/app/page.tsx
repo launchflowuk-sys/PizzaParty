@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getConfig, assetUrl } from "@/lib/config";
-import { getMenu, getLocations, topSellers, productPath } from "@/lib/menu";
+import { getMenu, getLocations, topSellers, productPath, dealsToday } from "@/lib/menu";
 import { availability } from "@/lib/availability";
 import { restaurantJsonLd } from "@/lib/seo";
 import { gbpShort } from "@/lib/money";
@@ -27,7 +27,7 @@ export default async function Home() {
   const primary = locations[0];
   const avail = primary ? availability(primary) : null;
   const featured = topSellers(menu, 4);
-  const deals = menu.deals.slice(0, 4);
+  const deals = dealsToday(menu.deals).slice(0, 4);
   const towns = cfg.seo.locality.join(" · ");
   // Chips under the search bar: the shop's own best sellers, so the suggestions
   // are things it actually makes rather than generic pizza words.

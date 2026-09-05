@@ -219,7 +219,7 @@
     "reviewDelayMinutes": 45
   },
   "loyalty": {
-    "enabled": false,
+    "enabled": true,
     "pointsPerPound": 1
   },
   "referral": {

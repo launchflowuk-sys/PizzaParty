@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@launchflow/db";
 import { getConfig } from "@/lib/config";
-import { getMenu, getClientRow } from "@/lib/menu";
+import { getMenu, getClientRow, dealsToday } from "@/lib/menu";
 import { pageTitle } from "@/lib/seo";
 import { gbpShort, gbp } from "@/lib/money";
 import { ApplyCode } from "@/components/deals/ApplyCode";
@@ -22,6 +22,8 @@ export function generateMetadata(): Metadata {
  *  set large in the accent, then a ruled list of promo codes underneath. */
 export default async function DealsPage() {
   const menu = await getMenu();
+  // Only what is actually buyable today - see dealsToday.
+  const deals = dealsToday(menu.deals);
   const client = await getClientRow();
   const promos = await prisma.promo.findMany({
     where: { clientId: client.id, active: true },
@@ -46,15 +48,15 @@ export default async function DealsPage() {
     <section className="fp-wrap" style={{ padding: "40px 32px 64px" }}>
       <span className="fp-kicker" style={{ marginBottom: 12 }}>Deals &amp; offers</span>
       <h1 className="fp-h1" style={{ marginBottom: 12 }}>
-        {menu.deals.length} deals. No small print you need a lawyer for.
+        {deals.length} deals. No small print you need a lawyer for.
       </h1>
       <p style={{ fontSize: 15, color: "var(--color-neutral-800)", margin: "0 0 32px", maxWidth: "60ch" }}>
         Every deal works on delivery and collection unless it says otherwise. Prices include VAT. One code per order.
       </p>
 
-      {menu.deals.length ? (
+      {deals.length ? (
         <div className="fp-grid fp-grid-4">
-          {menu.deals.map((d) => (
+          {deals.map((d) => (
             <div key={d.id} className="fp-cell" style={{ padding: 20, gap: 12, minHeight: 300 }}>
               <span style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--color-accent-700)" }}>
                 {d.featured ? "Most popular" : "Every day"}

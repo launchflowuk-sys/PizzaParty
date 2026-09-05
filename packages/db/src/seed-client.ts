@@ -127,6 +127,7 @@ type OpsFile = {
   staff?: { name: string; role?: string; phone?: string; email?: string; hoursWeek?: number; onShift?: boolean; pin?: string }[];
   reviews?: { customerName: string; rating: number; body?: string; source?: string; reply?: string; daysAgo?: number }[];
   automations?: { name: string; trigger: string; days?: number; cooldownDays?: number; promoCode?: string; maxPerRun?: number; body?: string; channel?: string }[];
+  loyaltyRewards?: { name: string; points: number; type?: string; value?: number; minOrder?: number; expiryDays?: number }[];
 };
 
 /**
@@ -136,7 +137,7 @@ type OpsFile = {
  */
 async function seedOps(clientId: string, slug: string) {
   const file = join(clientDir(slug), "ops.json");
-  if (!existsSync(file)) return { stock: 0, drivers: 0, staff: 0, reviews: 0, automations: 0 };
+  if (!existsSync(file)) return { stock: 0, drivers: 0, staff: 0, reviews: 0, automations: 0, loyaltyRewards: 0 };
   const ops = JSON.parse(readFileSync(file, "utf8")) as OpsFile;
 
   for (const [i, it] of (ops.stock ?? []).entries()) {
@@ -172,6 +173,25 @@ async function seedOps(clientId: string, slug: string) {
     });
   }
 
+  // Rewards, like reviews, only into an empty table: what points buy is the
+  // shop's pricing decision once the club is running, and a re-seed must not
+  // quietly put last season's ladder back.
+  if ((ops.loyaltyRewards ?? []).length && (await prisma.loyaltyReward.count({ where: { clientId } })) === 0) {
+    await prisma.loyaltyReward.createMany({
+      data: (ops.loyaltyRewards ?? []).map((r, i) => ({
+        clientId,
+        name: r.name,
+        points: r.points,
+        type: (r.type ?? "fixed") as "fixed" | "percent" | "free_delivery",
+        // Pounds in config like every other price; a percentage is already whole.
+        value: r.type === "percent" ? Math.round(r.value ?? 0) : toPence(r.value ?? 0),
+        minOrder: toPence(r.minOrder ?? 0),
+        expiryDays: r.expiryDays ?? 60,
+        sortOrder: i,
+      })),
+    });
+  }
+
   for (const a of ops.automations ?? []) {
     // Seeded paused on purpose: re-seeding must never switch on something that
     // texts the customer list.
@@ -185,7 +205,7 @@ async function seedOps(clientId: string, slug: string) {
     });
   }
 
-  return { stock: (ops.stock ?? []).length, drivers: (ops.drivers ?? []).length, staff: (ops.staff ?? []).length, reviews: (ops.reviews ?? []).length, automations: (ops.automations ?? []).length };
+  return { stock: (ops.stock ?? []).length, drivers: (ops.drivers ?? []).length, staff: (ops.staff ?? []).length, reviews: (ops.reviews ?? []).length, automations: (ops.automations ?? []).length, loyaltyRewards: (ops.loyaltyRewards ?? []).length };
 }
 
 function clientData(c: ClientConfig, configHash: string) {

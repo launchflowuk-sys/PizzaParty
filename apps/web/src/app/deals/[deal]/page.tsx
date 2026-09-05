@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getConfig } from "@/lib/config";
-import { getMenu } from "@/lib/menu";
+import { getMenu, dealsToday } from "@/lib/menu";
 import { toPicker } from "@/lib/picker";
 import { abs, breadcrumbJsonLd, pageTitle } from "@/lib/seo";
 import { gbpShort } from "@/lib/money";
@@ -10,6 +10,14 @@ import { JsonLd } from "@/components/JsonLd";
 import { DealBuilder, type BuilderDeal } from "@/components/deals/DealBuilder";
 
 export const dynamic = "force-dynamic";
+/** "Tuesdays", or "Tuesdays and Fridays" - what to tell someone who arrived early. */
+const DAY_NAME = ["Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays"];
+function runsOn(days: number[]): string {
+  const names = [...days].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map((d) => DAY_NAME[d] ?? "");
+  if (names.length <= 1) return names[0] ?? "";
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
 type Params = { params: Promise<{ deal: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
@@ -27,6 +35,28 @@ export default async function DealPage({ params }: Params) {
   const menu = await getMenu();
   const d = menu.deals.find((x) => x.slug === deal);
   if (!d) notFound();
+
+  // Someone can reach this from a saved link or a search result on the wrong
+  // day. Letting them build the deal would only take it off them at checkout,
+  // so say when it runs instead of wasting their time.
+  const runningToday = dealsToday([d]).length > 0;
+  if (!runningToday) {
+    return (
+      <div className="lf-container max-w-2xl">
+        <nav className="pt-4 text-sm text-muted"><Link href="/deals">Deals</Link> / {d.name}</nav>
+        <h1 className="lf-h1 mt-2">{d.name}</h1>
+        <p className="text-muted mt-2">
+          This one runs on {runsOn(d.daysOfWeek)}. It is not available today, so it cannot be
+          ordered — but it will be back.
+        </p>
+        <div className="mt-6 flex gap-3">
+          <Link href="/deals" className="btn btn-primary">See today&rsquo;s deals</Link>
+          <Link href="/menu" className="btn btn-secondary">See the menu</Link>
+        </div>
+      </div>
+    );
+  }
+
   const all = menu.categories.flatMap((c) => c.products.map((p) => ({ p, c })));
   const builder: BuilderDeal = {
     slug: d.slug, name: d.name, price: d.price,

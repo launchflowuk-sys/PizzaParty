@@ -5,7 +5,7 @@ const HEAD: React.CSSProperties = { fontSize: 12, letterSpacing: ".08em", textTr
 
 /** Storefront footer on the Modernist system: a 2px rule, then flush-left columns.
  *  No card, no rounding - the rule and the alignment do the organising. */
-export function Footer({ name, phone, address, localities }: { name: string; phone: string; address: string; localities: { name: string; path: string }[] }) {
+export function Footer({ name, phone, address, localities, loyalty }: { name: string; phone: string; address: string; localities: { name: string; path: string }[]; loyalty: boolean }) {
   return (
     <footer style={{ marginTop: 64, borderTop: "2px solid var(--color-divider)" }}>
       <div className="fp-wrap fp-footer" style={{ padding: "40px 32px" }}>
@@ -19,6 +19,8 @@ export function Footer({ name, phone, address, localities }: { name: string; pho
           <span style={HEAD}>Order</span>
           <Link href="/menu">Menu</Link>
           <Link href="/deals">Deals</Link>
+          {/* Only when the club is running - /rewards 404s otherwise. */}
+          {loyalty ? <Link href="/rewards">Crust Club</Link> : null}
           <Link href="/shops">Shops</Link>
           <Link href="/account">My account</Link>
           {localities.map((l) => <Link key={l.path} href={l.path}>{l.name} delivery</Link>)}

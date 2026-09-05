@@ -5,14 +5,19 @@ import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
 import { SEGMENTS, segmentWhere, segmentLabel } from "@/lib/segments";
 import { HelpSpot } from "@/components/admin/HelpSpot";
+import { AdminNotice } from "@/components/admin/AdminNotice";
+import { getConfig } from "@/lib/config";
+import { adjustPoints } from "../loyalty-actions";
 
 export const dynamic = "force-dynamic";
 
 /** The customer list, cut by the segments the campaign screen sends to. */
-export default async function AdminCustomers({ searchParams }: { searchParams: Promise<{ q?: string; segment?: string }> }) {
+export default async function AdminCustomers({ searchParams }: { searchParams: Promise<{ q?: string; segment?: string; m?: string; e?: string }> }) {
   await requireScreen("customers");
   const sp = await searchParams;
   const client = await getClientRow();
+  // The points column only earns its width when the club is actually running.
+  const loyaltyOn = getConfig().loyalty.enabled;
 
   const where = {
     clientId: client.id,
@@ -92,6 +97,8 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
         </p>
       ) : null}
 
+      <AdminNotice message={sp.m} error={sp.e} back="/admin/customers" />
+
       <div style={{ overflowX: "auto" }}>
         <table className="table" style={{ width: "100%" }}>
           <thead>
@@ -99,6 +106,16 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
               <th>Name</th><th>Phone</th>
               <th style={{ textAlign: "right" }}>Orders</th>
               <th style={{ textAlign: "right" }}>Spent</th>
+              {loyaltyOn ? (
+                <th style={{ textAlign: "right" }}>
+                  Points
+                  <HelpSpot title="Can I give somebody points by hand?" article="rewards-club" anchor="points-given-by-hand">
+                    Yes &mdash; type how many in the box next to their balance, put a reason on it and
+                    press Save. A minus number takes points away. The customer sees the reason you type
+                    on their rewards page, so write it as you would say it to them.
+                  </HelpSpot>
+                </th>
+              ) : null}
               <th>Last order</th>
               <th>
                 Marketing
@@ -113,7 +130,7 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
           </thead>
           <tbody>
             {customers.length === 0 ? (
-              <tr><td colSpan={6} style={{ color: "var(--color-neutral-700)" }}>Nobody matches.</td></tr>
+              <tr><td colSpan={loyaltyOn ? 7 : 6} style={{ color: "var(--color-neutral-700)" }}>Nobody matches.</td></tr>
             ) : customers.map((c) => (
               <tr key={c.id}>
                 <td style={{ fontWeight: 600 }}>
@@ -123,6 +140,18 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
                 <td style={{ whiteSpace: "nowrap" }}>{c.phone}</td>
                 <td style={{ textAlign: "right" }}>{c.ordersCount}</td>
                 <td style={{ textAlign: "right", fontWeight: 600 }}>{gbp(c.totalSpent)}</td>
+                {loyaltyOn ? (
+                  <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                    <span style={{ fontWeight: 700 }}>{c.loyaltyPoints}</span>
+                    <form action={adjustPoints} style={{ display: "inline-flex", gap: 4, marginLeft: 8, verticalAlign: "middle" }}>
+                      <input type="hidden" name="back" value="/admin/customers" />
+                      <input type="hidden" name="customerId" value={c.id} />
+                      <input name="delta" className="input" inputMode="numeric" placeholder="+/-" aria-label={`Adjust points for ${c.name || c.phone}`} style={{ width: 56 }} />
+                      <input name="reason" className="input" placeholder="Reason" aria-label={`Reason for ${c.name || c.phone}`} style={{ width: 130 }} />
+                      <button className="btn btn-secondary">Save</button>
+                    </form>
+                  </td>
+                ) : null}
                 <td style={{ whiteSpace: "nowrap" }}>{c.lastOrderAt?.toLocaleDateString("en-GB") ?? "—"}</td>
                 <td>{c.marketingOptIn ? <span className="tag tag-accent">Opted in</span> : <span className="tag tag-neutral">No</span>}</td>
               </tr>

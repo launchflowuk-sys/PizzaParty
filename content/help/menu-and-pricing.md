@@ -1,7 +1,7 @@
 ---
 id: menu-and-pricing
 title: Changing prices and marking things sold out
-summary: Put a price up, take an item off, and why a new product needs LaunchFlow.
+summary: Put a price up, take an item off, add a new one, and reshape the whole menu.
 kind: guide
 screens: [menu]
 roles: []
@@ -69,8 +69,11 @@ saves the price as **£0.00** and the item goes out at nothing. Check the box sh
 expect after you save.
 
 There is no bulk price change and no percentage increase. A menu-wide rise means going
-through the sizes one at a time, or asking LaunchFlow to do it in the config and
-re-seed.
+through the sizes one at a time.
+
+Do not ask for it to be done "in the config" instead. The menu belongs to the shop now, and
+the only way to push a config menu back over the top would throw away every other change
+made since — every price, every new item, every topping.
 
 ## Sold out
 
@@ -129,9 +132,15 @@ with no name.
 
 ## Reordering
 
-The **↑** and **↓** buttons move an item up or down **inside its own category only**. There
-is no way to move an item into a different category from here, and no way to reorder the
-categories themselves — both are config, so ring LaunchFlow.
+The **↑** and **↓** buttons move an item up or down **inside its own section**.
+
+To move an item into a different section, open it with **Edit** and use the Section box
+there. Be aware this changes its web address, because the section is part of it — the item
+is at `/menu/pizzas/margherita`, so moving it to Sides moves the link too.
+
+To reorder the sections themselves, open **Sections** at the top of the screen and use the
+arrows there. That order is the order customers see, and it decides which section they land
+on first.
 
 ## Toppings and options
 
@@ -159,27 +168,51 @@ chicken is still off the pizzas on Sunday unless someone puts it back.
 
 ## Adding a new item
 
-**You cannot, and this is the honest answer.** There is no Add button on this screen and
-there is not going to be one you have missed.
+**+ Add an item** at the top of the screen. Give it a name, pick the section, name its first
+size and price it. It is live straight away, at the bottom of its section.
 
-Products, categories, sizes, option groups, allergen tags and photos all live in the shop's
-config file (`config/farm-pizza/menu.json`). Adding, removing or restructuring any of them
-is a job for LaunchFlow followed by a re-seed. Ring LaunchFlow with what you want — the item name, the sizes, the prices and which category it belongs in — and it
-gets written into the file properly, where it will survive the next update.
+It is created with **one size** on purpose — an item with no sizes has no price and cannot
+be put in a basket, so it would sit on the menu refusing to be ordered. Open it with
+**Edit** afterwards to add more sizes, choose which toppings it offers, and put a photo on
+it.
 
-The same goes for taking an item off permanently. **Hide** is the right answer in the
-meantime, but tell LaunchFlow so it is removed from the file too.
+### Sections
+
+**Sections** at the top of the screen: rename them, reorder them, add one, delete one.
+
+A section will not delete while it still has items in it, and it says how many. That is
+deliberate — deleting Pizzas and taking thirty pizzas with it is not something anyone should
+be able to do with one click at the end of a shift. Move or delete the items first.
+
+### Deleting an item
+
+On the item's own screen, at the bottom. **Past orders are unaffected** — every order line
+keeps its own copy of the name, size and price it was sold at, so takings and order history
+read exactly the same afterwards.
+
+Delete is for something put on by mistake. For "not this season", **Hide** is the right
+answer: it comes off the website and can be brought straight back.
+
+### None of this gets overwritten
+
+Everything you change here belongs to the shop. The menu was set up from a file once, when
+the site was built, and since then the shop owns it — an update to the website will not put
+last month's prices or a deleted pizza back.
 
 ## Photos
 
-There is no photo on this screen and no upload anywhere in the back office.
+Open an item with **Edit** and there is a **Photo** box under *Photo and labels*.
 
-Of the 68 items, **46 have a photograph**. The other 22 show a plain tile with the item's
-initials on the website. That is a deliberate fallback, not a broken image.
+There is still **no upload** anywhere in the back office. The box takes the address of a
+picture that is already on the site, like `/images/products/margherita.jpg`. So new
+photographs still go to LaunchFlow to be put on the server — but once they are there, which
+item uses which picture is yours to set.
 
-New photographs go to LaunchFlow, who add them to the config and re-seed. Send the food
-shots you already have — they do not need to be perfect, and a real photo beats an initials
-tile every time.
+An item with no photo shows a plain tile with its initials on the website. That is a
+deliberate fallback, not a broken image, and the item sells perfectly well without one.
+
+The same box also carries **labels** (vegetarian, spicy) and **allergens**, typed as plain
+comma-separated lists.
 
 ## Two people at once
 

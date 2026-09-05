@@ -313,5 +313,31 @@
       "maxPerRun": 250,
       "body": "{name}, kitchen's quiet tonight at {shop}. {code} - free delivery for the next two hours."
     }
+  ],
+  "loyaltyRewards": [
+    {
+      "name": "£5 off your order",
+      "points": 100,
+      "type": "fixed",
+      "value": 5,
+      "minOrder": 15,
+      "expiryDays": 60
+    },
+    {
+      "name": "£10 off your order",
+      "points": 180,
+      "type": "fixed",
+      "value": 10,
+      "minOrder": 25,
+      "expiryDays": 60
+    },
+    {
+      "name": "Free delivery",
+      "points": 40,
+      "type": "free_delivery",
+      "value": 0,
+      "minOrder": 0,
+      "expiryDays": 60
+    }
   ]
 }

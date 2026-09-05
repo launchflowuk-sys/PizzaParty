@@ -52,8 +52,10 @@ function target(fd: FormData, param: "m" | "e", message: string): never {
   const back = /^\/admin\/menu(\/[A-Za-z0-9_-]+)?$/.test(raw) ? raw : "/admin/menu";
   redirect(`${back}?${param}=${encodeURIComponent(message)}`);
 }
-const refuse = (fd: FormData, message: string): never => target(fd, "e", message);
-const done = (fd: FormData, message: string): never => target(fd, "m", message);
+// Declared as functions, not arrow consts: TypeScript only narrows past a
+// `never` return for a function declaration, and these are used as guards.
+function refuse(fd: FormData, message: string): never { target(fd, "e", message); }
+function done(fd: FormData, message: string): never { target(fd, "m", message); }
 
 /**
  * A URL-safe key from whatever the shop typed.
