@@ -4,6 +4,11 @@
  *   pnpm demo-data farm-pizza            # ~9 months of customers and orders
  *   pnpm demo-data farm-pizza --wipe     # clear generated data first
  *
+ * Sized with flags, because the full default history is around ten thousand
+ * orders and that is more than a demo needs or a small server enjoys:
+ *
+ *   pnpm demo-data farm-pizza --customers=150 --days=30 --per-day=7
+ *
  * This exists so a demo shows the back office doing its job: a dashboard with
  * takings on it, a customer list worth marketing to, and campaign figures that
  * came from real rows rather than a mock-up.
@@ -19,10 +24,29 @@ import { prisma, type OrderStatus } from "@launchflow/db";
 
 const slug = process.argv.slice(2).find((a) => !a.startsWith("-")) ?? process.env.CLIENT_SLUG;
 const wipe = process.argv.includes("--wipe");
-const DAYS = 270;
-const CUSTOMERS = 850;
+
+/**
+ * Sizes are flags, not constants, because a demo and a screenshot want very
+ * different shops.
+ *
+ * The defaults below are a nine-month history: 850 customers and the better
+ * part of ten thousand orders. That is right for showing the marketing engine
+ * segmenting a real customer base, and far too heavy for a small server or for
+ * anyone who just wants the back office to have something in it - which is what
+ * `--customers` and `--days` are for.
+ */
+const flag = (name: string, fallback: number): number => {
+  const raw = process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
+  const n = raw === undefined ? NaN : Number(raw);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback;
+};
+
+const DAYS = flag("days", 270);
+const CUSTOMERS = flag("customers", 850);
 /** Days of proper trading volume at the end, so the dashboard is not a ghost town. */
-const RECENT_DAYS = 21;
+const RECENT_DAYS = Math.min(flag("recent", 21), DAYS);
+/** Orders on an ordinary evening. Friday and Saturday get roughly double. */
+const PER_DAY = flag("per-day", 33);
 /** Ofcom reserves 07700 900000-900999 for fiction. Stored E.164, the way the
  *  app normalises every real number, so demo customers and real orders join up. */
 const PHONE_PREFIX = "+44770090";
@@ -247,7 +271,11 @@ async function main() {
   for (let d = RECENT_DAYS; d >= 1; d--) {
     const dow = daysAgo(d).getDay();
     const busy = dow === 5 || dow === 6; // Friday and Saturday carry the week
-    const count = busy ? between(48, 72) : between(24, 42);
+    // Scaled off PER_DAY so a small demo still has quiet Mondays and heaving
+    // weekends rather than a flat line.
+    const lo = Math.max(1, Math.round(PER_DAY * (busy ? 1.45 : 0.73)));
+    const hi = Math.max(lo, Math.round(PER_DAY * (busy ? 2.18 : 1.27)));
+    const count = between(lo, hi);
     for (let n = 0; n < count; n++) {
       const c = pick(active);
       // A small number go wrong, which is normal and worth the owner seeing.
