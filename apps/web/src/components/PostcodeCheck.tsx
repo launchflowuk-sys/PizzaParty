@@ -34,7 +34,7 @@ export function PostcodeCheck({ initial = "", compact = false }: { initial?: str
       <form onSubmit={submit} className="flex gap-2">
         <input
           className="lf-input"
-          placeholder="Your postcode, e.g. SS14 1AB"
+          placeholder="Your postcode, e.g. RM17 6QD"
           autoComplete="postal-code"
           value={postcode}
           onChange={(e) => setPostcode(e.target.value)}

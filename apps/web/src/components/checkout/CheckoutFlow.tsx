@@ -130,7 +130,7 @@ export function CheckoutFlow() {
                       <div className="field"><label htmlFor="city">Town</label><input id="city" className="input" autoComplete="address-level2" value={form.city} onChange={set("city")} /></div>
                       <div className="field">
                         <label htmlFor="pc">Postcode</label>
-                        <input id="pc" className="input" required autoComplete="postal-code" placeholder="SS14 1AB" style={{ textTransform: "uppercase" }}
+                        <input id="pc" className="input" required autoComplete="postal-code" placeholder="RM17 6QD" style={{ textTransform: "uppercase" }}
                           value={form.postcode}
                           onChange={(e) => { setForm((f) => ({ ...f, postcode: e.target.value })); basket.setPostcode(e.target.value.toUpperCase(), ""); }} />
                       </div>

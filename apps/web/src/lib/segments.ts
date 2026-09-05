@@ -16,8 +16,8 @@ export const SEGMENTS: { key: string; label: string; help: string }[] = [
   { key: "one_timers", label: "Ordered once only", help: "The single biggest pot of untapped money in most shops." },
   { key: "regulars", label: "Regulars (5+ orders)", help: "They already like you. Tell them things first rather than discounting." },
   { key: "big_spenders", label: "Big spenders (£250+ lifetime)", help: "Worth protecting. A thank-you lands better here than an offer." },
-  { key: "grays", label: "Grays area (RM)", help: "Everyone with an RM postcode." },
-  { key: "basildon", label: "Basildon area (SS)", help: "Everyone with an SS postcode." },
+  { key: "grays", label: "Grays & Little Thurrock (RM17)", help: "The doorstep trade, closest to the shop." },
+  { key: "thurrock", label: "Chafford & West Thurrock (RM16/RM20)", help: "The further patch, where delivery costs more." },
 ];
 
 export function segmentWhere(key: string): Prisma.CustomerWhereInput {
@@ -29,8 +29,8 @@ export function segmentWhere(key: string): Prisma.CustomerWhereInput {
     case "one_timers": return { ordersCount: 1 };
     case "regulars": return { ordersCount: { gte: 5 } };
     case "big_spenders": return { totalSpent: { gte: 25000 } };
-    case "grays": return { lastPostcode: { startsWith: "RM" } };
-    case "basildon": return { lastPostcode: { startsWith: "SS" } };
+    case "grays": return { lastPostcode: { startsWith: "RM17" } };
+    case "thurrock": return { OR: [{ lastPostcode: { startsWith: "RM16" } }, { lastPostcode: { startsWith: "RM20" } }] };
     default: return {};
   }
 }

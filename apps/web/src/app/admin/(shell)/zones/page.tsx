@@ -20,7 +20,7 @@ export default async function AdminZones() {
       </header>
 
       <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 24px", maxWidth: "78ch" }}>
-        Postcode districts are comma separated (SS13, SS14). A letters-only entry like RM covers
+        Postcode districts are comma separated (RM17, RM20). A letters-only entry like RM covers
         the whole area. Add a <strong>charge band</strong> when part of the patch costs more to
         reach &mdash; the district price always wins over an area price, so a band on RM20 beats a
         band on RM. Anywhere no band names is charged the shop&rsquo;s standard fee below.

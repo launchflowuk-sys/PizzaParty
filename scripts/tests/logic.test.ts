@@ -41,10 +41,10 @@ test("postcode helpers", () => {
   assert.equal(outwardCode("SS14 1AB"), "SS14");
   assert.equal(outwardCode("rm16"), "RM16");
   const locs = [
-    { id: "1", key: "basildon", name: "Basildon", postcodePrefixes: ["SS13", "SS14"], active: true, deliveryFee: 250, minOrder: 1200 },
+    { id: "1", key: "town", name: "Town", postcodePrefixes: ["SS13", "SS14"], active: true, deliveryFee: 250, minOrder: 1200 },
     { id: "2", key: "grays", name: "Grays", postcodePrefixes: ["RM"], active: true, deliveryFee: 250, minOrder: 1200 },
   ];
-  assert.equal(matchLocation("SS14 1AB", locs)?.key, "basildon");
+  assert.equal(matchLocation("SS14 1AB", locs)?.key, "town");
   assert.equal(matchLocation("SS1 1AB", locs), null, "SS1 must not match SS13/SS14");
   assert.equal(matchLocation("RM20 3AA", locs)?.key, "grays", "area-level prefix");
 });

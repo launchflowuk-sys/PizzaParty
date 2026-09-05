@@ -6,7 +6,10 @@ test("farm-pizza config loads and cross-validates", () => {
   const c = loadClientConfig("farm-pizza");
   const m = loadMenuConfig("farm-pizza");
   assert.equal(c.slug, "farm-pizza");
-  assert.equal(c.locations.length, 2);
+  // One shop: Grays. Basildon is supplied by someone else for now.
+  assert.equal(c.locations.length, 1);
+  assert.equal(c.locations[0]!.id, "grays");
+  assert.ok(c.locations[0]!.deliveryBands.length >= 2, "banded delivery configured");
   assert.ok(m.products.length >= 10);
   assert.ok(m.products.every((p) => p.sizes.length > 0), "price shorthand normalised to sizes");
 });

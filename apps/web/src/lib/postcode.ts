@@ -21,7 +21,7 @@ export function isValidUkPostcode(raw: string): boolean {
 }
 
 /**
- * Prefix match: a location prefix like "SS13" matches outward "SS13" exactly.
+ * Prefix match: a location prefix like "RM17" matches outward "RM17" exactly.
  * A letters-only prefix like "RM" matches every RM district (area-level coverage).
  */
 export function matchLocation<T extends LocationLike>(postcode: string, locations: T[]): T | null {
