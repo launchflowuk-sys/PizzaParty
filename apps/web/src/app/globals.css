@@ -1195,10 +1195,25 @@ html, body { max-width: 100%; overflow-x: clip; }
   gap: 4px 12px;
   padding: 11px 14px;
   border-bottom: 1px solid var(--color-divider);
-  color: inherit;
+  /* Explicit, never inherited.
+     This list is rendered inside the hero, which sets `color: #fff` for type
+     laid over the photograph - so `inherit` gave white text on a cream panel,
+     and the highlighted row read as white on green. A panel with its own
+     background needs its own foreground. */
+  color: var(--color-text);
   text-decoration: none;
 }
-.fp-searchdrop-row[data-active] { background: color-mix(in srgb, var(--color-action) 12%, transparent); }
+.fp-searchdrop-row[data-active],
+.fp-searchdrop-row:hover { background: color-mix(in srgb, var(--color-action) 10%, transparent); }
+.fp-searchdrop-row[data-active] { box-shadow: inset 3px 0 0 var(--color-action); }
+/* The name leads, the price is the thing being compared, and the supporting
+   lines step back - none of them are white. */
+.fp-searchdrop-name { color: var(--color-text); }
+.fp-searchdrop-desc { color: var(--color-neutral-800); }
+.fp-searchdrop-note { color: var(--color-neutral-700); }
+.fp-searchdrop-price { color: var(--color-accent); }
+.fp-searchdrop-empty { color: var(--color-neutral-800); }
+.fp-searchdrop-all { color: var(--color-text); }
 .fp-searchdrop-main { display: grid; gap: 3px; min-width: 0; }
 .fp-searchdrop-name {
   font-weight: 700;
@@ -2121,4 +2136,64 @@ footer > div:last-child span { color: rgba(255,255,255,.55) !important; }
 .fp-deals-h2 > span {
   display: block;
   color: var(--color-accent);
+}
+
+/* == Address lookup ========================================================
+   Themed like the rest of the shop rather than left as Google's own widget,
+   which arrives in Roboto with its own blue highlight and looks borrowed.
+   Same panel treatment as the menu search: a solid ground, its own foreground
+   colour set explicitly, and a rule of accent down whichever row is live. */
+.fp-addr { position: relative; }
+
+.fp-addr-drop {
+  position: absolute;
+  z-index: 45;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: min(56vh, 380px);
+  overflow-y: auto;
+  background: var(--color-bg);
+  /* Never `inherit`. This panel has its own background, so it needs its own
+     foreground - the same fault that put white text on the menu search. */
+  color: var(--color-text);
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 40px rgba(0,0,0,.24);
+  text-align: left;
+}
+
+.fp-addr-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--color-divider);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fp-addr-row:last-of-type { border-bottom: 0; }
+.fp-addr-row[data-active] {
+  background: color-mix(in srgb, var(--color-action) 10%, transparent);
+  box-shadow: inset 3px 0 0 var(--color-action);
+}
+.fp-addr-pin { color: var(--color-accent); flex: none; margin-top: 2px; }
+.fp-addr-text { display: grid; gap: 2px; min-width: 0; }
+.fp-addr-main { font-weight: 700; font-size: 14.5px; }
+.fp-addr-sec { font-size: 12.5px; color: var(--color-neutral-700); }
+
+.fp-addr-busy { margin: 0; padding: 14px; font-size: 13.5px; color: var(--color-neutral-700); }
+.fp-addr-foot {
+  margin: 0;
+  padding: 10px 14px;
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-surface);
+  font-size: 12.5px;
+  color: var(--color-neutral-700);
+  border-radius: 0 0 calc(var(--radius-md) - 2px) calc(var(--radius-md) - 2px);
 }

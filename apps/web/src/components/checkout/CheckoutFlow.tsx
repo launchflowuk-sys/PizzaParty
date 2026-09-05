@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useBasket } from "@/components/basket/store";
 import { useServerPrice } from "@/components/basket/useServerPrice";
+import { AddressAutocomplete } from "@/components/checkout/AddressAutocomplete";
 import { gbp } from "@/lib/money";
 import { PayStep } from "./PayStep";
 
@@ -140,7 +141,18 @@ export function CheckoutFlow() {
                     <div className="fp-fields">
                       <div className="field" style={{ gridColumn: "1 / -1" }}>
                         <label htmlFor="line1">Address</label>
-                        <input id="line1" className="input" required autoComplete="address-line1" placeholder="House number and street" value={form.line1} onChange={set("line1")} />
+                        {/* Suggests, never traps. Somebody in a new build or an
+                            annexe Google has not heard of can still type it, and
+                            if the lookup is off or failing the ordinary fields
+                            below still take the order. */}
+                        <AddressAutocomplete
+                          value={form.line1}
+                          onType={(v) => setForm((f) => ({ ...f, line1: v }))}
+                          onPick={(a) => {
+                            setForm((f) => ({ ...f, line1: a.line1, line2: a.line2 || f.line2, city: a.city || f.city, postcode: a.postcode || f.postcode }));
+                            if (a.postcode) basket.setPostcode(a.postcode.toUpperCase(), "");
+                          }}
+                        />
                       </div>
                       <div className="field"><label htmlFor="city">Town</label><input id="city" className="input" autoComplete="address-level2" value={form.city} onChange={set("city")} /></div>
                       <div className="field">
