@@ -1402,3 +1402,88 @@ html, body { max-width: 100%; overflow-x: clip; }
   .fp-refer { padding: 28px 20px; }
   .fp-refer .btn { width: 100%; }
 }
+
+/* ── Reviews drifting across the home page ────────────────────────────────
+   Two rails travelling opposite ways. Each rail holds its cards twice and the
+   track slides exactly half its own width, so the second copy lands where the
+   first began and the loop has no seam - no JavaScript, no measuring, nothing
+   to go wrong on a slow phone.
+
+   The duplicate set is wrapped in an element set to `display: contents`, so the
+   wrapper vanishes from layout and the copies sit as siblings of the originals.
+   Without that the track would be two flex items rather than 2n cards, and the
+   50% would land in the wrong place. */
+.fp-rv { padding: 56px 0 64px; overflow: hidden; }
+.fp-rv-head-wrap {
+  display: flex; align-items: end; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap; padding-inline: 32px; margin-bottom: 28px;
+}
+.fp-rv-h2 {
+  font-family: var(--font-heading); font-weight: 800; font-size: 36px;
+  letter-spacing: -.02em; margin: 0; line-height: 1.05;
+}
+.fp-rv-count { margin: 6px 0 0; font-size: 14px; color: var(--color-neutral-700); }
+
+.fp-rv-rail { overflow: hidden; padding: 8px 0; }
+.fp-rv-track {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+  padding-inline: 8px;
+  animation: fp-rv-left var(--speed, 46s) linear infinite;
+}
+.fp-rv-track[data-dir="right"] { animation-name: fp-rv-right; }
+.fp-rv-dupe { display: contents; }
+
+@keyframes fp-rv-left  { from { transform: translateX(0);     } to { transform: translateX(-50%); } }
+@keyframes fp-rv-right { from { transform: translateX(-50%);  } to { transform: translateX(0);    } }
+
+/* Reading one takes longer than it takes to drift past, so hovering or tabbing
+   into a rail stops it. */
+.fp-rv-rail:hover .fp-rv-track,
+.fp-rv-track:focus-within { animation-play-state: paused; }
+
+.fp-rv-card {
+  flex: 0 0 auto;
+  width: min(340px, 78vw);
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  background: var(--color-bg);
+  border: 2px solid var(--color-divider);
+  /* Bubbly rather than boxy: this is a pizza shop, not a bank. */
+  border-radius: 22px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.06);
+}
+/* A gentle alternating tilt so the rows read as pinned-up notes rather than a
+   ruler-straight queue. Every fourth sits level to stop it feeling seasick. */
+.fp-rv-card:nth-child(4n+1) { transform: rotate(-.7deg); }
+.fp-rv-card:nth-child(4n+3) { transform: rotate(.6deg); }
+
+.fp-rv-head { display: flex; align-items: center; gap: 10px; }
+.fp-rv-disc {
+  flex: none; width: 38px; height: 38px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 800; font-size: 16px; line-height: 1;
+}
+.fp-rv-who { display: grid; gap: 2px; min-width: 0; }
+.fp-rv-who strong { font-size: 14px; }
+.fp-rv-stars { color: var(--color-accent); letter-spacing: 1px; font-size: 13px; }
+.fp-rv-stars-off { color: var(--color-neutral-400); }
+.fp-rv-src {
+  margin-left: auto; font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--color-neutral-700); font-weight: 700;
+}
+.fp-rv-body {
+  margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--color-neutral-800);
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.fp-rv-foot { padding: 20px 32px 0; font-size: 13px; }
+
+/* Movement across the screen is exactly what somebody with motion sensitivity
+   asked not to have. They get the same reviews, standing still and wrapped. */
+@media (prefers-reduced-motion: reduce) {
+  .fp-rv-track { animation: none; width: 100%; flex-wrap: wrap; justify-content: center; }
+  .fp-rv-dupe { display: none; }
+  .fp-rv-card { transform: none; }
+}

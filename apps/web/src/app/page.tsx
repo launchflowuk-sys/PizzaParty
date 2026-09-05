@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const cfg = getConfig();
   const [menu, locations, reviews, reviewStats] = await Promise.all([
-    getMenu(), getLocations(), publicReviews(6), reviewSummary(),
+    getMenu(), getLocations(), publicReviews(12), reviewSummary(),
   ]);
   const primary = locations[0];
   const avail = primary ? availability(primary) : null;
