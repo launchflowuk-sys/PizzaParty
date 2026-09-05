@@ -92,9 +92,18 @@ docker image prune -af                        # safe, keeps anything running
 
 ## Deploying
 
-Push to `main` and Coolify builds it. Roughly **10 minutes** on this box — the
-Next.js compile is CPU-bound and 2 vCPU is the bottleneck. A larger instance is
-the single best improvement to the working loop.
+Push to `main`, then **hit Deploy in Coolify**. Roughly **10 minutes** on this
+box — the Next.js compile is CPU-bound and 2 vCPU is the bottleneck. A larger
+instance is the single best improvement to the working loop.
+
+> **A push does not deploy on its own.** "Auto deploy" is switched on in
+> Coolify, but this application was created from a deploy key rather than the
+> GitHub App, so nothing on GitHub's side ever calls the webhook — the setting
+> is on and there is nothing to trigger it. Every deploy so far has been
+> started by hand. Until the webhook is wired up, code can sit on `main` for
+> hours looking deployed when it is not, which is a nasty way to lose an
+> afternoon. Wiring it: copy the application's webhook URL from Coolify
+> (Application → Webhooks) and add it to the repo under Settings → Webhooks.
 
 Migrations and the seed run automatically on boot. The seed **does not touch the
 menu** — see `MenuMode` in `packages/db/src/seed-client.ts`. The shop owns its
