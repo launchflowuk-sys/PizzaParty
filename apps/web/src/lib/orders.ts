@@ -1,5 +1,5 @@
 import "server-only";
-import { attributeOrder } from "./marketing";
+import { attributeOrder, recordReviewRequest, recordReferralReward } from "./marketing";
 import { prisma, type Order, type OrderStatus, type Prisma } from "@launchflow/db";
 import { env } from "./env";
 import { getConfig } from "./config";
@@ -95,6 +95,8 @@ export async function markPlaced(orderId: string, actor: string, paymentData?: P
   // Credit the marketing message that carried this code, if there was one. Best
   // effort: a failure here must never stop an order being placed.
   try { await attributeOrder(order.id); } catch (e) { console.error("[marketing] attribution failed", (e as Error).message); }
+  // Pay the person who introduced them, now the first order is real money.
+  try { await payReferrer(order); } catch (e) { console.error("[referral] reward failed", (e as Error).message); }
   // Popularity counters for top sellers
   const productIds = order.items.flatMap((i) => [i.productId, ...i.components.map((c) => c.productId)]).filter((x): x is string => !!x);
   if (productIds.length) await prisma.product.updateMany({ where: { id: { in: productIds } }, data: { ordersCount: { increment: 1 } } });
@@ -124,6 +126,40 @@ export async function transitionOrder(orderId: string, to: OrderStatus, actor: s
   if (to === "rejected" && order.payment?.stripePaymentIntentId && order.payment.status === "succeeded") await refundOrder(order, "rejected");
   await notifyCustomer(order, to);
   return order;
+}
+
+/**
+ * Mint and send the referrer's thank-you.
+ *
+ * Deliberately after the order is placed rather than at sign-up: an
+ * introduction is worth paying for once it has bought something. The text is
+ * logged as a send like any other, so the code can be attributed when it comes
+ * back through the till.
+ */
+async function payReferrer(order: FullOrder) {
+  const { rewardReferrer } = await import("./referral");
+  const reward = await rewardReferrer(order.id);
+  if (!reward) return;
+
+  const cfg = getConfig();
+  const referrer = await prisma.customer.findUnique({
+    where: { id: reward.referrerId },
+    select: { id: true, name: true, phone: true },
+  });
+  if (!referrer?.phone) return;
+
+  const first = (referrer.name || "").trim().split(/\s+/)[0] || "there";
+  const r = await sendSms(
+    referrer.phone,
+    `${cfg.name}: ${first}, your friend just ordered - thanks for sending them our way. ` +
+    `${reward.code} takes £${cfg.referral.referrerReward.toFixed(2)} off your next order.
+
+Reply STOP to opt out`,
+  );
+  await recordReferralReward({
+    clientId: order.clientId, customerId: referrer.id, promoCode: reward.code,
+    ok: r.ok, error: r.error,
+  });
 }
 
 async function awardLoyalty(order: FullOrder) {
@@ -225,6 +261,13 @@ export async function sendReviewRequests(limit = 50): Promise<number> {
     await prisma.order.update({ where: { id: o.id }, data: { reviewRequestedAt: new Date() } });
     const r = await sendSms(o.customerPhone, `${cfg.name}: hope you enjoyed your order! A quick Google review helps us loads: ${cfg.contact.reviewUrl}`);
     await addEvent(o.id, "sms_sent", "system", `review request ${r.ok ? "ok" : r.error}`);
+    // Recorded as a send so the shop sees the real SMS bill, and so the shared
+    // cooldown keeps a win-back text from landing the same afternoon.
+    try {
+      await recordReviewRequest({ clientId: client.id, customerId: o.customerId, ok: r.ok, error: r.error });
+    } catch (e) {
+      console.error("[marketing] could not record review request", (e as Error).message);
+    }
     n++;
   }
   return n;

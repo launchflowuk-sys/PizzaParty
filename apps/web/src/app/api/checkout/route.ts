@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   }
   if (!cfg.fulfilment.includes(body.fulfilment)) return NextResponse.json({ error: "That option is not available." }, { status: 400 });
 
-  const { priced, location, availability } = await priceRequest(body, { customerPhone: phone });
+  const { priced, location, availability, referrerId } = await priceRequest(body, { customerPhone: phone });
   if (!location) return NextResponse.json({ error: "We don't deliver to that postcode." }, { status: 400 });
   if (priced.errors.length) return NextResponse.json({ error: priced.errors[0], errors: priced.errors, removedKeys: priced.removedKeys }, { status: 409 });
   if (priced.lines.length === 0) return NextResponse.json({ error: "Your basket is empty." }, { status: 400 });
@@ -61,6 +61,13 @@ export async function POST(req: NextRequest) {
         create: { clientId: client.id, phone, name: body.name, email: body.email, guest: true, marketingOptIn: body.marketingOptIn },
         update: { name: body.name, email: body.email || undefined, marketingOptIn: body.marketingOptIn ? true : undefined },
       });
+
+  // Record who introduced them, once, on their first order. Stored on the
+  // customer rather than the order because a person is introduced once, not
+  // every time they buy something.
+  if (referrerId && referrerId !== customer.id && !customer.referredById && customer.ordersCount === 0) {
+    await prisma.customer.update({ where: { id: customer.id }, data: { referredById: referrerId } });
+  }
 
   let addressId: string | null = null;
   if (body.fulfilment === "delivery" && body.address) {

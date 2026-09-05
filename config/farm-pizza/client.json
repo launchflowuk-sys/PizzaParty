@@ -20,7 +20,7 @@
     "phone": "01268 554034",
     "email": "",
     "address": "467 Clay Hill Road, Basildon SS16 4EX",
-    "reviewUrl": "",
+    "reviewUrl": "https://www.google.com/maps/search/?api=1&query=Farm+Pizza+Basildon",
     "social": {}
   },
   "locations": [
@@ -176,5 +176,12 @@
   "loyalty": {
     "enabled": false,
     "pointsPerPound": 1
+  },
+  "referral": {
+    "enabled": true,
+    "refereeDiscount": 5,
+    "referrerReward": 5,
+    "minOrder": 15,
+    "rewardExpiryDays": 90
   }
 }

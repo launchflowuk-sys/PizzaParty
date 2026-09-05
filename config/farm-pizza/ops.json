@@ -269,6 +269,15 @@
   ],
   "automations": [
     {
+      "name": "Chase an abandoned checkout",
+      "trigger": "abandoned_basket",
+      "days": 0,
+      "cooldownDays": 7,
+      "promoCode": "COMEBACK15",
+      "maxPerRun": 100,
+      "body": "{name}, your {shop} order is still sitting in the basket. Finish it with {code} for 15% off - we'll get it in the oven."
+    },
+    {
       "name": "Win back after 45 days",
       "trigger": "win_back",
       "days": 45,

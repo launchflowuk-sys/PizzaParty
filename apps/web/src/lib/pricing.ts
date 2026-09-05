@@ -1,5 +1,17 @@
 import "server-only";
 import type { Promo } from "@launchflow/db";
+
+/**
+ * Only the parts of a promo that affect a price.
+ *
+ * Narrower than the database row on purpose: a referral code is priced through
+ * exactly the same rules without having to be a Promo record first, and pricing
+ * stays a pure function of the offer rather than of where it was stored.
+ */
+export type PricingPromo = Pick<
+  Promo,
+  "code" | "type" | "value" | "minOrder" | "fulfilment" | "startsAt" | "endsAt" | "maxUses" | "uses" | "firstOrderOnly" | "active"
+>;
 import type { Menu, MenuProduct } from "./menu";
 import { findProduct } from "./menu";
 import type { BasketLine, BasketModifier, Fulfilment, PricedBasket, PricedLine } from "./basket-types";
@@ -8,7 +20,7 @@ type Ctx = {
   fulfilment: Fulfilment;
   deliveryFee: number;
   minOrder: number;
-  promo?: Promo | null;
+  promo?: PricingPromo | null;
   isFirstOrder?: boolean;
   now?: Date;
 };

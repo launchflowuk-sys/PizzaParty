@@ -53,6 +53,7 @@ model Client {
   reviews        Review[]
   automations    Automation[]
   marketingSends MarketingSend[]
+  smsInbound     SmsInbound[]
 }
 
 model Location {
@@ -236,6 +237,15 @@ model Customer {
   ordersCount    Int       @default(0)
   totalSpent     Int       @default(0)
   loyaltyPoints  Int       @default(0)
+  /// When they asked to stop hearing from us. Kept as evidence: under PECR the
+  /// shop has to show it acted on the request, not just that the flag is false.
+  optOutAt       DateTime?
+  optOutSource   String    @default("")
+  /// Nullable rather than "" so the unique index can hold the many customers
+  /// who have not been given a code yet.
+  referralCode   String?
+  referredById   String?
+  referralRewardedAt DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -245,9 +255,14 @@ model Customer {
   sessions       Session[]
   otpCodes       OtpCode[]
   marketingSends MarketingSend[]
+  smsInbound     SmsInbound[]
+  referredBy     Customer?  @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals      Customer[] @relation("Referrals")
 
   @@unique([clientId, phone])
+  @@unique([clientId, referralCode])
   @@index([clientId, lastOrderAt])
+  @@index([referredById])
 }
 
 model Address {
@@ -343,6 +358,9 @@ model Order {
   total             Int
   rejectReason      String        @default("")
   reviewRequestedAt DateTime?
+  /// Set when a recovery message went out for an abandoned checkout, so the
+  /// customer is chased once and not every time the cron runs.
+  recoveryRequestedAt DateTime?
   placedAt          DateTime?
   acceptedAt        DateTime?
   completedAt       DateTime?
@@ -456,6 +474,9 @@ model Promo {
   maxUses        Int?
   uses           Int       @default(0)
   firstOrderOnly Boolean   @default(false)
+  /// Set when this code was minted as a reward for one person, so anyone else
+  /// who hears it cannot spend it.
+  issuedToCustomerId String @default("")
   active         Boolean   @default(true)
   orders         Order[]
 
@@ -614,6 +635,10 @@ model MarketingSend {
   campaignId      String?
   customerId      String
   channel         String
+  /// automation | campaign | basket_recovery | review_request | referral_reward.
+  /// Everything the shop pays to send lands in this table, so spend and the
+  /// shared contact cooldown cover all of it rather than campaigns alone.
+  kind            String    @default("automation")
   promoCode       String    @default("")
   /// Cost in pence, so a campaign's spend can be set against its revenue.
   costPence       Int       @default(0)
@@ -633,4 +658,22 @@ model MarketingSend {
   @@index([customerId, sentAt])
   @@index([automationId, sentAt])
   @@index([clientId, promoCode])
+}
+
+/// Replies to the shop's own number. Only opt-out keywords are acted on; the
+/// rest is kept so someone can see what was said rather than it vanishing.
+model SmsInbound {
+  id         String    @id @default(cuid())
+  clientId   String
+  client     Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  fromPhone  String
+  body       String
+  /// stop | start | "" when it was neither
+  keyword    String    @default("")
+  providerId String    @default("")
+  receivedAt DateTime  @default(now())
+
+  @@index([clientId, receivedAt])
 }

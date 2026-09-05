@@ -14,6 +14,18 @@ export function BasketView() {
   const { data, loading } = useServerPrice();
   const [code, setCode] = useState(promoCode);
 
+  // A friend's referral link leaves the code in a cookie. Filling it in for
+  // them is the difference between a referral that gets used and one that gets
+  // forgotten between the link and the checkout.
+  useEffect(() => {
+    if (promoCode) return;
+    const ref = document.cookie.split("; ").find((c) => c.startsWith("lf_ref="))?.split("=")[1];
+    if (!ref) return;
+    const decoded = decodeURIComponent(ref);
+    setCode(decoded);
+    setPromo(decoded);
+  }, [promoCode, setPromo]);
+
   if (lines.length === 0) {
     return (
       <section className="fp-wrap" style={{ padding: "40px 32px 64px" }}>

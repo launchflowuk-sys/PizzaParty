@@ -189,8 +189,15 @@ async function seedOps(clientId: string, slug: string) {
   for (const [i, st] of (ops.staff ?? []).entries()) {
     // PINs are stored only as a salted hash; the plain value never reaches the database.
     const pinHash = st.pin ? createHash("sha256").update(`${clientId}:${st.pin}`).digest("base64url") : "";
-    const data = { role: st.role ?? "kitchen", phone: st.phone ?? "", email: st.email ?? "", hoursWeek: st.hoursWeek ?? 0, onShift: st.onShift ?? false, active: true, sortOrder: i, ...(pinHash ? { pinHash } : {}) };
-    await prisma.staff.upsert({ where: { clientId_name: { clientId, name: st.name } }, create: { clientId, name: st.name, ...data }, update: data });
+    const data = { role: st.role ?? "kitchen", phone: st.phone ?? "", email: st.email ?? "", hoursWeek: st.hoursWeek ?? 0, onShift: st.onShift ?? false, active: true, sortOrder: i };
+    // The PIN is set when the person is first created and never again. The
+    // sample PINs live in config, which is committed, so re-seeding a shop that
+    // has since changed them would quietly put a public value back.
+    await prisma.staff.upsert({
+      where: { clientId_name: { clientId, name: st.name } },
+      create: { clientId, name: st.name, ...data, ...(pinHash ? { pinHash } : {}) },
+      update: data,
+    });
   }
   // Reviews carry no natural key, so they are only seeded into an empty table -
   // re-seeding must not duplicate them or wipe real customer reviews.

@@ -2,7 +2,7 @@ import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
-import { TRIGGERS, automationStats, audienceSize, marketingTotals, commissionSaved, promoWarning, audienceKind, SMS_COST_PENCE } from "@/lib/marketing";
+import { TRIGGERS, automationStats, audienceSize, marketingTotals, commissionSaved, promoWarning, audienceKind, sendBreakdown, referralStats, KIND_LABEL, SMS_COST_PENCE } from "@/lib/marketing";
 import { saveAutomation, toggleAutomation, runAutomationNow } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +18,11 @@ export default async function MarketingPage() {
   });
 
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
-  const [totals, saved, promos] = await Promise.all([
+  const [totals, saved, breakdown, referrals, promos] = await Promise.all([
     marketingTotals(client.id),
     commissionSaved(client.id, monthStart),
+    sendBreakdown(client.id),
+    referralStats(client.id),
     prisma.promo.findMany({ where: { clientId: client.id, active: true }, select: { code: true, minOrder: true, firstOrderOnly: true, fulfilment: true } }),
   ]);
 
@@ -73,6 +75,65 @@ export default async function MarketingPage() {
         aggregator would have taken on the {saved.orders} order{saved.orders === 1 ? "" : "s"} taken
         directly this month, at 14%.
       </p>
+
+      <div style={{ display: "grid", gap: 24, gridTemplateColumns: "minmax(0, 1fr)", marginBottom: 32 }} className="fp-campaign-grid">
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 12 }}>Where the money went</span>
+          {breakdown.length === 0 ? (
+            <p style={{ fontSize: 14, color: "var(--color-neutral-700)" }}>Nothing sent yet.</p>
+          ) : (
+            <table className="table" style={{ width: "100%" }}>
+              <thead>
+                <tr>
+                  <th>Kind</th>
+                  <th style={{ textAlign: "right" }}>Sent</th>
+                  <th style={{ textAlign: "right" }}>Cost</th>
+                  <th style={{ textAlign: "right" }}>Earned</th>
+                </tr>
+              </thead>
+              <tbody>
+                {breakdown.map((b) => (
+                  <tr key={b.kind}>
+                    <td style={{ fontWeight: 600 }}>{KIND_LABEL[b.kind] ?? b.kind}</td>
+                    <td style={{ textAlign: "right" }}>{b.sent}</td>
+                    <td style={{ textAlign: "right" }}>{gbp(b.spendPence)}</td>
+                    <td style={{ textAlign: "right", fontWeight: 600, color: b.revenuePence ? "var(--color-accent-700)" : undefined }}>
+                      {gbp(b.revenuePence)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          <p style={{ fontSize: 12, color: "var(--color-neutral-700)", margin: "8px 0 0", lineHeight: 1.5 }}>
+            Review requests are a service message and go out whether or not somebody opted in
+            to marketing, but they still cost money, so they are counted here too.
+          </p>
+        </div>
+
+        <div>
+          <span className="fp-kicker" style={{ marginBottom: 12 }}>Word of mouth</span>
+          <div className="fp-stats4" style={{ gridTemplateColumns: "repeat(3, minmax(0,1fr))" }}>
+            <div className="fp-statcell">
+              <span className="l">Friends introduced</span>
+              <span className="n">{referrals.introduced}</span>
+            </div>
+            <div className="fp-statcell">
+              <span className="l">Rewards paid</span>
+              <span className="n" style={{ color: "var(--color-text)" }}>{referrals.rewarded}</span>
+            </div>
+            <div className="fp-statcell">
+              <span className="l">They have spent</span>
+              <span className="n">{gbp(referrals.revenuePence)}</span>
+            </div>
+          </div>
+          <p style={{ fontSize: 12, color: "var(--color-neutral-700)", margin: "12px 0 0", lineHeight: 1.5 }}>
+            Counts people who arrived on somebody&rsquo;s code and then actually ordered. The
+            referrer&rsquo;s thank-you is only minted once that first order is paid for, so an
+            introduction that never buys anything costs nothing.
+          </p>
+        </div>
+      </div>
 
       <span className="fp-kicker" style={{ marginBottom: 12 }}>Automations</span>
       {rows.length === 0 ? (

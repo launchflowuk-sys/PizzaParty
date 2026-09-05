@@ -83,6 +83,25 @@ export const ClientSchema = z.object({
   loyalty: z
     .object({ enabled: z.boolean().default(false), pointsPerPound: z.number().default(1) })
     .default({}),
+  /**
+   * Refer a friend. Both figures are in pounds, matching every other price in
+   * this file. The reward is minted as a single-use code for the referrer once
+   * the friend's first order is paid for - never on sign-up, or the shop pays
+   * for introductions that never buy anything.
+   */
+  referral: z
+    .object({
+      enabled: z.boolean().default(false),
+      /** Off the friend's first order, when they use the referrer's code. */
+      refereeDiscount: z.number().default(5),
+      /** The referrer's thank-you, once that first order is paid. */
+      referrerReward: z.number().default(5),
+      /** Both sides need a basket at least this big. */
+      minOrder: z.number().default(15),
+      /** Days the referrer's reward code stays live. */
+      rewardExpiryDays: z.number().default(90),
+    })
+    .default({}),
 });
 
 export type ClientConfig = z.infer<typeof ClientSchema>;

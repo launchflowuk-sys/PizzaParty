@@ -8,6 +8,10 @@ import { prettyPhone } from "@/lib/phone";
 import { LoginForm } from "@/components/account/LoginForm";
 import { ReorderButton } from "@/components/order/ReorderButton";
 import { LogoutButton } from "@/components/account/LogoutButton";
+import { ReferralCard } from "@/components/account/ReferralCard";
+import { ensureReferralCode } from "@/lib/referral";
+import { getConfig } from "@/lib/config";
+import { env } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "My account", robots: { index: false } };
@@ -35,6 +39,28 @@ export default async function AccountPage() {
     take: 20,
     include: { items: { where: { parentId: null }, select: { qty: true, name: true } } },
   });
+
+  // Referral panel. The code is minted the first time they look at this page,
+  // so nobody carries one who never asked for it.
+  const cfg = getConfig();
+  const referral = cfg.referral.enabled
+    ? await (async () => {
+        const code = await ensureReferralCode(customer.id);
+        const [referred, earned] = await Promise.all([
+          prisma.customer.count({ where: { referredById: customer.id, ordersCount: { gt: 0 } } }),
+          prisma.marketingSend.count({ where: { customerId: customer.id, kind: "referral_reward", status: "sent" } }),
+        ]);
+        const money = (n: number) => `£${n.toFixed(2)}`;
+        return {
+          code,
+          link: `${env.siteUrl}/r/${encodeURIComponent(code)}`,
+          refereeDiscount: money(cfg.referral.refereeDiscount),
+          referrerReward: money(cfg.referral.referrerReward),
+          minOrder: money(cfg.referral.minOrder),
+          referred, earned,
+        };
+      })()
+    : null;
 
   return (
     <section className="fp-wrap" style={{ padding: "40px 32px 64px" }}>
@@ -81,6 +107,17 @@ export default async function AccountPage() {
         </div>
 
         <aside style={{ display: "grid", gap: 24, alignContent: "start" }}>
+          {referral ? (
+            <ReferralCard
+              code={referral.code}
+              link={referral.link}
+              refereeDiscount={referral.refereeDiscount}
+              referrerReward={referral.referrerReward}
+              minOrder={referral.minOrder}
+              referred={referral.referred}
+              earned={referral.earned}
+            />
+          ) : null}
           <div style={{ border: "2px solid var(--color-text)", padding: 24, display: "grid", gap: 6 }}>
             <span style={{ fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--color-neutral-700)" }}>Crust Club</span>
             <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 56, lineHeight: 1, letterSpacing: "-.03em", color: "var(--color-accent)" }}>

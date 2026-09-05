@@ -19,7 +19,7 @@ import { env } from "./env";
 export const SMS_COST_PENCE = 4;
 export const EMAIL_COST_PENCE = 0;
 
-export type TriggerKey = "win_back" | "second_order" | "first_order_thanks" | "birthday" | "quiet_night";
+export type TriggerKey = "win_back" | "second_order" | "first_order_thanks" | "birthday" | "quiet_night" | "abandoned_basket";
 
 export const TRIGGERS: { key: TriggerKey; label: string; help: string; defaultDays: number }[] = [
   { key: "win_back", label: "Win back a lapsed customer", defaultDays: 45,
@@ -32,7 +32,14 @@ export const TRIGGERS: { key: TriggerKey; label: string; help: string; defaultDa
     help: "Needs a birthday on the customer record. Not collected yet, so this stays idle." },
   { key: "quiet_night", label: "Fill a quiet night", defaultDays: 30,
     help: "Ordered within N days and opted in. Send by hand when the kitchen is quiet." },
+  { key: "abandoned_basket", label: "Chase an abandoned checkout", defaultDays: 0,
+    help: "Picked the food, entered their number, then never paid. Runs off unpaid orders rather than the customer list, so 'days' does not apply." },
 ];
+
+/** Minutes to wait before chasing an unpaid checkout. */
+export const RECOVERY_AFTER_MINUTES = 25;
+/** The sweep that cancels unpaid orders runs at 2h, so chase inside that window. */
+export const RECOVERY_WINDOW_MINUTES = 110;
 
 /**
  * Whether an offer code can actually be used by the people about to receive it.
@@ -110,7 +117,8 @@ export async function audienceFor({ clientId, trigger, days, cooldownDays, limit
           ? { ...base, ordersCount: 1, lastOrderAt: { gte: cutoff } }
           : trigger === "quiet_night"
             ? { ...base, ordersCount: { gt: 0 }, lastOrderAt: { gte: cutoff } }
-            : // birthday has no data behind it yet, so it never matches
+            : // birthday has no data behind it yet, and abandoned_basket is
+              // answered from orders rather than customers.
               { ...base, id: "__none__" };
 
   return prisma.customer.findMany({
@@ -123,6 +131,8 @@ export async function audienceFor({ clientId, trigger, days, cooldownDays, limit
 
 /** Count only - used to show the owner the size and cost before he sends. */
 export async function audienceSize(a: Omit<AudienceArgs, "limit">) {
+  // The abandoned-checkout trigger counts unpaid orders, not people.
+  if (a.trigger === "abandoned_basket") return (await abandonedOrders(a.clientId, 500)).length;
   const rows = await audienceFor({ ...a, limit: 1000 });
   return rows.length;
 }
@@ -139,6 +149,10 @@ export async function runAutomation(automationId: string, opts: { dryRun?: boole
 
   const client = await prisma.client.findUnique({ where: { id: a.clientId }, select: { name: true } });
   const shop = client?.name ?? "";
+
+  // The abandoned-checkout trigger runs off unpaid orders, not the customer
+  // list, so it has its own audience and its own bookkeeping.
+  if (a.trigger === "abandoned_basket") return runBasketRecovery(a.id, opts);
 
   const people = await audienceFor({
     clientId: a.clientId, trigger: a.trigger, days: a.days,
@@ -172,7 +186,7 @@ export async function runAutomation(automationId: string, opts: { dryRun?: boole
     await prisma.marketingSend.create({
       data: {
         clientId: a.clientId, automationId: a.id, customerId: c.id, channel: a.channel,
-        promoCode: a.promoCode, costPence: ok ? unit : 0,
+        kind: "automation", promoCode: a.promoCode, costPence: ok ? unit : 0,
         status: ok ? "sent" : "failed", error: error.slice(0, 300),
       },
     });
@@ -181,6 +195,119 @@ export async function runAutomation(automationId: string, opts: { dryRun?: boole
 
   await prisma.automation.update({ where: { id: a.id }, data: { lastRunAt: new Date() } });
   return { sent, failed, skipped: 0, costPence: sent * unit };
+}
+
+/**
+ * Orders that were built but never paid for.
+ *
+ * The customer chose the food and typed in their number, then something got in
+ * the way. That is the warmest audience a takeaway ever has, and until now the
+ * only thing that happened to those orders was a sweep cancelling them after
+ * two hours. Chased once, inside that window, and never again.
+ */
+export async function abandonedOrders(clientId: string, limit: number) {
+  const now = Date.now();
+  return prisma.order.findMany({
+    where: {
+      clientId,
+      status: "pending_payment",
+      recoveryRequestedAt: null,
+      createdAt: {
+        lt: new Date(now - RECOVERY_AFTER_MINUTES * 60_000),
+        gt: new Date(now - RECOVERY_WINDOW_MINUTES * 60_000),
+      },
+      customer: { marketingOptIn: true, phone: { not: "" } },
+    },
+    orderBy: { createdAt: "asc" },
+    take: Math.max(0, Math.min(limit, 500)),
+    select: {
+      id: true, total: true, customerId: true,
+      customer: { select: { id: true, name: true, phone: true } },
+    },
+  });
+}
+
+/**
+ * Chase them.
+ *
+ * Marked before sending rather than after: if the send throws halfway, the
+ * customer has still been contacted once, and chasing them again because the
+ * bookkeeping failed is worse than not chasing them at all.
+ */
+export async function runBasketRecovery(automationId: string, opts: { dryRun?: boolean } = {}): Promise<RunResult> {
+  const a = await prisma.automation.findUnique({ where: { id: automationId } });
+  if (!a) throw new Error("Automation not found");
+
+  const client = await prisma.client.findUnique({ where: { id: a.clientId }, select: { name: true } });
+  const shop = client?.name ?? "";
+  const orders = await abandonedOrders(a.clientId, a.maxPerRun);
+
+  const unit = a.channel === "sms" ? SMS_COST_PENCE : EMAIL_COST_PENCE;
+  if (opts.dryRun) return { sent: 0, failed: 0, skipped: orders.length, costPence: orders.length * unit };
+
+  let sent = 0, failed = 0;
+  for (const o of orders) {
+    if (!o.customer) continue;
+    await prisma.order.update({ where: { id: o.id }, data: { recoveryRequestedAt: new Date() } });
+
+    const body = render(a.body, { name: o.customer.name, phone: o.customer.phone }, a.promoCode, shop);
+    const text = `${body}
+
+Reply STOP to opt out`;
+
+    let ok = false, error = "";
+    try {
+      const r = await sendSms(o.customer.phone, text);
+      ok = r.ok; error = r.error ?? "";
+    } catch (e) {
+      error = (e as Error).message;
+    }
+
+    await prisma.marketingSend.create({
+      data: {
+        clientId: a.clientId, automationId: a.id, customerId: o.customer.id, channel: "sms",
+        kind: "basket_recovery", promoCode: a.promoCode, costPence: ok ? unit : 0,
+        status: ok ? "sent" : "failed", error: error.slice(0, 300),
+      },
+    });
+    if (ok) sent++; else failed++;
+  }
+
+  await prisma.automation.update({ where: { id: a.id }, data: { lastRunAt: new Date() } });
+  return { sent, failed, skipped: 0, costPence: sent * unit };
+}
+
+/**
+ * Log a review request as a send.
+ *
+ * A review request is a service message and goes out whether or not somebody
+ * opted in to marketing - but it still costs money and it still lands on the
+ * customer's phone. Recording it here means the shop sees the true SMS bill,
+ * and the shared cooldown stops a win-back text arriving the same afternoon.
+ */
+export async function recordReviewRequest(args: {
+  clientId: string; customerId: string; ok: boolean; error?: string;
+}) {
+  await prisma.marketingSend.create({
+    data: {
+      clientId: args.clientId, customerId: args.customerId, channel: "sms",
+      kind: "review_request", promoCode: "", costPence: args.ok ? SMS_COST_PENCE : 0,
+      status: args.ok ? "sent" : "failed", error: (args.error ?? "").slice(0, 300),
+    },
+  });
+}
+
+/** Log the text that carries a referrer's reward code, so it is attributable. */
+export async function recordReferralReward(args: {
+  clientId: string; customerId: string; promoCode: string; ok: boolean; error?: string;
+}) {
+  await prisma.marketingSend.create({
+    data: {
+      clientId: args.clientId, customerId: args.customerId, channel: "sms",
+      kind: "referral_reward", promoCode: args.promoCode, costPence: args.ok ? SMS_COST_PENCE : 0,
+      status: args.ok ? "sent" : "failed", error: (args.error ?? "").slice(0, 300),
+    },
+  });
 }
 
 /**
@@ -262,6 +389,51 @@ export async function marketingTotals(clientId: string) {
     spendPence: agg._sum.costPence ?? 0,
     revenuePence: agg._sum.revenuePence ?? 0,
   };
+}
+
+/** Spend and return split by what the message was for. */
+export async function sendBreakdown(clientId: string) {
+  const rows = await prisma.marketingSend.groupBy({
+    by: ["kind"],
+    where: { clientId, status: "sent" },
+    _count: true,
+    _sum: { costPence: true, revenuePence: true },
+  });
+  return rows
+    .map((r) => ({
+      kind: r.kind,
+      sent: r._count,
+      spendPence: r._sum.costPence ?? 0,
+      revenuePence: r._sum.revenuePence ?? 0,
+    }))
+    .sort((a, b) => b.revenuePence - a.revenuePence || b.sent - a.sent);
+}
+
+export const KIND_LABEL: Record<string, string> = {
+  automation: "Automations",
+  campaign: "Campaigns",
+  basket_recovery: "Abandoned checkouts",
+  review_request: "Review requests",
+  referral_reward: "Referral rewards",
+};
+
+/**
+ * How word of mouth is doing.
+ *
+ * "Introduced" counts people who arrived on someone's code and actually
+ * ordered, not people who clicked a link - the shop only cares about the ones
+ * that turned into money.
+ */
+export async function referralStats(clientId: string) {
+  const [introduced, rewarded, spend] = await Promise.all([
+    prisma.customer.count({ where: { clientId, referredById: { not: null }, ordersCount: { gt: 0 } } }),
+    prisma.customer.count({ where: { clientId, referralRewardedAt: { not: null } } }),
+    prisma.customer.aggregate({
+      where: { clientId, referredById: { not: null } },
+      _sum: { totalSpent: true },
+    }),
+  ]);
+  return { introduced, rewarded, revenuePence: spend._sum.totalSpent ?? 0 };
 }
 
 /**
