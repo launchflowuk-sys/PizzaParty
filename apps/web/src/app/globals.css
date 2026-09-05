@@ -1562,3 +1562,63 @@ html, body { max-width: 100%; overflow-x: clip; }
 @media (min-width: 1281px) {
   .fp-helpspot-sheet { max-width: min(320px, calc(100vw - 32px)); }
 }
+
+/* ── Kitchen: the button tells you what happens next ──────────────────────
+   Every advance button was the same green, so "Cooking", "Ready", "Out for
+   delivery" and "Delivered" looked identical from the pass - the one place
+   where somebody is glancing sideways with their hands full and must not have
+   to read. Each button now carries the colour of the stage it moves the order
+   into, and the stripe down the side of the card carries the stage it is in, so
+   the board reads as a queue rather than a wall of identical tickets. */
+.fp-ticket-go[data-to="preparing"]        { background: var(--warn);  border-color: var(--warn); }
+.fp-ticket-go[data-to="ready"]            { background: var(--info);  border-color: var(--info); }
+.fp-ticket-go[data-to="out_for_delivery"] { background: var(--color-accent-2, #3E6B48); border-color: var(--color-accent-2, #3E6B48); }
+.fp-ticket-go[data-to="completed"]        { background: var(--ok);    border-color: var(--ok); }
+
+/* ── The whole order, on demand ───────────────────────────────────────────
+   The ticket stays short because a long one pushes the next order off the
+   board. This holds everything else - address, gate code, driver note, what is
+   actually on each pizza - for whoever needs it, without leaving the queue. */
+.fp-ticket-full { margin-top: 4px; }
+.fp-ticket-full > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 12px;
+  border: 2px dashed var(--color-neutral-400);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  color: var(--color-neutral-800);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fp-ticket-full > summary::-webkit-details-marker { display: none; }
+.fp-ticket-full[open] > summary { border-style: solid; margin-bottom: 8px; }
+.fp-ticket-full dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+.fp-ticket-full dt { font-weight: 800; color: var(--color-neutral-700); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; align-self: center; }
+.fp-ticket-full dd { margin: 0; }
+/* A gate code or "leave it with next door" is the difference between a
+   delivery and a second trip, so it is not set in small grey text. */
+.fp-ticket-driver,
+.fp-ticket-driver-full {
+  display: block;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--warn-bg);
+  border-left: 4px solid var(--warn);
+  color: var(--warn);
+  font-weight: 700;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.fp-ticket-full-items { display: grid; gap: 8px; font-size: 14px; border-top: 1px solid var(--color-divider); padding-top: 10px; }
+.fp-ticket-full-items > div { padding-bottom: 6px; border-bottom: 1px solid var(--color-divider); }
+.fp-ticket-full-items > div:last-child { border-bottom: 0; }

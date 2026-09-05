@@ -4,37 +4,44 @@
     {
       "slug": "pizzas",
       "name": "Pizzas",
-      "description": "Every pizza in five sizes, up to the 20 inch. All our recipes are flexible - customise any of them."
+      "description": "Every pizza in five sizes, up to the 20 inch. All our recipes are flexible - customise any of them.",
+      "image": "categories/cat-pizzas.jpg"
     },
     {
       "slug": "starters",
       "name": "Starters",
-      "description": "Garlic breads, straight from the oven."
+      "description": "Garlic breads, straight from the oven.",
+      "image": "categories/cat-starters.jpg"
     },
     {
       "slug": "sides",
       "name": "Sides",
-      "description": "Wedges, skins, poppers and dips."
+      "description": "Wedges, skins, poppers and dips.",
+      "image": "categories/cat-sides.jpg"
     },
     {
       "slug": "chicken",
       "name": "Chicken",
-      "description": "Wings, strips, dippers and the Chicken Box."
+      "description": "Wings, strips, dippers and the Chicken Box.",
+      "image": "categories/cat-chicken.jpg"
     },
     {
       "slug": "pasta",
       "name": "Pasta",
-      "description": "Oven-baked, served hot."
+      "description": "Oven-baked, served hot.",
+      "image": "categories/cat-pasta.jpg"
     },
     {
       "slug": "desserts",
       "name": "Desserts",
-      "description": "Cakes and ice cream tubs."
+      "description": "Cakes and ice cream tubs.",
+      "image": "categories/cat-desserts.jpg"
     },
     {
       "slug": "drinks",
       "name": "Drinks",
-      "description": "Cans, bottles and milkshakes."
+      "description": "Cans, bottles and milkshakes.",
+      "image": "categories/cat-drinks.jpg"
     }
   ],
   "modifierGroups": [
@@ -241,7 +248,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/the-favourite.jpg",
       "story": "Called the favourite because it keeps getting ordered. Sweet cured ham and earthy mushrooms over tomato and mozzarella — the combination that never once turned up wrong for anybody."
     },
     {
@@ -286,7 +293,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/hawaiian.jpg",
       "story": "Yes, pineapple. Sweet, slightly caramelised at the edges where the heat catches it, cutting straight through salty ham and melted mozzarella. Argue about it all you like; it sells every single night."
     },
     {
@@ -423,7 +430,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/seafood.jpg",
       "story": "Prawns, anchovies, tuna and sweetcorn — salty, briny and a little bit sweet all at once. A genuine change of pace from the meat side of the menu, and better than it has any right to be."
     },
     {
@@ -468,7 +475,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/farm-chicken.jpg",
       "story": "Simple and honest. Tender chicken with onions and mushrooms over tomato and mozzarella, letting the three of them do the work. Comforting rather than clever."
     },
     {
@@ -608,7 +615,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/farm-pizza-classic.jpg",
       "story": "Our own. Tomato base, mushrooms, bacon and sausage, finished with fresh tomato that stays juicy in the oven and keeps the whole thing from going heavy. The one we would put our name on — and did."
     },
     {
@@ -698,7 +705,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/bbq-meat-combo.jpg",
       "story": "The Meat Combo swapped onto a smoky BBQ base. Ham, beef, pork and pepperoni over sauce that goes sticky and dark at the crust. Sweeter, deeper and messier in the best way."
     },
     {
@@ -745,7 +752,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/hot-and-spicy.jpg",
       "story": "Built to bite back. Pepperoni, chicken and beef for the substance, then onion and jalapeño for the heat — sharp and bright rather than a slow burn."
     },
     {
@@ -837,7 +844,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/american-hot.jpg",
       "story": "The classic hot one. Pepperoni and jalapeño over sweet onion, so you get the spiced fat from the pepperoni and the clean vinegar heat of the chilli in the same bite."
     },
     {
@@ -884,7 +891,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/chicken-hot.jpg",
       "story": "Tandoori-spiced chicken with jalapeño, onions and mushrooms. Warm, aromatic spice underneath and a sharper chilli heat on top — two different kinds of hot on one base."
     },
     {
@@ -929,7 +936,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/out-of-this-world.jpg",
       "story": "Sausage, beef, onions, peppers and mushrooms, loaded on thick. Savoury and substantial, with the peppers and onions going sweet against all that meat. Named optimistically, eaten enthusiastically."
     },
     {
@@ -976,7 +983,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/mexican-hot.jpg",
       "story": "Beef, onions and mushrooms with jalapeño for heat, then sliced tomatoes laid over the top that burst and go jammy in the oven. The fresh tomato keeps it lively rather than heavy."
     },
     {
@@ -1023,7 +1030,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/hotter-than-hot.jpg",
       "story": "Do not order this casually. Pepperoni, beef and sausage carrying green chilli scattered right through — a real, building heat that keeps going after the slice is gone. Have a drink to hand."
     },
     {
@@ -1070,7 +1077,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/bbq-special.jpg",
       "story": "Texas BBQ sauce, chicken, bacon, peppers, jalapeño and sweetcorn. Smoke, salt, sweet and heat all pulling against each other, with the bacon crisping at the edges. A lot going on, and all of it works."
     },
     {
@@ -1115,7 +1122,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/chinese-special.jpg",
       "story": "Double Chinese chicken, mushrooms, onions and sweetcorn. Twice the chicken means every slice is properly covered, and the sweetcorn cuts the savouriness just enough."
     },
     {
@@ -1252,7 +1259,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/italian-meatball.jpg",
       "story": "Proper meatballs with pepperoni and sausage on a BBQ base. The meatballs stay soft and juicy while the pepperoni crisps around them. Hearty, and not remotely shy."
     },
     {
@@ -1342,7 +1349,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/tex-bbq.jpg",
       "story": "BBQ sauce, chicken, bacon and pepperoni. Three meats, one smoky sauce, and bacon that crisps up against the cheese. Simple, and very hard to stop eating."
     },
     {
@@ -1434,7 +1441,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/italian-chicken.jpg",
       "story": "Chicken four ways — Chinese, Mexican, BBQ and roast — on a double BBQ base with green peppers. Each one is seasoned differently, so the flavour keeps shifting slice to slice. Genuinely unlike anything else on the menu."
     },
     {
@@ -1479,7 +1486,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/mega-ball.jpg",
       "story": "Double meatballs, plus beef, sausage, pepperoni and onion. Soft meatballs, crisped pepperoni, sweet onion running through it. Heavy, and completely unapologetic about it."
     },
     {
@@ -1524,7 +1531,7 @@
         "milk"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/half-and-half.jpg",
       "story": "Can't decide? Don't. Two different pizzas on one base, split down the middle — just tell us which two in the notes when you order and we'll build it."
     },
     {
@@ -2008,7 +2015,7 @@
         "egg"
       ],
       "featured": false,
-      "image": "",
+      "image": "products/spaghetti-bolognese.jpg",
       "story": "Slow-cooked beef ragù over spaghetti, rich and savoury with the sauce clinging to every strand. The comfort option, and none the worse for it."
     },
     {
@@ -2211,7 +2218,7 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "",
+      "image": "products/dr-pepper-can.jpg",
       "story": "Dr Pepper, 330ml. That unmistakable flavour nobody can quite describe. Cold, obviously."
     },
     {
@@ -2375,7 +2382,7 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "",
+      "image": "products/milkshake.jpg",
       "story": "Thick, cold and properly creamy. The pudding you can drink, and a very good excuse not to choose between one and the other."
     },
     {
@@ -2505,7 +2512,8 @@
             "dr-pepper-can"
           ]
         }
-      ]
+      ],
+      "image": "deals/meal-for-1.jpg"
     },
     {
       "slug": "meal-for-2",
@@ -2555,7 +2563,8 @@
             "tango-bottle"
           ]
         }
-      ]
+      ],
+      "image": "deals/meal-for-2.jpg"
     },
     {
       "slug": "family-meal-1",
@@ -2605,7 +2614,8 @@
             "tango-bottle"
           ]
         }
-      ]
+      ],
+      "image": "deals/family-meal-1.jpg"
     },
     {
       "slug": "family-meal-3",
@@ -2648,7 +2658,8 @@
             "tango-bottle"
           ]
         }
-      ]
+      ],
+      "image": "deals/family-meal-3.jpg"
     },
     {
       "slug": "mega-deal",
@@ -2691,7 +2702,8 @@
             "tango-bottle"
           ]
         }
-      ]
+      ],
+      "image": "deals/mega-deal.jpg"
     },
     {
       "slug": "three-20-inch",
@@ -2710,7 +2722,8 @@
             "xxlarge"
           ]
         }
-      ]
+      ],
+      "image": "deals/three-20-inch.jpg"
     },
     {
       "slug": "two-pizzas-medium",
@@ -2729,7 +2742,8 @@
             "medium"
           ]
         }
-      ]
+      ],
+      "image": "deals/two-pizzas-medium.jpg"
     },
     {
       "slug": "three-13-inch",
@@ -2748,7 +2762,8 @@
             "large"
           ]
         }
-      ]
+      ],
+      "image": "deals/three-13-inch.jpg"
     }
   ],
   "promos": [

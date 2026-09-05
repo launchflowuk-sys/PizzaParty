@@ -3,7 +3,7 @@ import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
-import { SEGMENTS, segmentWhere, segmentLabel } from "@/lib/segments";
+import { SEGMENTS, SEGMENT_GROUPS, segmentWhere, segmentLabel } from "@/lib/segments";
 import { campaignStats, promoWarning, audienceKind, SMS_COST_PENCE } from "@/lib/marketing";
 import { sendCampaign } from "../actions";
 import { HelpSpot } from "@/components/admin/HelpSpot";
@@ -11,15 +11,32 @@ import { HelpSpot } from "@/components/admin/HelpSpot";
 export const dynamic = "force-dynamic";
 
 /** One-off sends: a new item, a closure, a quiet Tuesday. Measured like everything else. */
-export default async function AdminCampaigns() {
+export default async function AdminCampaigns({
+  searchParams,
+}: {
+  searchParams: Promise<{ segment?: string; ids?: string }>;
+}) {
   await requireScreen("campaigns");
   const client = await getClientRow();
+  const sp = await searchParams;
+
+  // People ticked on the customer list arrive here in the URL. They are counted
+  // against opted-in, because ticking somebody is not consent.
+  const pickedIds = (sp.ids ?? "").split(",").map((x) => x.trim()).filter(Boolean).slice(0, 2000);
+  const pickedCount = pickedIds.length
+    ? await prisma.customer.count({ where: { clientId: client.id, id: { in: pickedIds }, marketingOptIn: true, phone: { not: "" } } })
+    : 0;
+  const startSegment = sp.segment === "custom" && pickedIds.length ? "custom" : (sp.segment || "lapsed_60d");
 
   const [past, counts, promos] = await Promise.all([
     prisma.campaign.findMany({ where: { clientId: client.id }, orderBy: { createdAt: "desc" }, take: 20 }),
     Promise.all(SEGMENTS.map(async (s) => ({
       ...s,
-      n: await prisma.customer.count({ where: { clientId: client.id, marketingOptIn: true, phone: { not: "" }, ...segmentWhere(s.key) } }),
+      // "custom" is not a rule - segmentWhere returns nothing for it, which
+      // would count the entire list. It is however many were ticked.
+      n: s.key === "custom"
+        ? 0
+        : await prisma.customer.count({ where: { clientId: client.id, marketingOptIn: true, phone: { not: "" }, ...segmentWhere(s.key) } }),
     }))),
     prisma.promo.findMany({ where: { clientId: client.id, active: true }, select: { code: true, minOrder: true, firstOrderOnly: true, fulfilment: true } }),
   ]);
@@ -86,9 +103,25 @@ export default async function AdminCampaigns() {
                     address &mdash; a different, usually smaller, set of people.
                   </HelpSpot>
                 </label>
-                <select id="segment" name="segment" className="input" defaultValue="lapsed_60d">
-                  {counts.map((s) => <option key={s.key} value={s.key}>{s.label} ({s.n})</option>)}
+                <select id="segment" name="segment" className="input" defaultValue={startSegment}>
+                  {SEGMENT_GROUPS.map((g) => (
+                    <optgroup key={g} label={g}>
+                      {counts.filter((s) => s.group === g).map((s) => (
+                        <option key={s.key} value={s.key}>
+                          {s.label}{s.key === "custom" ? (pickedCount ? ` (${pickedCount} ticked)` : " — tick them on Customers first") : ` (${s.n})`}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
+                {/* The ticked ids ride with the send. */}
+                <input type="hidden" name="ids" value={pickedIds.join(",")} />
+                {startSegment === "custom" ? (
+                  <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "6px 0 0" }}>
+                    Sending to the <strong>{pickedCount}</strong> you ticked who are opted in and have a mobile.
+                    {pickedIds.length !== pickedCount ? ` ${pickedIds.length - pickedCount} of the ones you picked cannot be messaged and will be skipped.` : ""}
+                  </p>
+                ) : null}
               </div>
               <div className="field">
                 <label htmlFor="promoCode">Offer code</label>

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
-import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
 import { SEGMENTS, segmentWhere, segmentLabel } from "@/lib/segments";
 import { HelpSpot } from "@/components/admin/HelpSpot";
 import { AdminNotice } from "@/components/admin/AdminNotice";
+import { PickCustomers } from "@/components/admin/PickCustomers";
 import { getConfig } from "@/lib/config";
 import { adjustPoints } from "../loyalty-actions";
 
@@ -21,7 +21,9 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
 
   const where = {
     clientId: client.id,
-    ordersCount: { gt: 0 },
+    // No `ordersCount > 0` filter. Somebody who signed up and never ordered is
+    // the most valuable person on this screen to know about, and they used to
+    // be invisible here.
     ...(sp.segment ? segmentWhere(sp.segment) : {}),
     ...(sp.q
       ? { OR: [
@@ -99,66 +101,22 @@ export default async function AdminCustomers({ searchParams }: { searchParams: P
 
       <AdminNotice message={sp.m} error={sp.e} back="/admin/customers" />
 
-      <div style={{ overflowX: "auto" }}>
-        <table className="table" style={{ width: "100%" }}>
-          <thead>
-            <tr>
-              <th>Name</th><th>Phone</th>
-              <th style={{ textAlign: "right" }}>Orders</th>
-              <th style={{ textAlign: "right" }}>Spent</th>
-              {loyaltyOn ? (
-                <th style={{ textAlign: "right" }}>
-                  Points
-                  <HelpSpot title="Can I give somebody points by hand?" article="rewards-club" anchor="points-given-by-hand">
-                    Yes &mdash; type how many in the box next to their balance, put a reason on it and
-                    press Save. A minus number takes points away. The customer sees the reason you type
-                    on their rewards page, so write it as you would say it to them.
-                  </HelpSpot>
-                </th>
-              ) : null}
-              <th>Last order</th>
-              <th>
-                Marketing
-                <HelpSpot title="Can I opt somebody out from here?" article="customers" anchor="opting-someone-out-by-hand">
-                  No, and there is no override anywhere else either. Only the customer can change it
-                  &mdash; the tick box at the checkout, or texting STOP to the shop number, which is
-                  acted on within seconds. If somebody rings to come off the list, ask them to text
-                  STOP.
-                </HelpSpot>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {customers.length === 0 ? (
-              <tr><td colSpan={loyaltyOn ? 7 : 6} style={{ color: "var(--color-neutral-700)" }}>Nobody matches.</td></tr>
-            ) : customers.map((c) => (
-              <tr key={c.id}>
-                <td style={{ fontWeight: 600 }}>
-                  {c.name || <span style={{ color: "var(--color-neutral-700)", fontWeight: 400 }}>&mdash;</span>}
-                  {c.email ? <><br /><span style={{ fontSize: 12, fontWeight: 400, color: "var(--color-neutral-700)" }}>{c.email}</span></> : null}
-                </td>
-                <td style={{ whiteSpace: "nowrap" }}>{c.phone}</td>
-                <td style={{ textAlign: "right" }}>{c.ordersCount}</td>
-                <td style={{ textAlign: "right", fontWeight: 600 }}>{gbp(c.totalSpent)}</td>
-                {loyaltyOn ? (
-                  <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                    <span style={{ fontWeight: 700 }}>{c.loyaltyPoints}</span>
-                    <form action={adjustPoints} style={{ display: "inline-flex", gap: 4, marginLeft: 8, verticalAlign: "middle" }}>
-                      <input type="hidden" name="back" value="/admin/customers" />
-                      <input type="hidden" name="customerId" value={c.id} />
-                      <input name="delta" className="input" inputMode="numeric" placeholder="+/-" aria-label={`Adjust points for ${c.name || c.phone}`} style={{ width: 56 }} />
-                      <input name="reason" className="input" placeholder="Reason" aria-label={`Reason for ${c.name || c.phone}`} style={{ width: 130 }} />
-                      <button className="btn btn-secondary">Save</button>
-                    </form>
-                  </td>
-                ) : null}
-                <td style={{ whiteSpace: "nowrap" }}>{c.lastOrderAt?.toLocaleDateString("en-GB") ?? "—"}</td>
-                <td>{c.marketingOptIn ? <span className="tag tag-accent">Opted in</span> : <span className="tag tag-neutral">No</span>}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <PickCustomers
+        loyalty={loyaltyOn}
+        adjustPoints={adjustPoints}
+        rows={customers.map((c) => ({
+          id: c.id,
+          name: c.name ?? "",
+          email: c.email ?? "",
+          phone: c.phone,
+          ordersCount: c.ordersCount,
+          totalSpent: c.totalSpent,
+          lastOrder: c.lastOrderAt?.toLocaleDateString("en-GB") ?? "",
+          optIn: c.marketingOptIn,
+          points: c.loyaltyPoints,
+        }))}
+      />
+
       {shown > customers.length ? (
         <p style={{ fontSize: 13, color: "var(--color-neutral-700)", marginTop: 12 }}>
           Showing the {customers.length} most recent of {shown}. Narrow it with a segment or a search.

@@ -196,7 +196,16 @@ export function KitchenScreen() {
                   const late = age >= LATE_MINUTES;
                   const loc = locs.find((l) => l.key === o.locationKey);
                   const defaultEta = o.fulfilment === "delivery" ? (loc?.deliveryMinutes ?? 35) : (loc?.prepMinutes ?? 15);
-                  const edge = o.status === "placed" ? "var(--color-accent)" : o.fulfilment === "delivery" ? "var(--color-text)" : "var(--color-neutral-500)";
+                  // The stripe down the side is the stage, so a glance across the
+                  // board reads as a queue rather than a wall of identical cards.
+                  const EDGE: Record<string, string> = {
+                    placed: "var(--danger)",
+                    accepted: "var(--warn)",
+                    preparing: "var(--warn)",
+                    ready: "var(--info)",
+                    out_for_delivery: "var(--color-accent-2, #3E6B48)",
+                  };
+                  const edge = EDGE[o.status] ?? "var(--color-neutral-500)";
                   const next = (NEXT[o.status] ?? []).filter(
                     (n) => !(n.to === "out_for_delivery" && o.fulfilment !== "delivery") && !(n.to === "completed" && n.label === "Collected" && o.fulfilment === "delivery"),
                   );
@@ -242,9 +251,41 @@ export function KitchenScreen() {
                       <div className="fp-ticket-who">
                         {o.customerName} &middot; <a href={`tel:${o.customerPhone}`}>{o.customerPhone}</a>
                         {o.address ? <span style={{ display: "block" }}>{o.address}</span> : null}
-                        {o.notes ? <span style={{ display: "block", color: "var(--color-accent-700)", fontWeight: 600 }}>Note: {o.notes}</span> : null}
-                        {o.rejectReason ? <span style={{ display: "block", color: "var(--color-accent-700)" }}>Rejected: {o.rejectReason}</span> : null}
+                        {o.notes ? <span className="fp-ticket-driver">Note: {o.notes}</span> : null}
+                        {o.rejectReason ? <span style={{ display: "block", color: "var(--danger)" }}>Rejected: {o.rejectReason}</span> : null}
                       </div>
+
+                      {/* The whole order, one press away.
+                          The card is deliberately short - it is read at arm's
+                          length across a hot kitchen and a long ticket pushes the
+                          next order off the board. But somebody checking an
+                          address, a gate code or what exactly is on the pizza
+                          needs all of it, without leaving the queue. */}
+                      <details className="fp-ticket-full">
+                        <summary>Open the whole order</summary>
+                        <dl>
+                          <dt>Order</dt><dd>#{o.number} &middot; {o.locationName}</dd>
+                          <dt>Placed</dt><dd>{new Date(o.placedAt ?? o.createdAt).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" })} ({age} min ago)</dd>
+                          {o.scheduledFor ? <><dt>Wanted for</dt><dd>{new Date(o.scheduledFor).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" })}</dd></> : null}
+                          {o.etaAt ? <><dt>Promised</dt><dd>{new Date(o.etaAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</dd></> : null}
+                          <dt>Customer</dt><dd>{o.customerName}<br /><a href={`tel:${o.customerPhone}`}>{o.customerPhone}</a></dd>
+                          <dt>{o.fulfilment === "delivery" ? "Deliver to" : "Collection"}</dt>
+                          <dd>{o.address || "At the counter"}</dd>
+                          {o.notes ? <><dt>Driver note</dt><dd className="fp-ticket-driver-full">{o.notes}</dd></> : null}
+                          <dt>Payment</dt><dd>{o.paid ? "Paid online" : o.paymentMethod === "cash" ? `CASH TO COLLECT — ${gbp(o.total)}` : "Unpaid"}</dd>
+                          <dt>Total</dt><dd>{gbp(o.total)}</dd>
+                        </dl>
+                        <div className="fp-ticket-full-items">
+                          {o.items.map((i, idx) => (
+                            <div key={idx}>
+                              <strong>{i.qty}&times; {i.name}{i.size ? ` (${i.size})` : ""}</strong>
+                              {i.components.length ? <div>{i.components.join(", ")}</div> : null}
+                              {i.modifiers.length ? <div><em>{i.modifiers.join(", ")}</em></div> : null}
+                              {i.notes ? <div>&ldquo;{i.notes}&rdquo;</div> : null}
+                            </div>
+                          ))}
+                        </div>
+                      </details>
 
                       {o.status === "placed" ? (
                         <div style={{ display: "grid", gap: 8 }}>
@@ -271,7 +312,7 @@ export function KitchenScreen() {
                       ) : next.length ? (
                         <div style={{ display: "grid", gap: 8 }}>
                           {next.map((n) => (
-                            <button key={n.to} className="btn fp-ticket-go" onClick={() => act(o.id, n.to)}>
+                            <button key={n.to} className="btn fp-ticket-go" data-to={n.to} onClick={() => act(o.id, n.to)}>
                               {n.label}
                             </button>
                           ))}

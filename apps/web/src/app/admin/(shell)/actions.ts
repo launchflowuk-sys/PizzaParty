@@ -222,16 +222,31 @@ export async function sendCampaign(fd: FormData) {
   const { SMS_COST_PENCE, EMAIL_COST_PENCE, render } = await import("@/lib/marketing");
   const { sendSms, sendEmail, escapeHtml } = await import("@/lib/notify");
 
-  const customers = await prisma.customer.findMany({
+  // A hand-picked list is the one audience that is not a rule: the shop ticked
+  // these people, so the ids are the audience. Still intersected with opted-in
+  // and with having the channel, because picking somebody by hand does not
+  // create consent they never gave.
+  const { AVG_BASKET_SEGMENTS } = await import("@/lib/segments");
+  const pickedIds = segment === "custom"
+    ? String(fd.get("ids") ?? "").split(",").map((x) => x.trim()).filter(Boolean).slice(0, 2000)
+    : [];
+  if (segment === "custom" && pickedIds.length === 0) return;
+
+  let customers = await prisma.customer.findMany({
     where: {
       clientId: client.id,
       marketingOptIn: true,
-      ...segmentWhere(segment),
+      ...(segment === "custom" ? { id: { in: pickedIds } } : segmentWhere(segment)),
       ...(channel === "email" ? { email: { not: "" } } : { phone: { not: "" } }),
     },
     take: 2000,
-    select: { id: true, name: true, phone: true, email: true },
+    select: { id: true, name: true, phone: true, email: true, totalSpent: true, ordersCount: true },
   });
+
+  // Average basket is not a column, so this one cut happens here rather than in
+  // the query - see AVG_BASKET_SEGMENTS.
+  const minAvg = AVG_BASKET_SEGMENTS[segment];
+  if (minAvg) customers = customers.filter((c) => c.ordersCount > 0 && c.totalSpent / c.ordersCount >= minAvg);
 
   const campaign = await prisma.campaign.create({
     data: { clientId: client.id, channel, segment, promoCode, subject, body, sent: 0, failed: 0 },
