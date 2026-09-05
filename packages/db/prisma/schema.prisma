@@ -241,17 +241,38 @@ model Deal {
   @@unique([clientId, slug])
 }
 
+/// What a particular item costs extra inside a particular deal line.
+///
+/// "Any 10 inch pizza" is how a meal deal is sold and it should stay that way -
+/// pinning a deal to one pizza makes it a weaker product. But without this every
+/// customer rationally picks the most expensive thing the line allows, and the
+/// shop carries the difference on every order. A supplement keeps the offer on
+/// the poster and stops the leak on the four or five items that genuinely cost
+/// more to make.
+model DealSlotSupplement {
+  id          String   @id @default(cuid())
+  slotId      String
+  slot        DealSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  /// Matched on the product slug, the same way the slot's own allow-lists work.
+  productSlug String
+  /// Pence added to the deal price when this item is chosen for this line.
+  extra       Int      @default(0)
+
+  @@unique([slotId, productSlug])
+}
+
 model DealSlot {
-  id               String   @id @default(cuid())
+  id               String               @id @default(cuid())
   dealId           String
-  deal             Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  deal             Deal                 @relation(fields: [dealId], references: [id], onDelete: Cascade)
   name             String // "Large pizza"
-  qty              Int      @default(1)
-  categorySlugs    String[] @default([]) // allowed categories
-  productSlugs     String[] @default([]) // or explicit products
-  sizeKeys         String[] @default([]) // allowed sizes, empty = any
-  extraPerModifier Boolean  @default(true) // modifiers charged on top
-  sortOrder        Int      @default(0)
+  qty              Int                  @default(1)
+  categorySlugs    String[]             @default([]) // allowed categories
+  productSlugs     String[]             @default([]) // or explicit products
+  sizeKeys         String[]             @default([]) // allowed sizes, empty = any
+  extraPerModifier Boolean              @default(true) // modifiers charged on top
+  sortOrder        Int                  @default(0)
+  supplements      DealSlotSupplement[]
 }
 
 // ---------- Customers ----------

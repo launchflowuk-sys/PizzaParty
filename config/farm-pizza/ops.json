@@ -148,64 +148,56 @@
       "role": "manager",
       "phone": "07700 900 101",
       "hoursWeek": 41,
-      "onShift": true,
-      "pin": "1111"
+      "onShift": true
     },
     {
       "name": "Tom Bennett",
       "role": "shift_lead",
       "phone": "07700 900 102",
       "hoursWeek": 36,
-      "onShift": true,
-      "pin": "2222"
+      "onShift": true
     },
     {
       "name": "Giulia Ferrari",
       "role": "kitchen",
       "phone": "07700 900 103",
       "hoursWeek": 38,
-      "onShift": true,
-      "pin": "3333"
+      "onShift": true
     },
     {
       "name": "Sam Whitfield",
       "role": "kitchen",
       "phone": "07700 900 104",
       "hoursWeek": 22,
-      "onShift": true,
-      "pin": "4444"
+      "onShift": true
     },
     {
       "name": "Priya Shah",
       "role": "front_of_house",
       "phone": "07700 900 105",
       "hoursWeek": 18,
-      "onShift": true,
-      "pin": "5555"
+      "onShift": true
     },
     {
       "name": "Marek Nowak",
       "role": "driver",
       "phone": "07700 900 201",
       "hoursWeek": 30,
-      "onShift": true,
-      "pin": "6666"
+      "onShift": true
     },
     {
       "name": "Aisha Rahman",
       "role": "driver",
       "phone": "07700 900 202",
       "hoursWeek": 27,
-      "onShift": false,
-      "pin": "7777"
+      "onShift": false
     },
     {
       "name": "Danny Fields",
       "role": "driver",
       "phone": "07700 900 203",
       "hoursWeek": 24,
-      "onShift": false,
-      "pin": "8888"
+      "onShift": false
     }
   ],
   "reviews": [

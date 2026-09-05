@@ -30,9 +30,43 @@ export default async function LaunchflowPage() {
   }
   const domains = await Promise.all([cfg.domain, `www.${cfg.domain}`, ...cfg.legacyDomains].map(async (d) => ({ d, r: await check(`https://${d}/`) })));
   const Row = ({ k, v }: { k: string; v: React.ReactNode }) => <tr className="border-b border-line"><td className="p-2 font-semibold whitespace-nowrap">{k}</td><td className="p-2 break-all">{v}</td></tr>;
+
+  /**
+   * What still stops this shop trading for real.
+   *
+   * The table below reports everything; this says the handful of things that
+   * would actually cost the shop money or embarrass them on day one. A green
+   * tick further down is easy to skim past.
+   */
+  const blockers: string[] = [];
+  if (!stripeEnabled()) blockers.push("No Stripe keys — card payments do not work. Cash orders still do.");
+  if (stripeEnabled() && !env.stripeWebhookSecret) blockers.push("Stripe webhook secret missing — payments would be taken but never confirmed against the order.");
+  if (!env.twilioSid) blockers.push("No Twilio — no order confirmations, no kitchen alert, and campaigns report as sent while delivering nothing.");
+  if (!env.resendApiKey) blockers.push("No Resend — no email receipts.");
+  if (!cfg.notifications.kitchenSms && !cfg.notifications.kitchenEmail && !cfg.notifications.printerWebhook) {
+    blockers.push("Nothing alerts the kitchen when an order lands — somebody has to be watching the screen.");
+  }
   return (
     <div>
       <h1 className="lf-h2">LaunchFlow · {cfg.name}</h1>
+
+      <div className="fp-panel" data-tone={blockers.length ? "danger" : "ok"} style={{ marginTop: 16 }}>
+        <header>
+          <span>{blockers.length ? "Not ready to trade" : "Ready to trade"}</span>
+          <span style={{ fontWeight: 700, opacity: .85 }}>{blockers.length} blocker{blockers.length === 1 ? "" : "s"}</span>
+        </header>
+        <div className="body">
+          {blockers.length === 0 ? (
+            <p style={{ margin: 0, fontSize: 14 }}>
+              Payments, messaging and kitchen alerts are all configured. Everything below is detail.
+            </p>
+          ) : (
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 1.7 }}>
+              {blockers.map((b) => <li key={b}>{b}</li>)}
+            </ul>
+          )}
+        </div>
+      </div>
       <table className="w-full text-sm mt-4 lf-card"><tbody>
         <Row k="Client slug" v={env.clientSlug} />
         <Row k="Seeded" v={client ? `yes · config hash ${client.configHash}` : "NO — run pnpm seed"} />

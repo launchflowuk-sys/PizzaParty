@@ -41,6 +41,7 @@ function SlotPicker({ deal, slotIndex, n, onPick }: { deal: BuilderDeal; slotInd
               <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16 }}>{o.name}</span>
                 <DietBadges tags={o.tags} size={18} />
+                {o.extra ? <span className="tag tag-warn">+{gbp(o.extra)}</span> : null}
               </span>
               {/* A column of pizza names and nothing else asks the customer to
                   already know the menu. The ingredient line is what they are

@@ -10,6 +10,9 @@ export type PickerProduct = {
   description: string;
   /** Diet and heat, so the badges follow the item into the deal picker. */
   tags: string[];
+  /** Pence this item adds inside the deal line it is being chosen for. Zero
+   *  everywhere else, because a supplement only exists inside a deal. */
+  extra?: number;
   sizes: { key: string; name: string; price: number; soldOut: boolean }[];
   groups: { key: string; name: string; minSelect: number; maxSelect: number; modifiers: { key: string; name: string; price: number; soldOut: boolean }[] }[];
 };

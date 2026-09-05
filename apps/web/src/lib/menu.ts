@@ -35,7 +35,7 @@ async function loadMenu() {
   const deals = await prisma.deal.findMany({
     where: { clientId: client.id, active: true },
     orderBy: { sortOrder: "asc" },
-    include: { slots: { orderBy: { sortOrder: "asc" } } },
+    include: { slots: { orderBy: { sortOrder: "asc" }, include: { supplements: true } } },
   });
   return { categories, deals };
 }

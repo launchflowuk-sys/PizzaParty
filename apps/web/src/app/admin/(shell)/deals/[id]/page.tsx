@@ -5,7 +5,7 @@ import { getClientRow } from "@/lib/menu";
 import { requireScreen } from "@/lib/session";
 import { HelpSpot } from "@/components/admin/HelpSpot";
 import { AdminNotice } from "@/components/admin/AdminNotice";
-import { updateDeal, deleteDeal, saveSlot, deleteSlot } from "../../deal-actions";
+import { updateDeal, deleteDeal, saveSlot, deleteSlot, saveSupplements } from "../../deal-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +16,7 @@ const DAYS = [
 
 type SlotShape = {
   id?: string;
+  supplements?: { productSlug: string; extra: number }[];
   name: string;
   qty: number;
   categorySlugs: string[];
@@ -47,7 +48,7 @@ export default async function EditDeal({
 
   const deal = await prisma.deal.findFirst({
     where: { id, clientId: client.id },
-    include: { slots: { orderBy: { sortOrder: "asc" } } },
+    include: { slots: { orderBy: { sortOrder: "asc" }, include: { supplements: true } } },
   });
   if (!deal) notFound();
 
@@ -142,6 +143,57 @@ export default async function EditDeal({
       ) : null}
     </form>
   );
+
+  /**
+   * What the dear items cost extra on this line.
+   *
+   * Only the items this line actually accepts are listed, because a supplement
+   * on something the line will never offer is noise. Blank or zero means no
+   * supplement, so clearing the boxes clears the lot.
+   */
+  const supplementForm = (slot: typeof deal.slots[number]) => {
+    const allowed = categories
+      .flatMap((c) => c.products.map((p) => ({ p, c })))
+      .filter(({ p, c }) =>
+        (slot.productSlugs.length ? slot.productSlugs.includes(p.slug) : true) &&
+        (slot.categorySlugs.length ? slot.categorySlugs.includes(c.slug) : true));
+    if (allowed.length === 0) return null;
+    const current = new Map(slot.supplements.map((x) => [x.productSlug, x.extra]));
+
+    return (
+      <details style={{ padding: "0 16px 14px" }}>
+        <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "var(--color-neutral-700)" }}>
+          Charge extra for the dear ones on &ldquo;{slot.name}&rdquo;
+          {slot.supplements.length ? ` (${slot.supplements.length} set)` : ""}
+        </summary>
+        <form action={saveSupplements} style={{ marginTop: 10 }}>
+          <input type="hidden" name="back" value={back} />
+          <input type="hidden" name="slotId" value={slot.id} />
+          <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "0 0 10px", maxWidth: "72ch" }}>
+            The deal price covers any of these. Anything you put a figure against costs that much on top —
+            which is how &ldquo;any 10&Prime; pizza&rdquo; stays on the poster without the Meat Machine
+            costing you money every time somebody picks it. Leave a box empty for no supplement.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))", gap: 8 }}>
+            {allowed.map(({ p }) => (
+              <label key={p.slug} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                <input type="hidden" name="slug" value={p.slug} />
+                <span style={{ flex: 1, minWidth: 0 }}>{p.name}</span>
+                <span style={{ color: "var(--color-neutral-700)" }}>+£</span>
+                <input
+                  name="extra" className="input" inputMode="decimal"
+                  defaultValue={current.get(p.slug) ? (current.get(p.slug)! / 100).toFixed(2) : ""}
+                  placeholder="0.00" aria-label={`Supplement for ${p.name}`}
+                  style={{ width: 74 }}
+                />
+              </label>
+            ))}
+          </div>
+          <button className="btn btn-secondary" style={{ marginTop: 10 }}>Save supplements</button>
+        </form>
+      </details>
+    );
+  };
 
   return (
     <>
@@ -238,7 +290,12 @@ export default async function EditDeal({
           <span style={{ fontWeight: 700, opacity: .85 }}>{deal.slots.length} line{deal.slots.length === 1 ? "" : "s"}</span>
         </header>
         <div className="body" style={{ padding: 0 }}>
-          {deal.slots.map((s, i) => <div key={s.id}>{slotForm(s, i)}</div>)}
+          {deal.slots.map((s, i) => (
+            <div key={s.id}>
+              {slotForm(s, i)}
+              {supplementForm(s)}
+            </div>
+          ))}
           <div style={{ background: "var(--ok-bg)" }}>
             {slotForm({ name: "", qty: 1, categorySlugs: [], productSlugs: [], sizeKeys: [], extraPerModifier: true }, null)}
           </div>

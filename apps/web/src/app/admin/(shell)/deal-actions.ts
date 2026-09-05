@@ -187,3 +187,44 @@ export async function deleteSlot(fd: FormData) {
   }
   bump();
 }
+
+/* ---------- Premium items inside a deal ---------- */
+
+/**
+ * What a particular item costs extra on a particular line.
+ *
+ * "Any 10 inch pizza" is how a meal deal is sold and should stay that way -
+ * pinning a deal to one pizza makes it a weaker product. But left alone, every
+ * customer rationally picks the dearest thing the line allows and the shop
+ * carries the difference on every single order. This is the middle: the offer
+ * stays on the poster, and the four or five items that genuinely cost more to
+ * make carry a couple of pounds.
+ *
+ * Saved as one list per line so a shop can clear the lot by emptying the boxes,
+ * and a supplement of zero is simply not stored.
+ */
+export async function saveSupplements(fd: FormData) {
+  await guard();
+  const slotId = str(fd, "slotId");
+  const slot = await prisma.dealSlot.findUnique({ where: { id: slotId }, select: { id: true, name: true } });
+  if (!slot) refuse(fd, "That line is no longer part of the deal.");
+
+  const slugs = fd.getAll("slug").map((v) => String(v));
+  const amounts = fd.getAll("extra").map((v) => String(v));
+
+  const rows: { slotId: string; productSlug: string; extra: number }[] = [];
+  for (const [i, slug] of slugs.entries()) {
+    const pence = toPence(Number(String(amounts[i] ?? "0").replace(/[£,\s]/g, "")) || 0);
+    if (!slug || pence <= 0) continue;
+    rows.push({ slotId: slot.id, productSlug: slug, extra: pence });
+  }
+
+  await prisma.$transaction([
+    prisma.dealSlotSupplement.deleteMany({ where: { slotId: slot.id } }),
+    ...(rows.length ? [prisma.dealSlotSupplement.createMany({ data: rows })] : []),
+  ]);
+  bump();
+  done(fd, rows.length
+    ? `${rows.length} item${rows.length === 1 ? "" : "s"} now carry a supplement on ${slot.name}.`
+    : `Cleared the supplements on ${slot.name}.`);
+}

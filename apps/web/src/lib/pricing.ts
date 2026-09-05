@@ -100,6 +100,11 @@ export function priceBasket(menu: Menu, lines: BasketLine[], ctx: Ctx): PricedBa
           const mods = resolveModifiers(product, pick.modifiers, errors, `${deal.name} – ${product.name}`);
           if (!mods) { ok = false; break; }
           extra += mods.reduce((a, m) => a + m.price, 0);
+          // A premium item inside a deal costs the shop more to make, so it may
+          // carry a supplement - "any 10 inch pizza, Meat Machine +£2". Without
+          // it every customer rationally picks the dearest thing the line allows
+          // and the shop carries the difference on every order.
+          extra += slot.supplements.find((sup) => sup.productSlug === product.slug)?.extra ?? 0;
           comps.push({ productId: product.id, name: product.name, sizeKey: size.key, sizeName: product.sizes.length > 1 ? size.name : "", modifiers: mods });
         }
         if (!ok) break;

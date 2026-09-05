@@ -152,9 +152,13 @@ async function seedOps(clientId: string, slug: string) {
     // PINs are stored only as a salted hash; the plain value never reaches the database.
     const pinHash = st.pin ? createHash("sha256").update(`${clientId}:${st.pin}`).digest("base64url") : "";
     const data = { role: st.role ?? "kitchen", phone: st.phone ?? "", email: st.email ?? "", hoursWeek: st.hoursWeek ?? 0, onShift: st.onShift ?? false, active: true, sortOrder: i };
-    // The PIN is set when the person is first created and never again. The
-    // sample PINs live in config, which is committed, so re-seeding a shop that
-    // has since changed them would quietly put a public value back.
+    // No PIN in config any more, and that is deliberate: this file is committed,
+    // so a PIN written here is a published password. Seeded staff arrive with no
+    // usable PIN and the shop sets one on the Staff screen, which is the only
+    // place a PIN has ever been safe to type.
+    //
+    // The set-on-create rule stays anyway, so a shop that has set real PINs
+    // cannot have them replaced by a re-seed.
     await prisma.staff.upsert({
       where: { clientId_name: { clientId, name: st.name } },
       create: { clientId, name: st.name, ...data, ...(pinHash ? { pinHash } : {}) },

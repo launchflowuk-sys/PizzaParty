@@ -65,7 +65,10 @@ export default async function DealPage({ params }: Params) {
       options: all
         .filter(({ p, c }) => (s.productSlugs.length ? s.productSlugs.includes(p.slug) : true) && (s.categorySlugs.length ? s.categorySlugs.includes(c.slug) : true))
         .filter(({ p }) => !s.sizeKeys.length || p.sizes.some((z) => s.sizeKeys.includes(z.key)))
-        .map(({ p }) => toPicker(p)),
+        // The supplement rides on the option so the customer sees "+£2" while
+        // choosing. Finding it in the basket afterwards is a nasty surprise
+        // rather than a price.
+        .map(({ p }) => ({ ...toPicker(p), extra: s.supplements.find((x) => x.productSlug === p.slug)?.extra ?? 0 })),
     })),
   };
   const jsonld = {
