@@ -5,7 +5,7 @@ summary: The agency-only health check, and why Reload config undoes changes the 
 kind: guide
 screens: [launchflow]
 roles: []
-keywords: [launchflow, agency, key, health check, reseed, reload config, re-seed, seed, config hash, stripe, webhook, twilio, resend, dry run, dry-run, test notifications, domains, clear cache, deploy]
+keywords: [launchflow, agency, key, health check, reseed, reload config, re-seed, seed, config hash, stripe, webhook, twilio, smtp, email, dry run, dry-run, test notifications, domains, clear cache, deploy]
 requires: [agency]
 updated: 2026-09-05
 ---
@@ -23,7 +23,7 @@ One table, read top to bottom, is the whole health check for this shop:
 - **Site URL** — what the software believes its own public address is. This is what signed links and webhook checks are built from, so a wrong value here breaks things a long way away.
 - **Stripe** — the connected account, then *charges enabled* or **DISABLED**, and *payouts enabled* or **DISABLED**. Disabled charges means the shop cannot take card payments, whatever the storefront looks like.
 - **Webhook secret** — *set*, or **MISSING**. Missing means orders are paid for and never confirmed.
-- **SMS (Twilio)** and **Email (Resend)** — *configured*, or *dry-run (logs only)*. See **Dry-run mode**.
+- **SMS (Twilio)** and **Email (SMTP)** — the mail host and port, or *dry-run (logs only)*. See **Dry-run mode**.
 - **Kitchen notify** — which of text, email and printer the kitchen gets. For this shop it reads **none set**.
 - **Review URL** — the Google link the review-request text carries. Blank switches those texts off entirely.
 - **Domains** — a live check of the main domain, its www form and every legacy domain, each with the status it returned. Anything that is not a 200 or a redirect to the right place is a live problem.
@@ -73,7 +73,7 @@ It is worth being blunt about what that means for the shop: **nothing outside th
 
 ## Dry-run mode
 
-When the **SMS (Twilio)** or **Email (Resend)** row reads *dry-run (logs only)*, messages are written to the server log and nothing leaves the building.
+When the **SMS (Twilio)** or **Email (SMTP)** row reads *dry-run (logs only)*, messages are written to the server log and nothing leaves the building.
 
 This screen is the only place in the entire system that says so, and only LaunchFlow can open it. Everywhere else behaves as though the message went:
 

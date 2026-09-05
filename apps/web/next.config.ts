@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   htmlLimitedBots: /.*/,
   poweredByHeader: false,
   transpilePackages: ["@launchflow/ui", "@launchflow/config", "@launchflow/db"],
-  serverExternalPackages: ["@prisma/client", "prisma", "twilio", "resend", "stripe"],
+  serverExternalPackages: ["@prisma/client", "prisma", "twilio", "nodemailer", "stripe"],
   /**
    * Fewer widths, on purpose.
    *

@@ -378,7 +378,7 @@ are refused. Every step is written to an append-only event log with who did it. 
 can text the customer; the customer also gets an email confirmation; rejecting a paid order
 refunds it automatically; and a review-request text goes out 45 minutes after completion.
 
-**Limits.** If Twilio or Resend credentials are missing, sends are logged as dry runs and
+**Limits.** If Twilio or SMTP credentials are missing, sends are logged as dry runs and
 recorded in the order timeline as successful — the shop cannot tell a real text from a
 skipped one. The shop-alert channels are unset (above). Drivers are not part of the order's
 lifecycle at all.
@@ -627,7 +627,7 @@ and a sidebar prices each segment up front.
   counters written only after the loop finishes. A few hundred recipients will outlive the
   request timeout, leaving a campaign showing 0/0 with the messages already gone.
 - The 2,000 cap is silent; a larger segment is quietly truncated.
-- With Twilio or Resend credentials missing, sends return success — so the campaign records
+- With Twilio or SMTP credentials missing, sends return success — so the campaign records
   every message as sent and charges 4p each against reported spend even though nothing left
   the building. The agency screen is the only place that says you are in dry-run.
 - The 4p per SMS is a hard-coded constant, counted per recipient rather than per 160-character

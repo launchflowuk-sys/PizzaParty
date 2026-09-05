@@ -6,8 +6,19 @@ export const env = {
   stripeSecretKey: trim(process.env.STRIPE_SECRET_KEY),
   stripeWebhookSecret: trim(process.env.STRIPE_WEBHOOK_SECRET),
   stripePublishableKey: trim(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY),
-  resendApiKey: trim(process.env.RESEND_API_KEY),
-  resendFrom: trim(process.env.RESEND_FROM),
+  // Plain SMTP, not a vendor SDK. Every provider worth using speaks SMTP -
+  // including the shop's own mailbox - so this is the setting that does not
+  // have to be revisited if the mail host changes.
+  smtpHost: trim(process.env.SMTP_HOST),
+  smtpPort: Number(trim(process.env.SMTP_PORT)) || 587,
+  smtpUser: trim(process.env.SMTP_USER),
+  smtpPass: trim(process.env.SMTP_PASS),
+  // Implicit TLS on 465, STARTTLS on 587/25. Overridable, but the port is right
+  // often enough that making it explicit only invites getting it wrong.
+  smtpSecure: trim(process.env.SMTP_SECURE)
+    ? trim(process.env.SMTP_SECURE) === "true"
+    : Number(trim(process.env.SMTP_PORT)) === 465,
+  mailFrom: trim(process.env.MAIL_FROM),
   twilioSid: trim(process.env.TWILIO_ACCOUNT_SID),
   twilioToken: trim(process.env.TWILIO_AUTH_TOKEN),
   twilioFrom: trim(process.env.TWILIO_FROM),

@@ -160,10 +160,19 @@ money and does not belong in a chat transcript.
 
 Cash on collection and delivery already work.
 
-## 5. Twilio and Resend — the shop is silent without these
+## 5. Twilio and SMTP — the shop is silent without these
 
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` (a UK number)
-- `RESEND_API_KEY`, `RESEND_FROM` (a verified address)
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`
+
+Email is plain SMTP through Nodemailer — the shop's own mailbox, or any host
+that speaks SMTP. No sending API, no second vendor, and swapping mail hosts is
+these five variables rather than a code change. Port 465 is implicit TLS, 587 is
+STARTTLS; `SMTP_SECURE` follows the port unless it is set explicitly.
+
+Whichever host it is, publish **SPF and DKIM** for the sending domain. Without
+them receipts land in spam, and the shop only finds out when a customer says
+they never got one.
 
 Until these exist there are **no order confirmations, no kitchen alert, and
 campaigns report as sent while delivering nothing** — which is the most

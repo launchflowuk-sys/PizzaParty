@@ -42,7 +42,7 @@ export default async function LaunchflowPage() {
   if (!stripeEnabled()) blockers.push("No Stripe keys — card payments do not work. Cash orders still do.");
   if (stripeEnabled() && !env.stripeWebhookSecret) blockers.push("Stripe webhook secret missing — payments would be taken but never confirmed against the order.");
   if (!env.twilioSid) blockers.push("No Twilio — no order confirmations, no kitchen alert, and campaigns report as sent while delivering nothing.");
-  if (!env.resendApiKey) blockers.push("No Resend — no email receipts.");
+  if (!env.smtpHost || !env.mailFrom) blockers.push("No mail server — no email receipts. Set SMTP_HOST and MAIL_FROM.");
   if (!cfg.notifications.kitchenSms && !cfg.notifications.kitchenEmail && !cfg.notifications.printerWebhook) {
     blockers.push("Nothing alerts the kitchen when an order lands — somebody has to be watching the screen.");
   }
@@ -75,7 +75,7 @@ export default async function LaunchflowPage() {
         <Row k="Stripe" v={stripe} />
         <Row k="Webhook secret" v={env.stripeWebhookSecret ? "set" : "MISSING"} />
         <Row k="SMS (Twilio)" v={env.twilioSid ? "configured" : "dry-run (logs only)"} />
-        <Row k="Email (Resend)" v={env.resendApiKey ? "configured" : "dry-run (logs only)"} />
+        <Row k="Email (SMTP)" v={env.smtpHost && env.mailFrom ? `${env.smtpHost}:${env.smtpPort}` : "dry-run (logs only)"} />
         <Row k="Kitchen notify" v={[cfg.notifications.kitchenSms && "sms", cfg.notifications.kitchenEmail && "email", cfg.notifications.printerWebhook && "printer"].filter(Boolean).join(", ") || "none set"} />
         <Row k="Review URL" v={cfg.contact.reviewUrl || "not set (review SMS disabled)"} />
         <Row k="Domains" v={<ul>{domains.map((x) => <li key={x.d}>{x.d}: {x.r}</li>)}</ul>} />
