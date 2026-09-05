@@ -39,7 +39,7 @@ export default async function AdminHours() {
                   pause is on, so decide who is going to resume it.
                 </HelpSpot>
               </h2>
-              <form action={pauseLocation} className="flex gap-2 items-center text-sm">
+              <form action={pauseLocation} className="flex flex-wrap gap-2 items-center text-sm">
                 <input type="hidden" name="locationId" value={l.id} />
                 <HelpSpot title="Why does this dropdown say Resume?" article="hours-and-pause" anchor="pausing">
                   It always starts on Resume, so typing a reason and pressing Apply without changing it
@@ -55,7 +55,7 @@ export default async function AdminHours() {
               <input type="hidden" name="locationId" value={l.id} />
               <table className="text-sm"><tbody>
                 {[1, 2, 3, 4, 5, 6, 0].map((d) => { const h = l.hours.find((x) => x.dayOfWeek === d); return (
-                  <tr key={d}><td className="pr-3 py-1 font-semibold">{DAYS[d]}</td><td className="py-1"><input name={`opens${d}`} type="time" defaultValue={h?.opens ?? ""} className="lf-input w-32" /></td><td className="px-2">→</td><td className="py-1"><input name={`closes${d}`} type="time" defaultValue={h?.closes ?? ""} className="lf-input w-32" /></td></tr>
+                  <tr key={d}><td className="pr-3 py-1 font-semibold">{DAYS[d]}</td><td className="py-1"><input name={`opens${d}`} type="time" defaultValue={h?.opens ?? ""} className="lf-input" style={{ maxWidth: 128 }} /></td><td className="px-2">→</td><td className="py-1"><input name={`closes${d}`} type="time" defaultValue={h?.closes ?? ""} className="lf-input" style={{ maxWidth: 128 }} /></td></tr>
                 ); })}
               </tbody></table>
               <button className="lf-btn lf-btn-primary mt-3">Save hours</button>

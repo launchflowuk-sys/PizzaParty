@@ -1487,3 +1487,78 @@ html, body { max-width: 100%; overflow-x: clip; }
   .fp-rv-dupe { display: none; }
   .fp-rv-card { transform: none; }
 }
+
+/* ══ Back office: nothing squashes, nothing overflows ════════════════════════
+   Every "this field is crushed" and "this card runs off the screen" report has
+   had the same two causes, and they were being fixed one screen at a time.
+
+   1. The responsive tier started at 1000px. A tablet in landscape is 1024 and
+      up, so it got the full desktop layout - a 232px rail plus a content column
+      of maybe 800px - while the forms inside were written for a 1400px desktop
+      with pixel widths baked in. Everything below that width had to give.
+
+   2. Flex rows without `wrap`. A row of fields that cannot wrap has only two
+      options when it runs out of room: crush every field, or push the card
+      wider than the screen. Both were happening, on different screens.
+
+   So the rules live here, on the shell, rather than being patched per screen.
+   The tier runs to 1280px, which covers every tablet in landscape. */
+@media (max-width: 1280px) {
+  /* A form row wraps to the next line instead of crushing its fields. */
+  .fp-admin form,
+  .fp-admin .fp-panel .body > div,
+  .fp-admin .flex { flex-wrap: wrap !important; }
+
+  /* Fields keep the width they were given and wrap, rather than shrinking to a
+     sliver. Without this, `flex` lets them collapse under their own labels. */
+  .fp-admin form > label,
+  .fp-admin .field { flex-shrink: 0; max-width: 100%; }
+
+  /* ...but nothing may be wider than the space it is in. Inline pixel widths on
+     the inputs are a ceiling now, not a promise. */
+  .fp-admin .input,
+  .fp-admin .lf-input,
+  .fp-admin select,
+  .fp-admin textarea { max-width: 100% !important; box-sizing: border-box; }
+
+  /* Cards and panels stay inside the column whatever is in them. */
+  .fp-admin .lf-card,
+  .fp-admin .fp-panel,
+  .fp-admin section { max-width: 100%; box-sizing: border-box; }
+
+  /* A wide table scrolls inside its own box rather than widening the page. */
+  .fp-admin table { display: block; overflow-x: auto; max-width: 100%; }
+
+  /* The hours grid is the one table that must not go nowrap - the time inputs
+     need to stay readable, and it is only four columns. */
+  .fp-admin form > table { white-space: normal; }
+}
+
+/* ── Help hotspots open where they can be read ────────────────────────────
+   The sheet was centred on its own dot (`left: 50%` + a -50% shift), which is
+   fine in the middle of a screen and wrong at either edge - the kitchen board's
+   first column put half of every panel off the side of the tablet.
+
+   Below 1280 it becomes a sheet pinned to the bottom of the screen, which is
+   what a phone or tablet does with this kind of thing anyway and cannot be
+   clipped by anything. On a desktop it stays a popover. */
+@media (max-width: 1280px) {
+  .fp-helpspot-sheet {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    top: auto;
+    width: auto;
+    max-height: 60vh;
+    overflow-y: auto;
+    transform: none;
+    z-index: 60;
+    border-radius: var(--radius-md);
+    box-shadow: 0 -8px 40px rgba(0,0,0,.28);
+  }
+}
+/* On a desktop it stays anchored, but may not leave the window either. */
+@media (min-width: 1281px) {
+  .fp-helpspot-sheet { max-width: min(320px, calc(100vw - 32px)); }
+}

@@ -62,7 +62,7 @@ export function MenuFilter({ total }: { total: number }) {
         <span>Find an item</span>
         <span style={{ fontWeight: 700 }}>{shown} of {total}</span>
       </header>
-      <div className="body" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+      <div className="body" style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
         <input
           ref={input}
           className="input"
@@ -70,7 +70,7 @@ export function MenuFilter({ total }: { total: number }) {
           onChange={(e) => setQ(e.target.value)}
           placeholder="Type a name or a topping —  press /  to jump here"
           aria-label="Filter the menu"
-          style={{ flex: 1 }}
+          style={{ flex: "1 1 240px", minWidth: 0 }}
         />
         {q ? <button type="button" className="btn btn-secondary" onClick={() => setQ("")}>Clear</button> : null}
       </div>

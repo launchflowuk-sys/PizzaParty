@@ -79,7 +79,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
         <header>Filter</header>
         <div className="body">
           <form style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "end" }}>
-            <div className="field" style={{ minWidth: 170 }}>
+            <div className="field" style={{ flex: "1 1 170px", minWidth: 0 }}>
               <label htmlFor="status">Status</label>
               <select id="status" name="status" defaultValue={sp.status ?? ""} className="input">
                 <option value="">All except unpaid</option>
@@ -94,7 +94,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
               <label htmlFor="to">To</label>
               <input id="to" name="to" type="date" defaultValue={sp.to} className="input" />
             </div>
-            <div className="field" style={{ minWidth: 220 }}>
+            <div className="field" style={{ flex: "2 1 220px", minWidth: 0 }}>
               <label htmlFor="q">Search
                 <HelpSpot title="Why does a phone number find nothing?" article="orders-history" anchor="phone-search-gotcha">
                   It matches the number exactly as it was saved, and website orders are saved in the
