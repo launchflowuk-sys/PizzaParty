@@ -59,12 +59,7 @@ export async function updateProductText(fd: FormData) {
   bump();
 }
 
-/* ---------- Deals ---------- */
-export async function updateDeal(fd: FormData) {
-  await guard("deals");
-  await prisma.deal.update({ where: { id: str(fd, "id") }, data: { price: toPence(num(fd, "price")), active: fd.get("active") === "on", featured: fd.get("featured") === "on" } });
-  bump();
-}
+/* Deals moved to deal-actions.ts, which can also add and remove them. */
 
 /* ---------- Promos ---------- */
 export async function upsertPromo(fd: FormData) {

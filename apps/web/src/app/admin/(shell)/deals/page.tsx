@@ -1,62 +1,122 @@
+import Link from "next/link";
 import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
-import { HelpSpot } from "@/components/admin/HelpSpot";
-import { updateDeal } from "../actions";
-
+import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
+import { HelpSpot } from "@/components/admin/HelpSpot";
+import { AdminNotice } from "@/components/admin/AdminNotice";
+import { createDeal, deleteDeal } from "../deal-actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDeals() {
+const BACK = "/admin/deals";
+
+/**
+ * Deals.
+ *
+ * This screen used to be three checkboxes and a price, and told the shop that
+ * building or removing a deal was something only LaunchFlow could do. That was
+ * honest while config rewrote the deals on every deploy; now that the shop owns
+ * its menu, it owns its deals too, and the list links through to a builder.
+ */
+export default async function AdminDeals({
+  searchParams,
+}: {
+  searchParams: Promise<{ m?: string; e?: string }>;
+}) {
   await requireScreen("deals");
   const client = await getClientRow();
-  const deals = await prisma.deal.findMany({ where: { clientId: client.id }, orderBy: { sortOrder: "asc" }, include: { slots: { orderBy: { sortOrder: "asc" } } } });
+  const { m, e } = await searchParams;
+
+  const deals = await prisma.deal.findMany({
+    where: { clientId: client.id },
+    orderBy: { sortOrder: "asc" },
+    include: { slots: { orderBy: { sortOrder: "asc" } } },
+  });
+
+  const live = deals.filter((d) => d.active).length;
+
   return (
-    <div>
+    <>
       <header className="fp-adminhead">
         <div>
-          <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>
+          <span className="fp-kicker" style={{ marginBottom: 6 }}>
+            Back office &middot; {deals.length} deal{deals.length === 1 ? "" : "s"}
+            {live > 0 ? <> &middot; <span className="fp-num-ok">{live} running</span></> : null}
+          </span>
           <h1>
             Deals
-            <HelpSpot title="What can I actually change on this screen?" article="deals" anchor="what-this-screen-cannot-do">
-              Three things per deal: the price, whether it is running, and the Most popular label. What is
-              inside a deal, which sizes it allows, adding a new one or deleting one for good are all config
-              changes only LaunchFlow can make.
+            <HelpSpot title="What can I change on this screen?" article="deals" anchor="what-this-screen-cannot-do">
+              All of it. Open a deal to change its price, what goes in it, which sizes it allows and which
+              days it runs — or build a new one from scratch. Nothing here is overwritten when the site is
+              updated.
             </HelpSpot>
           </h1>
         </div>
       </header>
-      <div className="mt-4 space-y-3">
-        {deals.map((d, i) => (
-          <form key={d.id} action={updateDeal} className="lf-card p-4 flex flex-wrap items-center gap-3">
-            <input type="hidden" name="id" value={d.id} />
-            <div className="flex-1 min-w-60"><p className="font-bold">{d.name}</p><p className="text-sm text-muted">{d.slots.map((s) => `${s.qty} × ${s.name}`).join(" + ")}</p></div>
-            <label className="text-sm">£ <input name="price" defaultValue={(d.price / 100).toFixed(2)} className="lf-input w-24 inline-block" inputMode="decimal" /></label>
-            {i === 0 ? (
-              <HelpSpot title="Why has a deal price saved as £0.00?" article="deals" anchor="repricing-a-deal">
-                Anything that is not a number is saved as £0.00 rather than refused, and the deal goes out
-                free. Every row has its own Save, so changing three deals means pressing Save three times.
-              </HelpSpot>
-            ) : null}
-            <label className="text-sm flex items-center gap-1"><input type="checkbox" name="active" defaultChecked={d.active} /> Active</label>
-            {i === 0 ? (
-              <HelpSpot title="How do I delete a deal?" article="deals" anchor="what-this-screen-cannot-do">
-                You cannot, and that is deliberate. Untick Active and press Save: it comes off the website
-                straight away but keeps its price and its contents, ready for next time.
-              </HelpSpot>
-            ) : null}
-            <label className="text-sm flex items-center gap-1"><input type="checkbox" name="featured" defaultChecked={d.featured} /> Featured on home</label>
-            {i === 0 ? (
-              <HelpSpot title="Does this put the deal on the home page?" article="deals" anchor="featured-on-home">
-                No — the label oversells it. The home page shows the first four running deals in the order
-                LaunchFlow set them up in, ticked or not. All this tick changes is one line on the website&rsquo;s
-                Deals page: Most popular instead of Every day.
-              </HelpSpot>
-            ) : null}
-            <button className="lf-btn lf-btn-ghost">Save</button>
+
+      <AdminNotice message={m} error={e} back={BACK} />
+
+      {deals.map((d) => (
+        <div key={d.id} className="fp-panel" style={{ marginBottom: 12, opacity: d.active ? 1 : .68 }}>
+          <header>
+            <span>
+              {d.name}
+              {d.featured ? <span className="tag tag-warn" style={{ marginLeft: 10 }}>Most popular</span> : null}
+            </span>
+            <span style={{ fontWeight: 700, opacity: .85 }}>
+              {d.active ? "Running" : "Off"} &middot; {gbp(d.price)}
+            </span>
+          </header>
+          <div className="body" style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center", justifyContent: "space-between" }}>
+            <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: 0, maxWidth: "62ch" }}>
+              {d.slots.length === 0
+                ? "Nothing in it yet — it cannot be switched on until something is."
+                : d.slots.map((s) => `${s.qty} × ${s.name}`).join(" + ")}
+            </p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Link href={`/admin/deals/${d.id}`} className="btn btn-primary">Edit</Link>
+              <form action={deleteDeal}>
+                <input type="hidden" name="back" value={BACK} />
+                <input type="hidden" name="id" value={d.id} />
+                <button className="btn btn-secondary">Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {deals.length === 0 ? (
+        <p style={{ fontSize: 14, color: "var(--color-neutral-700)", margin: "0 0 20px" }}>
+          No deals yet. Build the first one below.
+        </p>
+      ) : null}
+
+      <div className="fp-panel" style={{ marginTop: 20 }}>
+        <header><span>New deal</span></header>
+        <div className="body">
+          <form action={createDeal} style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "flex-end" }}>
+            <input type="hidden" name="back" value={BACK} />
+            <label style={{ flex: "0 1 240px", fontSize: 12, fontWeight: 700, color: "var(--color-neutral-700)" }}>
+              Name
+              <input name="name" className="input" placeholder="Family Feast" style={{ width: "100%", marginTop: 4, fontWeight: 700 }} />
+            </label>
+            <label style={{ flex: "0 1 120px", fontSize: 12, fontWeight: 700, color: "var(--color-neutral-700)" }}>
+              Price £
+              <input name="price" className="input" inputMode="decimal" placeholder="0.00" style={{ width: "100%", marginTop: 4, fontWeight: 700 }} />
+            </label>
+            <label style={{ flex: "1 1 280px", minWidth: 0, fontSize: 12, fontWeight: 700, color: "var(--color-neutral-700)" }}>
+              Description
+              <input name="description" className="input" placeholder="2 large pizzas, sides and a drink" style={{ width: "100%", marginTop: 4 }} />
+            </label>
+            <button className="btn btn-ok">Create deal</button>
           </form>
-        ))}
+          <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "12px 0 0", maxWidth: "72ch" }}>
+            It starts switched off so nobody can buy an empty deal. You will be taken straight to it to
+            say what goes in.
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

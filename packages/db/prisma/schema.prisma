@@ -54,6 +54,7 @@ model Client {
   automations    Automation[]
   marketingSends MarketingSend[]
   smsInbound     SmsInbound[]
+  loyaltyRewards LoyaltyReward[]
 }
 
 model Location {
@@ -91,21 +92,21 @@ model Location {
 /// `Location.deliveryFee` remains the fee for anywhere not covered by a band,
 /// so a shop that charges one price everywhere simply has no bands.
 model DeliveryBand {
-  id         String   @id @default(cuid())
-  locationId String
-  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  locationId   String
+  location     Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
   /// Shown to the customer, e.g. "Grays & Chafford" - never a bare postcode list.
-  name       String   @default("")
+  name         String   @default("")
   /// Districts this band covers. "RM20" matches that district; "RM" matches the
   /// whole area, and loses to a district that names itself.
-  prefixes   String[] @default([])
+  prefixes     String[] @default([])
   /// Pence.
-  fee        Int      @default(0)
+  fee          Int      @default(0)
   /// Pence. 0 means fall back to the location's minimum.
-  minOrder   Int      @default(0)
+  minOrder     Int      @default(0)
   /// Added to the location's delivery time, because further away takes longer.
-  extraMinutes Int    @default(0)
-  sortOrder  Int      @default(0)
+  extraMinutes Int      @default(0)
+  sortOrder    Int      @default(0)
 
   @@index([locationId])
 }
@@ -251,30 +252,30 @@ model DealSlot {
 // ---------- Customers ----------
 
 model Customer {
-  id             String    @id @default(cuid())
-  clientId       String
-  client         Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  phone          String // E.164
-  email          String    @default("")
-  name           String    @default("")
-  guest          Boolean   @default(true)
-  marketingOptIn Boolean   @default(false)
-  lastPostcode   String    @default("")
-  lastOrderAt    DateTime?
-  ordersCount    Int       @default(0)
-  totalSpent     Int       @default(0)
-  loyaltyPoints  Int       @default(0)
+  id                 String    @id @default(cuid())
+  clientId           String
+  client             Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  phone              String // E.164
+  email              String    @default("")
+  name               String    @default("")
+  guest              Boolean   @default(true)
+  marketingOptIn     Boolean   @default(false)
+  lastPostcode       String    @default("")
+  lastOrderAt        DateTime?
+  ordersCount        Int       @default(0)
+  totalSpent         Int       @default(0)
+  loyaltyPoints      Int       @default(0)
   /// When they asked to stop hearing from us. Kept as evidence: under PECR the
   /// shop has to show it acted on the request, not just that the flag is false.
-  optOutAt       DateTime?
-  optOutSource   String    @default("")
+  optOutAt           DateTime?
+  optOutSource       String    @default("")
   /// Nullable rather than "" so the unique index can hold the many customers
   /// who have not been given a code yet.
-  referralCode   String?
-  referredById   String?
+  referralCode       String?
+  referredById       String?
   referralRewardedAt DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   addresses      Address[]
   orders         Order[]
@@ -283,8 +284,8 @@ model Customer {
   otpCodes       OtpCode[]
   marketingSends MarketingSend[]
   smsInbound     SmsInbound[]
-  referredBy     Customer?  @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referrals      Customer[] @relation("Referrals")
+  referredBy     Customer?       @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals      Customer[]      @relation("Referrals")
 
   @@unique([clientId, phone])
   @@unique([clientId, referralCode])
@@ -354,45 +355,45 @@ enum PaymentMethod {
 }
 
 model Order {
-  id                String        @id @default(cuid())
-  number            Int           @default(autoincrement())
-  clientId          String
-  client            Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  locationId        String
-  location          Location      @relation(fields: [locationId], references: [id])
-  customerId        String
-  customer          Customer      @relation(fields: [customerId], references: [id])
-  addressId         String?
-  address           Address?      @relation(fields: [addressId], references: [id])
-  status            OrderStatus   @default(pending_payment)
-  fulfilment        Fulfilment
-  paymentMethod     PaymentMethod @default(card)
-  customerName      String
-  customerPhone     String
-  customerEmail     String        @default("")
-  deliveryLine1     String        @default("")
-  deliveryLine2     String        @default("")
-  deliveryCity      String        @default("")
-  deliveryPostcode  String        @default("")
-  notes             String        @default("")
-  scheduledFor      DateTime? // pre-order slot; null = ASAP
-  etaMinutes        Int?
-  etaAt             DateTime?
-  subtotal          Int
-  deliveryFee       Int           @default(0)
-  discount          Int           @default(0)
-  promoCode         String        @default("")
-  total             Int
-  rejectReason      String        @default("")
-  reviewRequestedAt DateTime?
+  id                  String        @id @default(cuid())
+  number              Int           @default(autoincrement())
+  clientId            String
+  client              Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  locationId          String
+  location            Location      @relation(fields: [locationId], references: [id])
+  customerId          String
+  customer            Customer      @relation(fields: [customerId], references: [id])
+  addressId           String?
+  address             Address?      @relation(fields: [addressId], references: [id])
+  status              OrderStatus   @default(pending_payment)
+  fulfilment          Fulfilment
+  paymentMethod       PaymentMethod @default(card)
+  customerName        String
+  customerPhone       String
+  customerEmail       String        @default("")
+  deliveryLine1       String        @default("")
+  deliveryLine2       String        @default("")
+  deliveryCity        String        @default("")
+  deliveryPostcode    String        @default("")
+  notes               String        @default("")
+  scheduledFor        DateTime? // pre-order slot; null = ASAP
+  etaMinutes          Int?
+  etaAt               DateTime?
+  subtotal            Int
+  deliveryFee         Int           @default(0)
+  discount            Int           @default(0)
+  promoCode           String        @default("")
+  total               Int
+  rejectReason        String        @default("")
+  reviewRequestedAt   DateTime?
   /// Set when a recovery message went out for an abandoned checkout, so the
   /// customer is chased once and not every time the cron runs.
   recoveryRequestedAt DateTime?
-  placedAt          DateTime?
-  acceptedAt        DateTime?
-  completedAt       DateTime?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  placedAt            DateTime?
+  acceptedAt          DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   items   OrderItem[]
   payment Payment?
@@ -488,26 +489,47 @@ enum PromoType {
 }
 
 model Promo {
-  id             String    @id @default(cuid())
-  clientId       String
-  client         Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  code           String
-  type           PromoType
-  value          Int       @default(0) // percent (0-100) or pence
-  minOrder       Int       @default(0)
-  fulfilment     String[]  @default([])
-  startsAt       DateTime?
-  endsAt         DateTime?
-  maxUses        Int?
-  uses           Int       @default(0)
-  firstOrderOnly Boolean   @default(false)
+  id                 String    @id @default(cuid())
+  clientId           String
+  client             Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  code               String
+  type               PromoType
+  value              Int       @default(0) // percent (0-100) or pence
+  minOrder           Int       @default(0)
+  fulfilment         String[]  @default([])
+  startsAt           DateTime?
+  endsAt             DateTime?
+  maxUses            Int?
+  uses               Int       @default(0)
+  firstOrderOnly     Boolean   @default(false)
   /// Set when this code was minted as a reward for one person, so anyone else
   /// who hears it cannot spend it.
-  issuedToCustomerId String @default("")
-  active         Boolean   @default(true)
-  orders         Order[]
+  issuedToCustomerId String    @default("")
+  active             Boolean   @default(true)
+  orders             Order[]
 
   @@unique([clientId, code])
+}
+
+/// What points can be spent on. Editable by the shop, because "100 points is a
+/// free garlic bread" is a pricing decision that changes with the seasons.
+model LoyaltyReward {
+  id         String    @id @default(cuid())
+  clientId   String
+  client     Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  name       String
+  points     Int
+  type       PromoType @default(fixed)
+  /// pence for a fixed reward, percent for a percentage one, ignored for free delivery
+  value      Int       @default(0)
+  minOrder   Int       @default(0)
+  /// How long the code lives once claimed. Points are spent at that moment, so
+  /// this is the window to actually use it.
+  expiryDays Int       @default(60)
+  active     Boolean   @default(true)
+  sortOrder  Int       @default(0)
+
+  @@unique([clientId, name])
 }
 
 model LoyaltyLedger {

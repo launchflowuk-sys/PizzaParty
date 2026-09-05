@@ -1,12 +1,17 @@
 /**
  * Seed a client from /config/<slug> into the database. Idempotent (upserts by slug/key).
  * Used by scripts/seed-client.ts (CLI), docker entrypoint, and /admin/launchflow "reseed".
+ *
+ * The menu is seeded once and then owned by the shop - see MenuMode. Everything
+ * else here (the client record, locations, hours, delivery bands, and the ops
+ * data) is still refreshed from config on every run, because those are the
+ * things an agency changes on the shop's behalf.
  */
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { prisma } from "./index";
-import { clientDir, dayKeys, loadClientConfig, loadMenuConfig, toPence, type ClientConfig } from "@launchflow/config";
+import { clientDir, dayKeys, loadClientConfig, loadMenuConfig, toPence, type ClientConfig, type MenuConfig } from "@launchflow/config";
 
 function hashConfig(slug: string): string {
   const h = createHash("sha256");
@@ -28,7 +33,16 @@ function hoursRows(hours: ClientConfig["locations"][number]["hours"]) {
   return rows;
 }
 
-export async function seedClient(slug: string, opts: { reset?: boolean } = {}) {
+/**
+ * How to treat a menu that is already in the database.
+ *
+ * - `auto`      seed it if the shop has none, leave it alone if it has one.
+ * - `skip`      never touch the menu, whatever state it is in.
+ * - `overwrite` push config over the top, discarding the shop's own edits.
+ */
+export type MenuMode = "auto" | "skip" | "overwrite";
+
+export async function seedClient(slug: string, opts: { reset?: boolean; menu?: MenuMode } = {}) {
   const client = loadClientConfig(slug);
   const menu = loadMenuConfig(slug);
   const configHash = hashConfig(slug);
@@ -76,107 +90,35 @@ export async function seedClient(slug: string, opts: { reset?: boolean } = {}) {
     });
   }
 
-  // Categories
-  const catIds = new Map<string, string>();
-  for (const [i, cat] of menu.categories.entries()) {
-    const row = await prisma.category.upsert({
-      where: { clientId_slug: { clientId: c.id, slug: cat.slug } },
-      create: { clientId: c.id, slug: cat.slug, name: cat.name, description: cat.description, image: cat.image, sortOrder: i, active: true },
-      update: { name: cat.name, description: cat.description, image: cat.image, sortOrder: i, active: true },
-    });
-    catIds.set(cat.slug, row.id);
-  }
-
-  // Modifier groups
-  const groupIds = new Map<string, string>();
-  for (const g of menu.modifierGroups) {
-    const row = await prisma.modifierGroup.upsert({
-      where: { clientId_key: { clientId: c.id, key: g.id } },
-      create: { clientId: c.id, key: g.id, name: g.name, minSelect: g.min, maxSelect: g.max, required: g.min > 0 },
-      update: { name: g.name, minSelect: g.min, maxSelect: g.max, required: g.min > 0 },
-    });
-    groupIds.set(g.id, row.id);
-    for (const [i, o] of g.options.entries()) {
-      await prisma.modifier.upsert({
-        where: { groupId_key: { groupId: row.id, key: o.id } },
-        create: { groupId: row.id, key: o.id, name: o.name, price: toPence(o.price), sortOrder: i },
-        update: { name: o.name, price: toPence(o.price), sortOrder: i },
-      });
-    }
-    await prisma.modifier.deleteMany({ where: { groupId: row.id, key: { notIn: g.options.map((o) => o.id) } } });
-  }
-
-  // Products
-  for (const [i, p] of menu.products.entries()) {
-    const categoryId = catIds.get(p.category)!;
-    const data = {
-      categoryId, name: p.name, description: p.description, image: p.image, tags: p.tags, allergens: p.allergens,
-      featured: p.featured, sortOrder: i, active: true, soldOut: p.soldOut,
-    };
-    const row = await prisma.product.upsert({
-      where: { clientId_slug: { clientId: c.id, slug: p.slug } },
-      create: { clientId: c.id, slug: p.slug, ...data },
-      update: data,
-    });
-    for (const [si, s] of p.sizes.entries()) {
-      await prisma.productSize.upsert({
-        where: { productId_key: { productId: row.id, key: s.id } },
-        create: { productId: row.id, key: s.id, name: s.name, price: toPence(s.price), sortOrder: si },
-        update: { name: s.name, price: toPence(s.price), sortOrder: si },
-      });
-    }
-    await prisma.productSize.deleteMany({ where: { productId: row.id, key: { notIn: p.sizes.map((s) => s.id) } } });
-    await prisma.productModifierGroup.deleteMany({ where: { productId: row.id } });
-    if (p.modifierGroups.length) {
-      await prisma.productModifierGroup.createMany({
-        data: p.modifierGroups.map((g, gi) => ({ productId: row.id, groupId: groupIds.get(g)!, sortOrder: gi })),
-      });
-    }
-  }
-  if (opts.reset) {
-    await prisma.product.updateMany({ where: { clientId: c.id, slug: { notIn: menu.products.map((p) => p.slug) } }, data: { active: false } });
-    await prisma.category.updateMany({ where: { clientId: c.id, slug: { notIn: menu.categories.map((p) => p.slug) } }, data: { active: false } });
-  }
-
-  // Deals
-  for (const [i, d] of menu.deals.entries()) {
-    const data = {
-      name: d.name, description: d.description, image: d.image, price: toPence(d.price), featured: d.featured,
-      sortOrder: i, active: true, daysOfWeek: d.daysOfWeek, fulfilment: d.fulfilment,
-    };
-    const row = await prisma.deal.upsert({
-      where: { clientId_slug: { clientId: c.id, slug: d.slug } },
-      create: { clientId: c.id, slug: d.slug, ...data },
-      update: data,
-    });
-    await prisma.dealSlot.deleteMany({ where: { dealId: row.id } });
-    await prisma.dealSlot.createMany({
-      data: d.slots.map((s, si) => ({
-        dealId: row.id, name: s.name, qty: s.qty, categorySlugs: s.categories, productSlugs: s.products, sizeKeys: s.sizes, sortOrder: si,
-      })),
-    });
-  }
-  if (opts.reset) {
-    await prisma.deal.updateMany({ where: { clientId: c.id, slug: { notIn: menu.deals.map((d) => d.slug) } }, data: { active: false } });
-  }
-
-  // Promos (config-defined ones; admin-created ones are left alone)
-  for (const p of menu.promos) {
-    const data = {
-      type: p.type, value: p.type === "fixed" ? toPence(p.value) : Math.round(p.value), minOrder: toPence(p.minOrder),
-      fulfilment: p.fulfilment, firstOrderOnly: p.firstOrderOnly, maxUses: p.maxUses ?? null,
-      endsAt: p.endsAt ? new Date(p.endsAt) : null, active: true,
-    };
-    await prisma.promo.upsert({
-      where: { clientId_code: { clientId: c.id, code: p.code } },
-      create: { clientId: c.id, code: p.code, ...data },
-      update: data,
-    });
-  }
+  // ---- Menu ownership ------------------------------------------------
+  //
+  // Everything below - categories, options, products, deals and the config
+  // promos - is written once and then belongs to the shop, not to config.
+  //
+  // It used to be pushed over the top on every boot, because the entrypoint
+  // seeds on every deploy. That is fine for a template nobody has touched and
+  // silently destructive for a real one: a price the shop put up on Friday, a
+  // topping they added, a pizza they took off, all quietly back to the
+  // committed defaults on Monday morning deploy. Config still supplies the
+  // opening menu, which is what makes a new tenant a new folder rather than a
+  // new database; after that the database is the source of truth.
+  //
+  // "overwrite" is the deliberate way back to config, and it is destructive on
+  // purpose, so nothing reaches it by accident.
+  const mode = opts.menu ?? "auto";
+  const menuSeeded = mode === "overwrite" || (mode === "auto" && !(await hasMenu(c.id)));
+  if (menuSeeded) await seedMenu(c.id, menu, opts.reset ?? false);
 
   const ops = await seedOps(c.id, slug);
 
-  return { clientId: c.id, configHash, counts: { locations: client.locations.length, categories: menu.categories.length, products: menu.products.length, deals: menu.deals.length, promos: menu.promos.length, ...ops } };
+  // Menu counts are what this run actually wrote. Reporting the config totals
+  // when the menu was left alone reads as "68 products seeded" on a run that
+  // touched none of them.
+  const wrote = menuSeeded
+    ? { categories: menu.categories.length, products: menu.products.length, deals: menu.deals.length, promos: menu.promos.length }
+    : { categories: 0, products: 0, deals: 0, promos: 0 };
+
+  return { clientId: c.id, configHash, menuSeeded, counts: { locations: client.locations.length, ...wrote, ...ops } };
 }
 
 type OpsFile = {
@@ -268,3 +210,121 @@ function locationData(l: ClientConfig["locations"][number], sortOrder: number) {
   };
 }
 
+
+/** True once the shop has a menu of its own, however it got there. */
+async function hasMenu(clientId: string): Promise<boolean> {
+  const [categories, products] = await Promise.all([
+    prisma.category.count({ where: { clientId } }),
+    prisma.product.count({ where: { clientId } }),
+  ]);
+  return categories > 0 || products > 0;
+}
+
+/**
+ * Write the config menu into the database.
+ *
+ * Only called on a first seed or an explicit overwrite. The deleteMany calls
+ * in here are why: sizes, options, product-to-group links and deal slots have
+ * no config-independent identity, so config can only be applied by replacing
+ * them - which would take a shop's own additions with it.
+ */
+async function seedMenu(clientId: string, menu: MenuConfig, reset: boolean) {
+  // Categories
+  const catIds = new Map<string, string>();
+  for (const [i, cat] of menu.categories.entries()) {
+    const row = await prisma.category.upsert({
+      where: { clientId_slug: { clientId: clientId, slug: cat.slug } },
+      create: { clientId: clientId, slug: cat.slug, name: cat.name, description: cat.description, image: cat.image, sortOrder: i, active: true },
+      update: { name: cat.name, description: cat.description, image: cat.image, sortOrder: i, active: true },
+    });
+    catIds.set(cat.slug, row.id);
+  }
+
+  // Modifier groups
+  const groupIds = new Map<string, string>();
+  for (const g of menu.modifierGroups) {
+    const row = await prisma.modifierGroup.upsert({
+      where: { clientId_key: { clientId: clientId, key: g.id } },
+      create: { clientId: clientId, key: g.id, name: g.name, minSelect: g.min, maxSelect: g.max, required: g.min > 0 },
+      update: { name: g.name, minSelect: g.min, maxSelect: g.max, required: g.min > 0 },
+    });
+    groupIds.set(g.id, row.id);
+    for (const [i, o] of g.options.entries()) {
+      await prisma.modifier.upsert({
+        where: { groupId_key: { groupId: row.id, key: o.id } },
+        create: { groupId: row.id, key: o.id, name: o.name, price: toPence(o.price), sortOrder: i },
+        update: { name: o.name, price: toPence(o.price), sortOrder: i },
+      });
+    }
+    await prisma.modifier.deleteMany({ where: { groupId: row.id, key: { notIn: g.options.map((o) => o.id) } } });
+  }
+
+  // Products
+  for (const [i, p] of menu.products.entries()) {
+    const categoryId = catIds.get(p.category)!;
+    const data = {
+      categoryId, name: p.name, description: p.description, image: p.image, tags: p.tags, allergens: p.allergens,
+      featured: p.featured, sortOrder: i, active: true, soldOut: p.soldOut,
+    };
+    const row = await prisma.product.upsert({
+      where: { clientId_slug: { clientId: clientId, slug: p.slug } },
+      create: { clientId: clientId, slug: p.slug, ...data },
+      update: data,
+    });
+    for (const [si, s] of p.sizes.entries()) {
+      await prisma.productSize.upsert({
+        where: { productId_key: { productId: row.id, key: s.id } },
+        create: { productId: row.id, key: s.id, name: s.name, price: toPence(s.price), sortOrder: si },
+        update: { name: s.name, price: toPence(s.price), sortOrder: si },
+      });
+    }
+    await prisma.productSize.deleteMany({ where: { productId: row.id, key: { notIn: p.sizes.map((s) => s.id) } } });
+    await prisma.productModifierGroup.deleteMany({ where: { productId: row.id } });
+    if (p.modifierGroups.length) {
+      await prisma.productModifierGroup.createMany({
+        data: p.modifierGroups.map((g, gi) => ({ productId: row.id, groupId: groupIds.get(g)!, sortOrder: gi })),
+      });
+    }
+  }
+  if (reset) {
+    await prisma.product.updateMany({ where: { clientId: clientId, slug: { notIn: menu.products.map((p) => p.slug) } }, data: { active: false } });
+    await prisma.category.updateMany({ where: { clientId: clientId, slug: { notIn: menu.categories.map((p) => p.slug) } }, data: { active: false } });
+  }
+
+  // Deals
+  for (const [i, d] of menu.deals.entries()) {
+    const data = {
+      name: d.name, description: d.description, image: d.image, price: toPence(d.price), featured: d.featured,
+      sortOrder: i, active: true, daysOfWeek: d.daysOfWeek, fulfilment: d.fulfilment,
+    };
+    const row = await prisma.deal.upsert({
+      where: { clientId_slug: { clientId: clientId, slug: d.slug } },
+      create: { clientId: clientId, slug: d.slug, ...data },
+      update: data,
+    });
+    await prisma.dealSlot.deleteMany({ where: { dealId: row.id } });
+    await prisma.dealSlot.createMany({
+      data: d.slots.map((s, si) => ({
+        dealId: row.id, name: s.name, qty: s.qty, categorySlugs: s.categories, productSlugs: s.products, sizeKeys: s.sizes, sortOrder: si,
+      })),
+    });
+  }
+  if (reset) {
+    await prisma.deal.updateMany({ where: { clientId: clientId, slug: { notIn: menu.deals.map((d) => d.slug) } }, data: { active: false } });
+  }
+
+  // Promos (config-defined ones; admin-created ones are left alone)
+  for (const p of menu.promos) {
+    const data = {
+      type: p.type, value: p.type === "fixed" ? toPence(p.value) : Math.round(p.value), minOrder: toPence(p.minOrder),
+      fulfilment: p.fulfilment, firstOrderOnly: p.firstOrderOnly, maxUses: p.maxUses ?? null,
+      endsAt: p.endsAt ? new Date(p.endsAt) : null, active: true,
+    };
+    await prisma.promo.upsert({
+      where: { clientId_code: { clientId: clientId, code: p.code } },
+      create: { clientId: clientId, code: p.code, ...data },
+      update: data,
+    });
+  }
+
+}

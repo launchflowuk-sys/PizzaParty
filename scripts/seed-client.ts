@@ -11,6 +11,7 @@ import { ConfigError } from "@launchflow/config";
 
 const slug = process.argv.slice(2).find((a) => !a.startsWith("-")) ?? process.env.CLIENT_SLUG;
 const reset = process.argv.includes("--reset");
+const overwriteMenu = process.argv.includes("--overwrite-menu");
 
 if (!slug) { console.error("Usage: pnpm seed <slug>  (or set CLIENT_SLUG)"); process.exit(1); }
 seedClient(slug, { reset })
