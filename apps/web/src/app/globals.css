@@ -1920,3 +1920,205 @@ html, body { max-width: 100%; overflow-x: clip; }
   .fp-loc-facts { grid-template-columns: minmax(0, 1fr); }
   .fp-loc-facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 }
+
+/* == The closing band ======================================================
+   A flat red rectangle with white text and a small button, sitting at the end
+   of the page as the least interesting thing on it - which is the wrong way
+   round, because this is where somebody decides.
+
+   Depth comes from three cheap layers rather than an image: a charcoal ground,
+   the accent bled through one corner, and a slow drifting check like the
+   tablecloth in every pizzeria. All of it is transform and opacity, so it
+   composites on the GPU and costs nothing to download. */
+.fp-close {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(120% 140% at 12% 0%, color-mix(in srgb, var(--color-accent) 78%, transparent) 0%, transparent 62%),
+    linear-gradient(160deg, #241715 0%, #16100f 60%, #0d0908 100%);
+  color: #fff;
+}
+
+/* The tablecloth. Two diagonal gradients make a check without an image. */
+.fp-close-check {
+  position: absolute;
+  inset: -60% -20%;
+  z-index: 0;
+  opacity: .10;
+  background-image:
+    repeating-linear-gradient(45deg, #fff 0 2px, transparent 2px 22px),
+    repeating-linear-gradient(-45deg, #fff 0 2px, transparent 2px 22px);
+  animation: fp-close-drift 40s linear infinite;
+  will-change: transform;
+}
+@keyframes fp-close-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-44px, -44px, 0); }
+}
+
+/* A warm bloom behind the type, so the words sit on something. */
+.fp-close-glow {
+  position: absolute;
+  z-index: 0;
+  left: -10%; bottom: -40%;
+  width: 70vw; height: 70vw;
+  max-width: 900px; max-height: 900px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--color-accent) 55%, transparent), transparent 72%);
+  filter: blur(20px);
+  opacity: .55;
+  animation: fp-close-breathe 14s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes fp-close-breathe {
+  0%, 100% { transform: scale(1);    opacity: .48; }
+  50%      { transform: scale(1.12); opacity: .62; }
+}
+
+.fp-close-inner {
+  position: relative;
+  z-index: 1;
+  padding: clamp(56px, 8vw, 92px) 32px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+.fp-close-kicker { color: rgba(255,255,255,.72); margin-bottom: 12px; }
+
+/* The hero's typewriter, at closing-band size. */
+.fp-close-h2 {
+  font-size: clamp(34px, 5.6vw, 62px) !important;
+  margin: 0 !important;
+  max-width: 15ch;
+}
+.fp-close-cta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-close-check, .fp-close-glow { animation: none; }
+}
+@media (max-width: 700px) {
+  .fp-close-inner { padding-inline: 16px; }
+  .fp-close-cta .btn { flex: 1 1 auto; text-align: center; }
+}
+
+/* == Footer ================================================================
+   Pale grey text on the page ground, which made the last thing anybody sees
+   look like the bottom of a document. A takeaway closes on its own colour: the
+   charcoal ground, the accent as a rule across the top, and enough contrast
+   that the phone number and the opening hours can actually be read. */
+footer {
+  background: linear-gradient(180deg, #16100f 0%, #0d0908 100%);
+  color: rgba(255,255,255,.82);
+  border-top: 0 !important;
+  position: relative;
+}
+/* The accent as a line across the top, so the footer starts rather than fades. */
+footer::before {
+  content: "";
+  position: absolute; inset: 0 0 auto 0; height: 4px;
+  background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent-2, #3E6B48) 100%);
+}
+footer .fp-footer a { color: rgba(255,255,255,.82); }
+footer .fp-footer a:hover { color: #fff; text-decoration: underline; }
+footer .fp-footer span[style] { color: rgba(255,255,255,.62) !important; }
+/* The brand line and the section headings. */
+footer .fp-footer > div > span:first-child { color: #fff; }
+footer > div:last-child { border-top: 1px solid rgba(255,255,255,.14) !important; }
+footer > div:last-child span { color: rgba(255,255,255,.55) !important; }
+
+/* == The four numbers under the hero =======================================
+   Every figure here is live - the wait from this shop's own settings, the price
+   from the cheapest size of a real pizza, the rating from reviews actually
+   left, the status from today's opening hours. They were set as bare figures
+   floating on the page ground with a caption under each, which made honest
+   numbers look like decoration.
+
+   A cell each, an accent rule above, and the ground stepping to the surface
+   colour so the strip reads as a band rather than four stray headings. */
+.fp-nums {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  padding: 0;
+  margin: 0;
+  background: var(--color-divider);
+  border-block: 2px solid var(--color-text);
+}
+.fp-num {
+  position: relative;
+  background: var(--color-bg);
+  padding: 26px 22px 24px;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  transition: background .15s ease;
+}
+.fp-num:hover { background: var(--color-surface); }
+/* The accent rule, drawn on the cell rather than the section so it stops at the
+   cell edge and reads as a set of four rather than one long line. */
+.fp-num::before {
+  content: "";
+  position: absolute; inset: 0 0 auto 0; height: 4px;
+  background: var(--color-accent);
+}
+.fp-num[data-live]::before { background: var(--color-action); }
+
+.fp-num-big {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(34px, 4.2vw, 52px);
+  line-height: 1;
+  letter-spacing: -.03em;
+  color: var(--color-accent);
+}
+.fp-num[data-live] .fp-num-big { color: var(--color-action); }
+.fp-num-big small { font-size: .42em; font-weight: 700; letter-spacing: 0; margin-left: 3px; }
+
+.fp-num-label {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--color-text);
+  margin-top: 4px;
+}
+.fp-num-sub { font-size: 13px; color: var(--color-neutral-700); }
+
+/* A pulse while the kitchen is genuinely taking orders. It stops when the shop
+   closes, because a light that is always on tells you nothing. */
+.fp-num-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--color-action);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-action) 60%, transparent);
+  animation: fp-num-pulse 2.2s ease-out infinite;
+  flex: none;
+}
+@keyframes fp-num-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-action) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 9px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .fp-num-dot { animation: none; } }
+
+@media (max-width: 900px) {
+  .fp-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 460px) {
+  .fp-nums { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* The deals heading was a kicker - the smallest type on the page - sitting above
+   the cheapest way to order from this shop. */
+.fp-deals-h2 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(30px, 4.4vw, 50px);
+  line-height: 1.04;
+  letter-spacing: -.03em;
+  margin: 0 0 24px;
+}
+.fp-deals-h2 > span {
+  display: block;
+  color: var(--color-accent);
+}

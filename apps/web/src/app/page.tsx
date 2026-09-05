@@ -126,18 +126,29 @@ export default async function Home() {
 
       <div className="fp-rule" />
 
-      {/* the numbers */}
-      <section className="fp-wrap fp-stats" style={{ padding: "40px 32px" }}>
+      {/* The four numbers.
+          Every one is live: the wait comes from this shop's own settings, the
+          price from the cheapest size of a real pizza, the rating from reviews
+          actually left, and the status from today's opening hours. They were
+          set as bare figures on the page ground, which made them read as
+          decoration - so they get a cell each, a rule of accent above, and the
+          status carries a pulsing dot while the shop is actually taking orders. */}
+      <section className="fp-wrap fp-nums">
         {[
-          [primary ? `${primary.deliveryMinutes} min` : "—", "Average delivery time"],
-          [featured[0] ? gbpShort(featured[0].product.sizes[0]?.price ?? 0) : "—", `A ${featured[0]?.product.name ?? "pizza"}, always`],
-          [reviewStats.count > 0 ? `${reviewStats.average}` : "—",
-            reviewStats.count > 0 ? `Out of 5, from ${reviewStats.count} reviews` : "No reviews yet"],
-          [avail?.open ? "Open" : "Pre-order", avail?.open ? "Taking orders right now" : "Order ahead for later"],
-        ].map(([big, label]) => (
-          <div key={label}>
-            <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 44, lineHeight: 1, color: "var(--color-accent)", letterSpacing: "-.02em" }}>{big}</div>
-            <div style={{ fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--color-neutral-700)", marginTop: 10 }}>{label}</div>
+          { big: primary ? `${primary.deliveryMinutes}` : "—", unit: primary ? "min" : "", label: "Typical delivery", sub: primary ? `to ${primary.name}` : "" },
+          { big: featured[0] ? gbpShort(featured[0].product.sizes[0]?.price ?? 0) : "—", unit: "", label: "Pizzas from", sub: featured[0]?.product.name ?? "" },
+          { big: reviewStats.count > 0 ? `${reviewStats.average}` : "—", unit: reviewStats.count > 0 ? "/5" : "", label: "Customers rate us", sub: reviewStats.count > 0 ? `${reviewStats.count} reviews` : "no reviews yet" },
+          { big: avail?.open ? "Open" : "Pre-order", unit: "", label: avail?.open ? "Taking orders now" : "Order ahead", sub: avail?.open ? "kitchen is on" : "for later today", live: !!avail?.open },
+        ].map((n) => (
+          <div key={n.label} className="fp-num" data-live={n.live ? "1" : undefined}>
+            <span className="fp-num-big">
+              {n.big}{n.unit ? <small>{n.unit}</small> : null}
+            </span>
+            <span className="fp-num-label">
+              {n.live ? <i className="fp-num-dot" aria-hidden="true" /> : null}
+              {n.label}
+            </span>
+            {n.sub ? <span className="fp-num-sub">{n.sub}</span> : null}
           </div>
         ))}
       </section>
@@ -184,7 +195,13 @@ export default async function Home() {
       {/* deals */}
       {deals.length ? (
         <section className="fp-wrap" style={{ padding: "0 32px 64px" }}>
-          <span className="fp-kicker" style={{ marginBottom: 12 }}>Deals this week</span>
+          {/* This was set as a kicker - the smallest type on the page - above the
+              cheapest way to order. It is a headline now. */}
+          <span className="fp-kicker" style={{ marginBottom: 10 }}>Better together</span>
+          <h2 className="fp-deals-h2">
+            Deals this week.
+            <span>{deals.length} of them, on tonight.</span>
+          </h2>
           <div style={{ borderTop: "2px solid var(--color-divider)" }}>
             {deals.map((d) => (
               <div
@@ -229,14 +246,29 @@ export default async function Home() {
 
       <ReviewStrip reviews={reviews} summary={reviewStats} reviewUrl={cfg.contact.reviewUrl} />
 
-      <section style={{ background: "var(--color-accent)", color: "var(--color-bg)" }}>
-        <div className="fp-wrap" style={{ padding: "64px 32px", display: "flex", alignItems: "end", justifyContent: "space-between", gap: 48 }}>
-          <h2 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 64, lineHeight: 1, letterSpacing: "-.02em", margin: 0, marginLeft: "-.05em" }}>
-            Order tonight.<br />Eat tonight.
-          </h2>
-          <Link href="/menu" className="btn" style={{ background: "var(--color-bg)", color: "var(--color-accent-700)", padding: "10px 16px" }}>
-            Start an order &rarr;
-          </Link>
+      {/* The closing band was a flat red rectangle with white text and a small
+          button - the last thing on the page and the least interesting. It is
+          the place somebody decides, so it gets the weight: a deep charcoal
+          ground with the accent bled through it, a slow drifting check like a
+          pizzeria tablecloth, and the same typewriter as the hero naming what
+          is actually going in the oven. */}
+      <section className="fp-close">
+        <div className="fp-close-check" aria-hidden="true" />
+        <div className="fp-close-glow" aria-hidden="true" />
+        <div className="fp-wrap fp-close-inner">
+          <div>
+            <span className="fp-kicker fp-close-kicker">Still deciding?</span>
+            <TypewriterTitle
+              as="h2"
+              className="fp-close-h2"
+              prefix="Order tonight. Eat"
+              items={heroRotation}
+            />
+          </div>
+          <div className="fp-close-cta">
+            <Link href="/menu" className="btn btn-primary fp-cta-lg">Start an order &rarr;</Link>
+            <Link href="/deals" className="btn btn-hero-ghost fp-cta-lg">See tonight&rsquo;s deals</Link>
+          </div>
         </div>
       </section>
     </>

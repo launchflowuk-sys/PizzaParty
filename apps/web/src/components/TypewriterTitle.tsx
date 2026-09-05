@@ -54,12 +54,17 @@ export function TypewriterTitle({
   typeMs = 55,
   deleteMs = 22,
   holdMs = 1500,
+  as = "h1",
+  className,
 }: {
   prefix: string;
   items: string[];
   typeMs?: number;
   deleteMs?: number;
   holdMs?: number;
+  /** The closing band wants this typing too, but the page already has its h1. */
+  as?: "h1" | "h2" | "p";
+  className?: string;
 }) {
   const words = items.filter(Boolean);
   const wordRef = useRef<HTMLSpanElement>(null);
@@ -113,8 +118,9 @@ export function TypewriterTitle({
     return () => { clearTimeout(timer); cancelAnimationFrame(frame); };
   }, [animate, words, typeMs, deleteMs, holdMs]);
 
+  const Tag = as;
   return (
-    <h1 className="fp-hero-h1">
+    <Tag className={`fp-hero-h1 ${className ?? ""}`.trim()}>
       <span className="fp-hero-h1-lead">{prefix}</span>
       <span className="fp-hero-h1-swap" aria-hidden="true">
         <span
@@ -126,6 +132,6 @@ export function TypewriterTitle({
       </span>
       {/* Announced once, as a sentence, not a character at a time. */}
       <span className="fp-visually-hidden">{prefix} {words.join(", ")}</span>
-    </h1>
+    </Tag>
   );
 }
