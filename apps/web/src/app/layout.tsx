@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-GB" className={`${display.variable} ${sans.variable}`} style={style} data-photo={cfg.brand.photoStyle}>
       <body style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
-        <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} fulfilment={cfg.fulfilment} />
+        <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} fulfilment={cfg.fulfilment} loyalty={cfg.loyalty.enabled} />
         <main style={{ flex: 1 }}>{children}</main>
         <Footer name={cfg.name} phone={cfg.contact.phone} address={cfg.contact.address} localities={cfg.seo.locality.map((l) => ({ name: l, path: localityPath(cfg, l) }))} loyalty={cfg.loyalty.enabled} />
         <StickyBar />
