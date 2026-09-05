@@ -496,36 +496,17 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   overflow: hidden;
   text-overflow: clip;
 }
-/* The name burns. A warm ramp is painted through the glyphs and panned slowly,
-   so a multi-word name sits across different parts of the fire - "Farm" ember
-   red, "Pizza" orange, "Special" gold - without needing a span per word. The
-   glow underneath flickers on its own, slower cycle so the two never sync into
-   an obvious pulse. Only background-position and text-shadow animate, both
-   cheap, so it stays smooth over a full-bleed photograph. */
+/* Pure white, so the name reads instantly against any part of the photograph.
+   One adjacent pair of letters per name carries the accent — enough to catch
+   the eye and stop it being a flat block of text, without the whole word
+   turning into a colour swatch. */
 .fp-hero-h1-word {
   font-variant-ligatures: none;
-  background-image: linear-gradient(
-    100deg,
-    #FFEFC9 0%, #F6C558 14%, #E89334 30%, #C82323 46%,
-    #E89334 62%, #F6C558 78%, #FFEFC9 92%, #F6C558 100%
-  );
-  background-size: 260% 100%;
-  background-position: 0% 50%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  animation: fp-flame-pan 7s linear infinite, fp-flame-glow 2.6s ease-in-out infinite;
-  filter: drop-shadow(0 2px 20px rgba(0,0,0,.5));
+  color: #fff;
+  text-shadow: 0 2px 22px rgba(0,0,0,.55);
 }
-@keyframes fp-flame-pan { to { background-position: 260% 50%; } }
-@keyframes fp-flame-glow {
-  0%, 100% { text-shadow: 0 0 18px rgba(232,147,52,.34), 0 0 44px rgba(200,35,35,.18); }
-  50%      { text-shadow: 0 0 26px rgba(246,197,88,.46), 0 0 62px rgba(200,35,35,.26); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .fp-hero-h1-word { animation: none; background-position: 40% 50%; }
-}
+.fp-hero-h1-hi { color: var(--color-accent); }
+
 .fp-hero-caret {
   display: inline-block;
   width: .06em;
@@ -983,14 +964,19 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   border-radius: var(--radius-md);
   background: var(--color-bg);
   overflow: hidden;
-  padding: 0 0 14px;
-  gap: 8px;
+  gap: 9px;
 }
-.fp-cell > .fp-photo, .fp-cell > .fp-photo-img, .fp-cell > div:first-child {
+/* Everything gets breathing room; the photograph alone is allowed to reach the
+   card edge. Padding on the cell rather than margins on selected children, so
+   a card with a different set of children cannot end up with text flush to the
+   border — which is what was happening across the whole platform. */
+.fp-cell { padding: 0 16px 16px; }
+.fp-cell > .fp-photo,
+.fp-cell > .fp-photo-img {
+  margin: 0 -16px 12px;
   border-radius: 0;
-  margin-bottom: 4px;
+  width: calc(100% + 32px);
 }
-.fp-cell > *:not(.fp-photo):not(.fp-photo-img):not(:first-child) { margin-inline: 14px; }
 .fp-cell:hover { background: var(--color-surface); border-color: var(--color-neutral-400); }
 
 /* ── Buttons that never wrap ──────────────────────────────────────────────

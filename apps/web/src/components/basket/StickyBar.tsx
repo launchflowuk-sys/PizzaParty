@@ -5,7 +5,16 @@ import { useEffect, useState } from "react";
 import { basketCount, basketTotal, useBasket } from "./store";
 import { gbp } from "@/lib/money";
 
-const HIDE_ON = ["/basket", "/checkout", "/kitchen", "/admin", "/order/"];
+/**
+ * Pages that must not get the floating basket bar.
+ *
+ * `/deals/` is here because the deal builder draws its own bar at the same
+ * bottom:0 and z-index:40 — they sat on top of each other and covered the "Add
+ * deal to basket" button, so a deal could be built and then not ordered. The
+ * deal bar already shows the running total, so nothing is lost by standing
+ * down on that page.
+ */
+const HIDE_ON = ["/basket", "/checkout", "/kitchen", "/admin", "/order/", "/deals/"];
 
 export function StickyBar() {
   const lines = useBasket((s) => s.lines);

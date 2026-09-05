@@ -48,6 +48,49 @@ export function MenuBrowser({ categories, items, initialQuery = "" }: {
   );
   const title = q ? `Search: ${query}` : (categories.find((c) => c.slug === cat)?.name ?? "Menu");
 
+  // Hits grouped under their category, in menu order.
+  const grouped = useMemo(() => {
+    if (!q) return [];
+    return categories
+      .map((c) => ({ slug: c.slug, name: c.name, items: shown.filter((i) => i.categorySlug === c.slug) }))
+      .filter((g) => g.items.length > 0);
+  }, [q, categories, shown]);
+
+  /** One product card. Used by both the browse grid and the search groups. */
+  const renderCard = (it: TileItem, i: number) => (
+          
+            <div key={it.slug} className="fp-cell">
+              {/* The first row is above the fold and holds the LCP element, so it
+                  must load eagerly - lazy-loading it costs ~1s of LCP. */}
+              <Photo src={it.image} alt={it.name} caption={`photo · ${it.name.toLowerCase()} · b/w`} priority={i < 3} />
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17, lineHeight: 1.2 }}>{it.name}</span>
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17 }}>{gbpShort(it.fromPrice)}</span>
+              </div>
+              <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: "var(--color-neutral-700)", flex: 1 }}>{it.description}</p>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", minHeight: 20 }}>
+                {it.tags.filter((t) => TAG_LABEL[t]).map((t) => (
+                  <span key={t} className="tag tag-neutral">{TAG_LABEL[t]}</span>
+                ))}
+                <span style={{ fontSize: 11, color: "var(--color-neutral-700)" }}>{it.sizeNote}</span>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {it.soldOut ? (
+                  <span className="tag tag-outline">Sold out</span>
+                ) : it.needsChoice ? (
+                  /* Required options (base, size) cannot be guessed, so the only
+                     action is to open the product and choose. */
+                  <Link href={it.href} className="btn btn-primary">Choose options</Link>
+                ) : (
+                  <>
+                    <button className="btn btn-primary" onClick={() => quickAdd(it)}>Add</button>
+                    <Link href={it.href} className="btn btn-secondary">Details</Link>
+                  </>
+                )}
+              </div>
+            </div>
+  );
+
   function quickAdd(it: TileItem) {
     add({
       kind: "product", product: it.slug, size: it.firstSizeKey, modifiers: [], qty: 1,
@@ -108,40 +151,28 @@ export function MenuBrowser({ categories, items, initialQuery = "" }: {
             />
           </div>
 
-          <div className="fp-grid fp-grid-3">
-            {shown.map((it, i) => (
-              <div key={it.slug} className="fp-cell">
-                {/* The first row is above the fold and holds the LCP element, so it
-                    must load eagerly - lazy-loading it costs ~1s of LCP. */}
-                <Photo src={it.image} alt={it.name} caption={`photo · ${it.name.toLowerCase()} · b/w`} priority={i < 3} />
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
-                  <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17, lineHeight: 1.2 }}>{it.name}</span>
-                  <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17 }}>{gbpShort(it.fromPrice)}</span>
+          {/* Searching groups the hits under their category, so "chicken" comes
+              back as Pizzas / Chicken / Sides rather than one undifferentiated
+              run of cards. Browsing a single category needs no heading. */}
+          {q ? (
+            grouped.length === 0 ? null : grouped.map((g) => (
+              <section key={g.slug} style={{ marginBottom: 32 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, borderBottom: "2px solid var(--color-divider)", paddingBottom: 8, marginBottom: 14 }}>
+                  <h2 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 22, margin: 0 }}>{g.name}</h2>
+                  <span style={{ fontSize: 13, color: "var(--color-neutral-700)" }}>
+                    {g.items.length} item{g.items.length === 1 ? "" : "s"}
+                  </span>
                 </div>
-                <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: "var(--color-neutral-700)", flex: 1 }}>{it.description}</p>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", minHeight: 20 }}>
-                  {it.tags.filter((t) => TAG_LABEL[t]).map((t) => (
-                    <span key={t} className="tag tag-neutral">{TAG_LABEL[t]}</span>
-                  ))}
-                  <span style={{ fontSize: 11, color: "var(--color-neutral-700)" }}>{it.sizeNote}</span>
+                <div className="fp-grid fp-grid-3">
+                  {g.items.map((it, i) => renderCard(it, i))}
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  {it.soldOut ? (
-                    <span className="tag tag-outline">Sold out</span>
-                  ) : it.needsChoice ? (
-                    /* Required options (base, size) cannot be guessed, so the only
-                       action is to open the product and choose. */
-                    <Link href={it.href} className="btn btn-primary">Choose options</Link>
-                  ) : (
-                    <>
-                      <button className="btn btn-primary" onClick={() => quickAdd(it)}>Add</button>
-                      <Link href={it.href} className="btn btn-secondary">Details</Link>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+              </section>
+            ))
+          ) : (
+            <div className="fp-grid fp-grid-3">
+              {shown.map((it, i) => renderCard(it, i))}
+            </div>
+          )}
 
           {shown.length === 0 ? (
             <p style={{ margin: "24px 0 0", color: "var(--color-neutral-700)" }}>
