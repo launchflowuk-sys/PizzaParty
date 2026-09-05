@@ -21,7 +21,7 @@ export const ROLE_LABEL: Record<StaffRole, string> = {
 export const SCREENS = [
   "dashboard", "kitchen", "orders", "dispatch", "menu", "deals",
   "promos", "inventory", "customers", "campaigns", "reviews", "marketing",
-  "staff", "hours", "zones", "launchflow",
+  "staff", "hours", "zones", "launchflow", "help",
 ] as const;
 export type Screen = (typeof SCREENS)[number];
 
@@ -29,7 +29,7 @@ export const SCREEN_LABEL: Record<Screen, string> = {
   dashboard: "Dashboard", kitchen: "Kitchen queue", orders: "Orders", dispatch: "Dispatch",
   menu: "Menu & pricing", deals: "Deals", promos: "Promotions", inventory: "Inventory",
   customers: "Customers", campaigns: "Campaigns", reviews: "Reviews", marketing: "Marketing", staff: "Staff",
-  hours: "Hours & pause", zones: "Delivery zones", launchflow: "LaunchFlow",
+  hours: "Hours & pause", zones: "Delivery zones", launchflow: "LaunchFlow", help: "Help",
 };
 
 /**
@@ -37,10 +37,10 @@ export const SCREEN_LABEL: Record<Screen, string> = {
  * row - that way a new screen cannot accidentally lock the manager out.
  */
 const GRANTS: Record<Exclude<StaffRole, "manager">, Screen[]> = {
-  shift_lead: ["dashboard", "kitchen", "orders", "dispatch", "inventory", "hours", "reviews"],
-  kitchen: ["kitchen"],
-  driver: ["kitchen", "dispatch"],
-  front_of_house: ["dashboard", "kitchen", "orders"],
+  shift_lead: ["dashboard", "kitchen", "orders", "dispatch", "inventory", "hours", "reviews", "help"],
+  kitchen: ["kitchen", "help"],
+  driver: ["kitchen", "dispatch", "help"],
+  front_of_house: ["dashboard", "kitchen", "orders", "help"],
 };
 
 export function can(role: StaffRole, screen: Screen): boolean {

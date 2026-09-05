@@ -769,3 +769,58 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
 }
 .fp-admin details.fp-panel[open] > summary::after { transform: rotate(-135deg); margin-top: -2px; }
 .fp-admin details.fp-panel > summary:hover { filter: brightness(1.25); }
+
+/* ── Help hotspots and articles ─────────────────────────────────────────── */
+.fp-helpspot { position: relative; display: inline-block; vertical-align: middle; margin-left: 6px; }
+.fp-helpspot-dot {
+  width: 18px; height: 18px;
+  font: inherit; font-size: 11px; font-weight: 800; line-height: 1;
+  color: var(--info); background: var(--info-bg);
+  border: 1px solid var(--info-line);
+  border-radius: 50%;
+  cursor: pointer; padding: 0;
+}
+.fp-helpspot-dot:hover { background: var(--info); color: #fff; }
+.fp-helpspot-sheet {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(320px, 78vw);
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  background: var(--color-bg);
+  border: 2px solid var(--color-text);
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
+  font-size: 13px;
+  line-height: 1.55;
+  text-align: left;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--color-text);
+}
+.fp-helpspot-body { color: var(--color-neutral-800); }
+
+/* Article body. Wider line-height and real spacing, because these get read
+   under pressure and a wall of text is the same as no help at all. */
+.fp-admin .lf-prose h2 { font-family: var(--font-heading); font-weight: 800; font-size: 20px; letter-spacing: -.01em; margin: 28px 0 10px; padding-top: 14px; border-top: 2px solid var(--color-divider); }
+.fp-admin .lf-prose h2:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
+.fp-admin .lf-prose h3 { font-weight: 800; font-size: 15px; margin: 20px 0 6px; }
+.fp-admin .lf-prose p { margin: 0 0 12px; }
+.fp-admin .lf-prose ol, .fp-admin .lf-prose ul { margin: 0 0 14px; padding-left: 22px; }
+.fp-admin .lf-prose li { margin-bottom: 7px; }
+.fp-admin .lf-prose strong { font-weight: 800; }
+.fp-admin .lf-prose code { background: var(--color-surface); border: 1px solid var(--color-divider); padding: 1px 5px; font-size: 13px; }
+.fp-admin .lf-prose table { width: 100%; border-collapse: collapse; margin: 0 0 16px; font-size: 14px; }
+.fp-admin .lf-prose th { background: var(--color-text); color: #fff; text-align: left; padding: 8px 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.fp-admin .lf-prose td { padding: 8px 10px; border-bottom: 1px solid var(--color-divider); vertical-align: top; }
+.fp-admin .lf-prose blockquote { margin: 0 0 14px; padding: 10px 14px; border-left: 4px solid var(--warn); background: var(--warn-bg); }
+.fp-admin .lf-prose a { font-weight: 600; }
+.fp-admin kbd {
+  font: inherit; font-size: 11px; font-weight: 700;
+  border: 1px solid var(--color-neutral-400); border-bottom-width: 2px;
+  padding: 1px 5px; background: var(--color-surface);
+}

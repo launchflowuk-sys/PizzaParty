@@ -20,6 +20,18 @@ export async function currentCustomer() {
 }
 
 /** The signed-in back-office person, with the role their permissions come from. */
+/**
+ * Whether this session holds the agency key.
+ *
+ * Separate from the role matrix on purpose: /admin/launchflow needs its own
+ * key, so a manager who can open every other screen still cannot open that one.
+ * Help articles gated on `agency` follow the same rule.
+ */
+export async function currentAgency(): Promise<boolean> {
+  const jar = await cookies();
+  return !!(await verifyToken(jar.get(COOKIE.agency)?.value, "agency"));
+}
+
 export type CurrentStaff = { id: string; name: string; role: StaffRole };
 
 /**

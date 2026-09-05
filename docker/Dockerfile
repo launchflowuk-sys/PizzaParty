@@ -39,6 +39,10 @@ COPY --from=build /app/apps/web/public ./apps/web/public
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages ./packages
 COPY --from=build /app/config ./config
+# Help articles. A sibling of config/, not a child, so CONFIG_DIR cannot reach
+# it — lib/help.ts resolves it separately. Miss this line and the help centre
+# ships empty with no error to tell you.
+COPY --from=build /app/content ./content
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/package.json ./package.json
 COPY docker/entrypoint.sh ./entrypoint.sh
