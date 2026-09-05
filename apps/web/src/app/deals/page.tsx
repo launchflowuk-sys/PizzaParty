@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@launchflow/db";
-import { getConfig } from "@/lib/config";
+import { getConfig, assetUrl } from "@/lib/config";
 import { getMenu, getClientRow, dealsToday } from "@/lib/menu";
 import { pageTitle } from "@/lib/seo";
 import { gbpShort, gbp } from "@/lib/money";
@@ -55,26 +56,29 @@ export default async function DealsPage() {
       </p>
 
       {deals.length ? (
-        <div className="fp-grid fp-grid-4">
+        <div className="fp-dealgrid">
           {deals.map((d) => (
-            <div key={d.id} className="fp-cell" style={{ padding: 20, gap: 12, minHeight: 300 }}>
-              <span style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--color-accent-700)" }}>
-                {d.featured ? "Most popular" : "Every day"}
-              </span>
-              <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 56, lineHeight: 1, letterSpacing: "-.03em", color: "var(--color-accent)" }}>
-                {gbpShort(d.price)}
-              </span>
-              <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 22, lineHeight: 1.1 }}>{d.name}</span>
-              <p style={{ margin: 0, fontSize: 14, color: "var(--color-neutral-800)", flex: 1 }}>{d.description}</p>
-              {d.slots.length ? (
-                <span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>
-                  {d.slots.map((s) => `${s.qty} × ${s.name}`).join(" · ")}
-                </span>
-              ) : null}
-              <Link href={`/deals/${d.slug}`} className="btn btn-primary" style={{ alignSelf: "flex-start" }}>
-                Build the deal
-              </Link>
-            </div>
+            <article key={d.id} className="fp-dealcard">
+              <div className="fp-dealcard-media">
+                <Link href={`/deals/${d.slug}`} className="fp-dealcard-imglink" aria-hidden="true" tabIndex={-1}>
+                  {d.image ? (
+                    <Image src={assetUrl(d.image)} alt="" fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" style={{ objectFit: "cover" }} />
+                  ) : null}
+                </Link>
+                <span className="fp-dealcard-price">{gbpShort(d.price)}</span>
+                {d.featured ? <span className="fp-dealcard-flag">Most popular</span> : null}
+              </div>
+              <div className="fp-dealcard-body">
+                <h3>{d.name}</h3>
+                {d.description ? <p>{d.description}</p> : null}
+                {d.slots.length ? (
+                  <ul className="fp-dealcard-slots">
+                    {d.slots.map((sl) => <li key={sl.id}>{sl.qty} &times; {sl.name}</li>)}
+                  </ul>
+                ) : null}
+                <Link href={`/deals/${d.slug}`} className="btn btn-primary fp-dealcard-cta">Build this deal</Link>
+              </div>
+            </article>
           ))}
         </div>
       ) : (

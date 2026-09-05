@@ -28,6 +28,16 @@ export function generateMetadata(): Metadata {
  */
 const HERO = "rewards-hero.jpg";
 
+/**
+ * Something behind the red, without losing the red.
+ *
+ * If the shop has dropped a dedicated rewards photograph in, that wins. If not,
+ * rather than a flat colour, the page borrows a pizza it already has - the
+ * accent stays on top at high opacity so it still reads as Crust Club, and the
+ * photograph gives it depth instead of looking like a coloured rectangle.
+ */
+const FALLBACK_HERO = "products/meat-machine.jpg";
+
 /** How it works, in the order it happens. Three steps, because four is a form. */
 function Steps({ rate, cheapest }: { rate: number; cheapest: number | null }) {
   const steps = [
@@ -73,12 +83,13 @@ export default async function RewardsPage({
   const cheapest = catalogue[0] ?? null;
   const rate = cfg.loyalty.pointsPerPound;
   const hero = assetUrl(HERO);
+  const heroFallback = assetUrl(FALLBACK_HERO);
 
   /* ─────────────────────────── Not signed in ─────────────────────────── */
   if (!customer) {
     return (
       <>
-        <section className="fp-cc-hero" style={{ backgroundImage: `url(${hero})` }}>
+        <section className="fp-cc-hero" style={{ "--cc-img": `url(${hero}), url(${heroFallback})` } as React.CSSProperties}>
           <div className="fp-cc-hero-scrim" />
           <div className="fp-wrap fp-cc-hero-inner">
             <span className="fp-cc-badge">Crust Club</span>
@@ -178,7 +189,7 @@ export default async function RewardsPage({
 
   return (
     <>
-      <section className="fp-cc-hero fp-cc-hero-member" style={{ backgroundImage: `url(${hero})` }}>
+      <section className="fp-cc-hero fp-cc-hero-member" style={{ "--cc-img": `url(${hero}), url(${heroFallback})` } as React.CSSProperties}>
         <div className="fp-cc-hero-scrim" />
         <div className="fp-wrap fp-cc-hero-inner">
           <span className="fp-cc-badge">Crust Club</span>

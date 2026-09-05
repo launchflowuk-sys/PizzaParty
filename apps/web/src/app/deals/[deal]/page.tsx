@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getConfig } from "@/lib/config";
+import Image from "next/image";
+import { getConfig, assetUrl } from "@/lib/config";
 import { getMenu, dealsToday } from "@/lib/menu";
 import { toPicker } from "@/lib/picker";
 import { abs, breadcrumbJsonLd, pageTitle } from "@/lib/seo";
@@ -79,7 +80,13 @@ export default async function DealPage({ params }: Params) {
     <div className="lf-container max-w-2xl">
       <JsonLd data={[jsonld, breadcrumbJsonLd([{ name: "Deals", path: "/deals" }, { name: d.name, path: `/deals/${d.slug}` }])]} />
       <nav className="pt-4 text-sm text-muted"><Link href="/deals">Deals</Link> / {d.name}</nav>
-      <h1 className="lf-h1 mt-2">{d.name} <span className="text-brand">{gbpShort(d.price)}</span></h1>
+      {d.image ? (
+        <div className="fp-dealhero">
+          <Image src={assetUrl(d.image)} alt="" fill sizes="(max-width: 900px) 100vw, 720px" style={{ objectFit: "cover" }} priority />
+          <span className="fp-dealhero-price">{gbpShort(d.price)}</span>
+        </div>
+      ) : null}
+      <h1 className="lf-h1 mt-2">{d.name}{d.image ? null : <span className="text-brand"> {gbpShort(d.price)}</span>}</h1>
       <p className="text-muted mt-2">{d.description}</p>
       <div className="mt-6"><DealBuilder deal={builder} /></div>
     </div>

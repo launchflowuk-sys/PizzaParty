@@ -155,6 +155,57 @@ export default async function Home() {
 
       <div className="fp-rule" />
 
+      {/* Deals, as cards with the photograph on them.
+          They were a ruled list of price, name and description under the menu -
+          the cheapest way to order from this shop, set out like a price list and
+          placed after the thing it undercuts. The photographs existed and were
+          never rendered anywhere, which is the actual reason they could not be
+          seen. Cards, with the picture, above the menu. */}
+      {deals.length ? (
+        <section className="fp-wrap fp-dealsec">
+          <span className="fp-kicker" style={{ marginBottom: 10 }}>Better together</span>
+          <h2 className="fp-deals-h2">
+            Deals this week.
+            <span>{deals.length} of them, on tonight.</span>
+          </h2>
+
+          <div className="fp-dealgrid">
+            {deals.map((d) => (
+              <article key={d.slug} className="fp-dealcard">
+                <div className="fp-dealcard-media">
+                  <Link href={`/deals/${d.slug}`} className="fp-dealcard-imglink" aria-hidden="true" tabIndex={-1}>
+                    {d.image ? (
+                      <Image
+                        src={assetUrl(d.image)}
+                        alt=""
+                        fill
+                        sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw"
+                        style={{ objectFit: "cover" }}
+                      />
+                    ) : null}
+                  </Link>
+                  <span className="fp-dealcard-price">{gbpShort(d.price)}</span>
+                </div>
+                <div className="fp-dealcard-body">
+                  <h3>{d.name}</h3>
+                  {d.description ? <p>{d.description}</p> : null}
+                  {d.slots.length ? (
+                    <ul className="fp-dealcard-slots">
+                      {d.slots.map((sl) => <li key={sl.id}>{sl.qty} &times; {sl.name}</li>)}
+                    </ul>
+                  ) : null}
+                  <Link href={`/deals/${d.slug}`} className="btn btn-primary fp-dealcard-cta">
+                    Build this deal
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <Link href="/deals" className="btn btn-secondary" style={{ marginTop: 20 }}>See every deal</Link>
+        </section>
+      ) : null}
+
       {/* tonight's menu */}
       <section className="fp-wrap" style={{ padding: "56px 32px" }}>
         <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", marginBottom: 24 }}>
@@ -191,37 +242,6 @@ export default async function Home() {
           ))}
         </div>
       </section>
-
-      {/* deals */}
-      {deals.length ? (
-        <section className="fp-wrap" style={{ padding: "0 32px 64px" }}>
-          {/* This was set as a kicker - the smallest type on the page - above the
-              cheapest way to order. It is a headline now. */}
-          <span className="fp-kicker" style={{ marginBottom: 10 }}>Better together</span>
-          <h2 className="fp-deals-h2">
-            Deals this week.
-            <span>{deals.length} of them, on tonight.</span>
-          </h2>
-          <div style={{ borderTop: "2px solid var(--color-divider)" }}>
-            {deals.map((d) => (
-              <div
-                key={d.slug}
-                className="fp-dealrow"
-                style={{ padding: "20px 0", borderBottom: "2px solid var(--color-divider)" }}
-              >
-                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 32, letterSpacing: "-.02em", color: "var(--color-accent)" }}>
-                  {gbpShort(d.price)}
-                </span>
-                <div>
-                  <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 20, lineHeight: 1.1 }}>{d.name}</div>
-                </div>
-                <p style={{ margin: 0, fontSize: 14, color: "var(--color-neutral-800)" }}>{d.description}</p>
-                <Link href={`/deals/${d.slug}`} className="btn btn-primary">Add the deal</Link>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       {/* the one red field on the page */}
       <div className="fp-rule" />

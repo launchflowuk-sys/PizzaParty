@@ -1647,22 +1647,41 @@ html, body { max-width: 100%; overflow-x: clip; }
    The hero uses a photograph if the shop has dropped one at
    assets/rewards-hero.jpg, and falls back to the accent, so a tenant without
    one still gets something that looks deliberate. */
+/* The photograph sits under the accent rather than replacing it: the colour is
+   what makes this page Crust Club, and a picture alone would make it just
+   another hero. `--cc-img` carries a dedicated rewards shot if the shop has one
+   and falls back to a pizza the menu already has, so it never renders as a flat
+   coloured rectangle. */
 .fp-cc-hero {
   position: relative;
-  background: var(--color-accent);
+  background-color: var(--color-accent);
+  background-image: var(--cc-img);
   background-size: cover;
   background-position: center;
+  background-blend-mode: multiply;
   color: #fff;
   display: flex;
   align-items: flex-end;
   min-height: clamp(420px, 56vh, 560px);
 }
+/* A second wash of the accent over the top, so the photograph reads as texture
+   under the colour rather than a picture with a tint on it. */
+.fp-cc-hero::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--color-accent) 62%, transparent) 0%,
+    color-mix(in srgb, var(--color-accent) 74%, transparent) 60%,
+    color-mix(in srgb, #1a0d0b 78%, transparent) 100%);
+  pointer-events: none;
+}
 .fp-cc-hero-member { min-height: clamp(360px, 46vh, 460px); }
 .fp-cc-hero-scrim {
   position: absolute; inset: 0;
+  z-index: 1;
   background: linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,.42) 38%, rgba(0,0,0,.10) 72%, rgba(0,0,0,0) 100%);
 }
-.fp-cc-hero-inner { position: relative; z-index: 1; width: 100%; padding: 0 32px 48px; }
+.fp-cc-hero-inner { position: relative; z-index: 2; width: 100%; padding: 0 32px 48px; }
 .fp-cc-badge {
   display: inline-block; margin-bottom: 14px;
   padding: 6px 14px; border-radius: var(--radius-pill);
@@ -2036,13 +2055,6 @@ footer::before {
   position: absolute; inset: 0 0 auto 0; height: 4px;
   background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent-2, #3E6B48) 100%);
 }
-footer .fp-footer a { color: rgba(255,255,255,.82); }
-footer .fp-footer a:hover { color: #fff; text-decoration: underline; }
-footer .fp-footer span[style] { color: rgba(255,255,255,.62) !important; }
-/* The brand line and the section headings. */
-footer .fp-footer > div > span:first-child { color: #fff; }
-footer > div:last-child { border-top: 1px solid rgba(255,255,255,.14) !important; }
-footer > div:last-child span { color: rgba(255,255,255,.55) !important; }
 
 /* == The four numbers under the hero =======================================
    Every figure here is live - the wait from this shop's own settings, the price
@@ -2059,6 +2071,10 @@ footer > div:last-child span { color: rgba(255,255,255,.55) !important; }
   gap: 2px;
   padding: 0;
   margin: 0;
+  /* Left-aligned with the rest of the page rather than floating in its own
+     centred band - it is a row of facts about this shop, not a banner. */
+  text-align: left;
+  justify-items: stretch;
   background: var(--color-divider);
   border-block: 2px solid var(--color-text);
 }
@@ -2197,3 +2213,193 @@ footer > div:last-child span { color: rgba(255,255,255,.55) !important; }
   color: var(--color-neutral-700);
   border-radius: 0 0 calc(var(--radius-md) - 2px) calc(var(--radius-md) - 2px);
 }
+
+/* == Deals, as cards ======================================================
+   They were a ruled list of price, name and description, sitting under the
+   menu - the cheapest way to order from this shop, set out like a price list
+   and placed after the thing it undercuts. And the photographs existed all
+   along without ever being rendered, which is why they could not be seen. */
+.fp-dealsec { padding: 0 32px 56px; }
+
+.fp-dealgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.fp-dealcard {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  border: 2px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+}
+.fp-dealcard:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-accent);
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.fp-dealcard-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  background: var(--color-neutral-900, #16100f);
+  overflow: hidden;
+}
+/* The price rides on the photograph rather than sitting under it, so the offer
+   is the first thing read and not a number in a paragraph. */
+.fp-dealcard-price {
+  position: absolute;
+  left: 12px; bottom: 12px;
+  z-index: 1;
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -.02em;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
+.fp-dealcard-flag {
+  position: absolute;
+  right: 12px; top: 12px;
+  z-index: 1;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: var(--warn);
+  color: #fff;
+  font-size: 11px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase;
+}
+
+.fp-dealcard-body { display: flex; flex-direction: column; gap: 8px; padding: 18px; flex: 1; }
+.fp-dealcard-body h3 {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: 20px; line-height: 1.1; letter-spacing: -.01em; margin: 0;
+}
+.fp-dealcard-body > p {
+  margin: 0; font-size: 14px; line-height: 1.55; color: var(--color-neutral-800);
+}
+.fp-dealcard-slots {
+  margin: 0; padding: 0; list-style: none;
+  display: grid; gap: 3px;
+  font-size: 13px; color: var(--color-neutral-700);
+}
+.fp-dealcard-slots li::before { content: "+ "; color: var(--color-accent); font-weight: 800; }
+.fp-dealcard-slots li:first-child::before { content: ""; }
+.fp-dealcard-cta { margin-top: auto; width: 100%; }
+
+/* The deal's own page leads with the picture. */
+.fp-dealhero {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: 12px;
+  background: var(--color-neutral-900, #16100f);
+}
+.fp-dealhero-price {
+  position: absolute; left: 16px; bottom: 16px;
+  padding: 9px 18px; border-radius: var(--radius-pill);
+  background: var(--color-accent); color: #fff;
+  font-family: var(--font-heading); font-weight: 800; font-size: 28px; letter-spacing: -.02em;
+  box-shadow: 0 8px 22px rgba(0,0,0,.4);
+}
+
+/* == Footer ================================================================
+   Three columns of grey links on the page ground read as the bottom of a
+   document rather than the end of a shop. It carries the mark, one thing worth
+   doing, and an honest statement of what can be paid with. */
+.fp-footer-top {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding: 52px 32px 40px;
+  font-size: 14px;
+}
+.fp-footer-brand { display: grid; gap: 12px; align-content: start; }
+.fp-footer-logo {
+  width: 92px; height: auto;
+  /* The mark is on a dark ground now; a white plate behind it keeps it legible
+     without needing a second version of the artwork. */
+  background: #fff;
+  border-radius: 50%;
+  padding: 6px;
+}
+.fp-footer-wordmark { font-family: var(--font-heading); font-weight: 800; font-size: 20px; color: #fff; }
+.fp-footer-addr { color: rgba(255,255,255,.66); line-height: 1.5; max-width: 26ch; }
+.fp-footer-tel {
+  font-family: var(--font-heading); font-weight: 800; font-size: 20px;
+  color: #fff !important; letter-spacing: -.01em;
+}
+.fp-footer-h {
+  font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--color-accent-300, #ff9d8e);
+  margin-bottom: 4px;
+}
+.fp-footer-top a { color: rgba(255,255,255,.8); text-decoration: none; }
+.fp-footer-top a:hover { color: #fff; text-decoration: underline; }
+
+/* One thing worth doing down here, and not as a pop-up. */
+.fp-footer-signup { border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.03); }
+.fp-footer-signup-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 28px; flex-wrap: wrap; padding: 28px 32px;
+}
+.fp-footer-signup-inner p {
+  margin: 6px 0 0; font-size: 14px; color: rgba(255,255,255,.7); max-width: 46ch; line-height: 1.55;
+}
+.fp-signup { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.fp-signup .input {
+  min-width: 220px;
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.3);
+  color: #fff;
+}
+.fp-signup .input::placeholder { color: rgba(255,255,255,.5); }
+.fp-signup-done { margin: 0; font-size: 14px; font-weight: 700; color: #9fe0b4; }
+.fp-signup-err { margin: 0; flex: 1 1 100%; font-size: 13px; color: #ffb4a8; }
+
+.fp-footer-bottom { border-top: 1px solid rgba(255,255,255,.12); }
+.fp-footer-bottom-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap; padding: 20px 32px;
+}
+.fp-pay { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.fp-pay-l { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: rgba(255,255,255,.55); font-weight: 700; }
+.fp-pay-list { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; align-items: center; }
+/* A white plate behind each mark: the schemes require their marks on a clear
+   background, and most are drawn for light ground. */
+.fp-pay-list li {
+  background: #fff;
+  border-radius: 5px;
+  padding: 5px 7px;
+  display: flex; align-items: center;
+  height: 30px;
+}
+.fp-pay-list img { display: block; height: 20px; width: auto; }
+.fp-pay-fallback { margin: 0; font-size: 13px; color: rgba(255,255,255,.6); max-width: 52ch; }
+
+.fp-footer-legal { display: flex; gap: 20px; flex-wrap: wrap; font-size: 12px; color: rgba(255,255,255,.5); }
+.fp-footer-lf strong { color: rgba(255,255,255,.78); font-weight: 700; }
+
+@media (max-width: 900px) {
+  .fp-footer-top { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; padding-inline: 16px; }
+  .fp-footer-signup-inner, .fp-footer-bottom-inner { padding-inline: 16px; }
+  .fp-dealsec { padding-inline: 16px; }
+}
+@media (max-width: 560px) {
+  .fp-footer-top { grid-template-columns: minmax(0, 1fr); }
+  .fp-signup { width: 100%; }
+  .fp-signup .input { flex: 1 1 auto; min-width: 0; }
+}
+
+/* The picture is a link, but the price sitting on it is not inside that link -
+   the link is aria-hidden (the card already has a real, named CTA), and a price
+   inside it would be announced to nobody. It is a sibling laid over the top. */
+.fp-dealcard-imglink { position: absolute; inset: 0; display: block; }
+.fp-dealcard-price, .fp-dealcard-flag { pointer-events: none; }

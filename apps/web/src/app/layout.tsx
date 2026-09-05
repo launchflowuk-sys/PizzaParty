@@ -11,6 +11,7 @@ const display = Calistoga({ subsets: ["latin"], weight: ["400"], variable: "--fo
 const sans = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-sans", display: "swap" });
 import { contrastInk } from "@launchflow/ui";
 import { getConfig, assetUrl, localityPath } from "@/lib/config";
+import { paymentMarks } from "@/lib/payments";
 import { env } from "@/lib/env";
 import { fill, seoVars } from "@/lib/seo";
 import { Header } from "@/components/Header";
@@ -45,7 +46,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
         <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} fulfilment={cfg.fulfilment} loyalty={cfg.loyalty.enabled} />
         <main style={{ flex: 1 }}>{children}</main>
-        <Footer name={cfg.name} phone={cfg.contact.phone} address={cfg.contact.address} localities={cfg.seo.locality.map((l) => ({ name: l, path: localityPath(cfg, l) }))} loyalty={cfg.loyalty.enabled} />
+        <Footer
+          name={cfg.name}
+          phone={cfg.contact.phone}
+          address={cfg.contact.address}
+          localities={cfg.seo.locality.map((l) => ({ name: l, path: localityPath(cfg, l) }))}
+          loyalty={cfg.loyalty.enabled}
+          logo={assetUrl(cfg.brand.logo)}
+          payments={paymentMarks()}
+        />
         <StickyBar />
       </body>
     </html>
