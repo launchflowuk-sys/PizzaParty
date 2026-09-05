@@ -749,3 +749,23 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
 .fp-num-ok     { color: var(--ok); font-weight: 700; }
 .fp-num-warn   { color: var(--warn); font-weight: 700; }
 .fp-num-danger { color: var(--danger); font-weight: 700; }
+
+/* Category panels on the menu screen. The marker is removed because the whole
+   header bar is the hit target, and a chevron is drawn instead so it is obvious
+   the section opens. */
+.fp-admin details.fp-panel > summary::-webkit-details-marker { display: none; }
+.fp-admin details.fp-panel > summary { position: relative; }
+.fp-admin details.fp-panel > summary::after {
+  content: "";
+  position: absolute;
+  right: 44px;
+  top: 50%;
+  width: 8px; height: 8px;
+  margin-top: -6px;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(45deg);
+  transition: transform .12s ease;
+}
+.fp-admin details.fp-panel[open] > summary::after { transform: rotate(-135deg); margin-top: -2px; }
+.fp-admin details.fp-panel > summary:hover { filter: brightness(1.25); }
