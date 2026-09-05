@@ -95,7 +95,22 @@ export function CheckoutFlow() {
     <section className="fp-wrap fp-split-checkout" style={{ padding: "40px 32px 64px" }}>
       <div>
         <span className="fp-kicker" style={{ marginBottom: 12 }}>Checkout</span>
-        <h1 className="fp-h1" style={{ marginBottom: 28 }}>Four questions, then the oven.</h1>
+        <h1 className="fp-h1" style={{ marginBottom: 16 }}>Four questions, then the oven.</h1>
+
+        {/* The way back.
+            Reaching checkout used to be a one-way door on anything without a
+            browser toolbar: the sticky basket bar stands down here on purpose,
+            and a phone or a tablet in an app frame has no visible Back. Somebody
+            who remembers the garlic bread had to abandon the order and start
+            again. It sits above the form because that is where a person looks
+            when they realise, not at the bottom after four questions. */}
+        <Link
+          href="/menu"
+          className="btn btn-secondary"
+          style={{ marginBottom: 28, alignSelf: "start" }}
+        >
+          &larr; Add more to your order
+        </Link>
 
         {pay && ctx.stripe ? (
           <div style={{ borderTop: "2px solid var(--color-divider)", paddingTop: 24 }}>
@@ -253,7 +268,14 @@ export function CheckoutFlow() {
           <span style={{ fontWeight: 600 }}>Total</span>
           <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 28, letterSpacing: "-.02em" }}>{price ? gbp(price.total) : "…"}</span>
         </div>
-        <Link href="/basket" style={{ fontSize: 13 }}>&larr; Back to the basket</Link>
+        {/* Both ways out, as buttons rather than a line of small text. On a
+            phone this panel stacks under the whole form, so anything here is
+            the last thing on a long page - it cannot be the only way back,
+            which is why there is a link above the form as well. */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
+          <Link href="/menu" className="btn btn-secondary" style={{ flex: "1 1 auto" }}>&larr; Add more</Link>
+          <Link href="/basket" className="btn btn-secondary" style={{ flex: "1 1 auto" }}>Edit basket</Link>
+        </div>
       </aside>
     </section>
   );
