@@ -174,12 +174,14 @@ export function MenuSearchPill({
                         onMouseEnter={() => setActive(i)}
                         onClick={() => setOpen(false)}
                       >
-                        <span className="fp-searchdrop-name">
-                          {it.name}
-                          <DietBadges tags={it.tags} size={17} />
-                          {it.soldOut ? <span className="tag tag-neutral" style={{ marginLeft: 8 }}>Sold out</span> : null}
+                        <span className="fp-searchdrop-main">
+                          <span className="fp-searchdrop-name">
+                            {it.name}
+                            <DietBadges tags={it.tags} size={17} />
+                            {it.soldOut ? <span className="tag tag-neutral">Sold out</span> : null}
+                          </span>
                           {it.description ? <span className="fp-searchdrop-desc">{it.description}</span> : null}
-                          <span className="fp-searchdrop-note">{it.sizeNote}</span>
+                          {it.sizeNote ? <span className="fp-searchdrop-note">{it.sizeNote}</span> : null}
                         </span>
                         <span className="fp-searchdrop-price">{gbpShort(it.fromPrice)}</span>
                       </Link>

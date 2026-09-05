@@ -1119,6 +1119,31 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
 }
 .btn-hero-ghost:hover { background: rgba(255,255,255,.26); }
 
+/* ── The page stays where it is put ───────────────────────────────────────
+   Two separate faults, both of which made the site lurch on a phone.
+
+   1. iOS Safari zooms the whole viewport when you focus a form control whose
+      text is under 16px, and then does not zoom back out. Our inputs were 14px
+      and the hero search 15px, so touching the search bar threw the page in
+      the user's face and left it there. The fix is the font size, not
+      `maximum-scale=1` - that would stop the zoom by banning pinch-zoom
+      entirely, which takes the page away from anybody who needs to magnify it.
+      Scoped to coarse pointers so the denser desktop sizing is untouched.
+
+   2. Nothing may push the document wider than the screen. One overflowing
+      child and the whole page slides sideways under the thumb. */
+@media (pointer: coarse) {
+  .input, .lf-input, select.input, textarea.input,
+  input[type="text"], input[type="search"], input[type="tel"],
+  input[type="email"], input[type="number"], input[type="password"],
+  select, textarea,
+  .fp-herosearch-bar input {
+    font-size: 16px;
+  }
+}
+
+html, body { max-width: 100%; overflow-x: clip; }
+
 /* ── Search dropdown ───────────────────────────────────────────────────────
    Results as you type, grouped by category and priced, so the whole job can be
    done from the one box without loading a page first. */
@@ -1157,18 +1182,33 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
 .fp-searchdrop > div:first-child .fp-searchdrop-cat {
   border-radius: calc(var(--radius-md) - 2px) calc(var(--radius-md) - 2px) 0 0;
 }
+/* A result is a block of text with a price beside it, not four things fighting
+   for one line. Everything about the item stacks in the first column - name,
+   what is in it, the sizes - and the price keeps its own column on the right so
+   it stays aligned however long the name is. It used to be one flex row with
+   the description and the size note set inline after the name, which on a phone
+   read as "Chicken Dippers Six pieces Regular £5.49" run together. */
 .fp-searchdrop-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 4px 12px;
   padding: 11px 14px;
   border-bottom: 1px solid var(--color-divider);
   color: inherit;
   text-decoration: none;
 }
 .fp-searchdrop-row[data-active] { background: color-mix(in srgb, var(--color-action) 12%, transparent); }
-.fp-searchdrop-name { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.fp-searchdrop-main { display: grid; gap: 3px; min-width: 0; }
+.fp-searchdrop-name {
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
 .fp-searchdrop-note { font-weight: 400; font-size: 12px; color: var(--color-neutral-700); }
 /* ── Diet badges ──────────────────────────────────────────────────────────
    A filled circle, not a letter floating in the price line. Basil green for
@@ -1207,7 +1247,7 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   color: var(--color-neutral-800);
   margin-top: 2px;
 }
-.fp-searchdrop-price { font-weight: 800; font-size: 15px; white-space: nowrap; }
+.fp-searchdrop-price { font-weight: 800; font-size: 15px; white-space: nowrap; padding-top: 1px; }
 .fp-searchdrop-empty { margin: 0; padding: 16px; font-size: 14px; color: var(--color-neutral-800); }
 .fp-searchdrop-all {
   display: block;
