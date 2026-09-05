@@ -14,7 +14,8 @@
     "logo": "assets/logo.png",
     "og": "assets/og.jpg",
     "hero": "assets/hero.jpg",
-    "tagline": "Home of the 20 inch pizza. Fresh, handmade, delivered."
+    "tagline": "Home of the 20 inch pizza. Fresh, handmade, delivered.",
+    "photoStyle": "colour"
   },
   "contact": {
     "phone": "01268 554034",

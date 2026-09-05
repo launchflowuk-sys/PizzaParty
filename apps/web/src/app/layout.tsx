@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     "--brand-secondary": cfg.brand.secondary,
   } as React.CSSProperties;
   return (
-    <html lang="en-GB" className={archivo.variable} style={style}>
+    <html lang="en-GB" className={archivo.variable} style={style} data-photo={cfg.brand.photoStyle}>
       <body style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
         <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} fulfilment={cfg.fulfilment} />
         <main style={{ flex: 1 }}>{children}</main>

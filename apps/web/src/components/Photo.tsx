@@ -1,8 +1,10 @@
 import Image from "next/image";
 
-/** Every content photograph in the Modernist system goes through `.grayscale`
- *  (`filter: grayscale(1) contrast(1.08)`) - the images are stored in colour and
- *  desaturated here, so a tenant can switch to colour by dropping one class.
+/** Every content photograph goes through here. Colour or black and white is not
+ *  decided in this component - it cannot be, because this renders inside client
+ *  components that must not import server config. The root layout stamps
+ *  `data-photo` on <html> from `brand.photoStyle` and CSS does the rest, which
+ *  also means one attribute governs the whole site rather than each caller.
  *
  *  With no image yet it draws a monogram tile instead of an empty frame. The
  *  hatched placeholder the prototype used reads as a broken image once a menu
@@ -45,7 +47,7 @@ export function Photo({
   }
 
   return (
-    <div className="grayscale" style={{ ...box, background: "var(--color-surface)" }}>
+    <div className="fp-photo-img" style={{ ...box, background: "var(--color-surface)" }}>
       <Image
         src={src}
         alt={alt}

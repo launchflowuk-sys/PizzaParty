@@ -353,3 +353,9 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
 @media (min-width: 900px) {
   .fp-campaign-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
 }
+
+/* Colour or black and white for every photograph on the site, from
+   `brand.photoStyle`. Kept as one attribute on <html> rather than a class per
+   image, because the setting is a property of the shop, not of the picture —
+   and because Photo renders inside client components that cannot read config. */
+:root[data-photo="grayscale"] .fp-photo-img { filter: grayscale(1) contrast(1.08); }

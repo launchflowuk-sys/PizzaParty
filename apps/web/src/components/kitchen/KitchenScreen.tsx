@@ -112,6 +112,17 @@ export function KitchenScreen() {
           >
             {sound ? "Sound on" : "Enable sound"}
           </button>
+          {/* A shared tablet needs a way to hand over at the end of a shift. */}
+          <button
+            className="btn btn-secondary"
+            style={{ minHeight: 44 }}
+            onClick={async () => {
+              try { await fetch("/api/admin/logout", { method: "POST" }); }
+              finally { window.location.href = "/admin/login"; }
+            }}
+          >
+            Sign out
+          </button>
         </div>
       </header>
 

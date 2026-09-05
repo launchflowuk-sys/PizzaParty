@@ -43,6 +43,16 @@ export const ClientSchema = z.object({
     og: z.string().default("assets/og.jpg"),
     hero: z.string().default("assets/hero.jpg"),
     tagline: z.string().default(""),
+    /**
+     * How food photography is rendered.
+     *
+     * The Modernist prototypes desaturate every photograph, which is striking
+     * and consistent but works against a takeaway's actual job - a golden
+     * cheese pull sells a pizza and a grey one does not. Photos are always
+     * stored in colour, so this is a presentation choice a shop can change
+     * without re-shooting anything.
+     */
+    photoStyle: z.enum(["colour", "grayscale"]).default("colour"),
   }),
   contact: z
     .object({

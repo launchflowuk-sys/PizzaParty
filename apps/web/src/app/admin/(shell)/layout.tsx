@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SignOutButton } from "@/components/admin/SignOutButton";
 import { getConfig } from "@/lib/config";
 import { getClientRow } from "@/lib/menu";
 import { prisma } from "@launchflow/db";
@@ -69,6 +70,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/" style={{ fontSize: 12 }}>Open the storefront &rarr;</Link>
           <br />
           <Link href="/admin/launchflow" style={{ fontSize: 12 }}>LaunchFlow &rarr;</Link>
+          <SignOutButton />
         </div>
       </aside>
 
