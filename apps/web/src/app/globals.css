@@ -2403,3 +2403,109 @@ footer::before {
    inside it would be announced to nobody. It is a sibling laid over the top. */
 .fp-dealcard-imglink { position: absolute; inset: 0; display: block; }
 .fp-dealcard-price, .fp-dealcard-flag { pointer-events: none; }
+
+/* == The notification switchboard ==========================================
+   Nine events by four audiences by two channels is seventy-two switches, so
+   the grid has to be readable at a glance or nobody will ever touch it. The
+   two channels sit side by side in one cell, colour-coded, because the whole
+   decision this screen exists for is "email or text" - and the one that costs
+   money should be the one that looks like it costs money. */
+.fp-nottable { width: 100%; border-collapse: collapse; min-width: 760px; }
+.fp-nottable thead th {
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--color-neutral-700); font-weight: 700; text-align: left;
+  padding: 0 10px 10px; border-bottom: 2px solid var(--color-divider);
+}
+.fp-nottable tbody th {
+  text-align: left; font-weight: 400; padding: 14px 16px 14px 0;
+  border-bottom: 1px solid var(--color-divider); vertical-align: top;
+}
+.fp-nottable tbody th strong { display: block; font-size: 15px; font-weight: 700; color: var(--color-text); }
+.fp-nottable tbody th span {
+  display: block; font-size: 12.5px; line-height: 1.45; color: var(--color-neutral-700);
+  margin-top: 3px; max-width: 42ch;
+}
+.fp-nottable td { padding: 12px 10px; border-bottom: 1px solid var(--color-divider); vertical-align: middle; }
+/* A combination that means nothing gets a dot, not an empty box - an empty box
+   reads as a switch somebody forgot to draw. */
+.fp-nottable td.na { text-align: center; color: var(--color-neutral-400); }
+
+.fp-notcell { display: flex; flex-direction: column; gap: 6px; }
+
+.fp-notsw {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 10px; border-radius: var(--radius-pill);
+  border: 1px solid var(--color-divider); background: var(--color-bg);
+  font-size: 12px; font-weight: 600; color: var(--color-neutral-700);
+  cursor: pointer; user-select: none; white-space: nowrap;
+  transition: background .12s ease, border-color .12s ease, color .12s ease;
+}
+.fp-notsw input { accent-color: var(--ok); margin: 0; cursor: pointer; }
+.fp-notsw.sms input { accent-color: var(--warn); }
+.fp-notsw:hover { border-color: var(--color-neutral-400); }
+/* Lit only when actually on, so the shape of what is switched on reads down
+   the column without having to look at any individual checkbox. */
+.fp-notsw:has(input:checked) { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok); }
+.fp-notsw.sms:has(input:checked) { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn); }
+.fp-notsw:focus-within { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+.fp-notbanner {
+  padding: 13px 16px; margin: 0 0 16px; border-radius: 10px;
+  font-size: 14px; line-height: 1.55;
+}
+.fp-notbanner.warn { background: var(--warn-bg); color: var(--warn); box-shadow: inset 4px 0 0 var(--warn); }
+.fp-notbanner.danger { background: var(--danger-bg); color: var(--danger); box-shadow: inset 4px 0 0 var(--danger); }
+.fp-notbanner strong { font-weight: 800; }
+
+/* == New order alert, kitchen screen =======================================
+   The beep fires once. On a wall tablet with an extractor running and somebody
+   at the counter, once is not enough - so the alert also has to be seen, and
+   has to stay until a person actually taps it. Deliberately not auto-dismissing:
+   an order that times out unnoticed is the exact failure this prevents. */
+.fp-newalert {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 24px 16px;
+  background: color-mix(in srgb, var(--color-neutral-900, #16100f) 55%, transparent);
+  backdrop-filter: blur(2px);
+  animation: fp-newalert-in .18s ease-out;
+}
+@keyframes fp-newalert-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .fp-newalert { animation: none; } }
+
+.fp-newalert-card {
+  background: var(--color-bg);
+  border: 3px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  padding: 22px 24px;
+  width: min(520px, 100%);
+  display: grid; gap: 14px;
+}
+.fp-newalert-count {
+  font-family: var(--font-heading); font-weight: 800;
+  font-size: clamp(24px, 4vw, 32px); letter-spacing: -.02em; line-height: 1.05;
+  color: var(--color-accent);
+}
+.fp-newalert-list { display: grid; gap: 8px; }
+.fp-newalert-row {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: baseline;
+  padding: 10px 12px; border-radius: 8px; background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  font-size: 15px;
+}
+.fp-newalert-row strong { font-family: var(--font-heading); font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+.fp-newalert-row span:nth-of-type(1) { text-transform: capitalize; color: var(--color-neutral-700); }
+.fp-newalert-row span:last-child { font-weight: 700; font-variant-numeric: tabular-nums; }
+.fp-newalert-more { font-size: 13px; color: var(--color-neutral-700); padding-left: 12px; }
+/* Big enough to hit with a thumb, wearing a glove, without looking. */
+.fp-newalert-ok { width: 100%; min-height: 56px; font-size: 17px; }
+
+/* The peek link on each switch. Small, quiet, and only obvious on hover - it is
+   a check somebody does once, not something to compete with the switch itself. */
+.fp-notpeek {
+  margin-left: 2px; padding: 0 3px; border-radius: 3px;
+  font-size: 13px; line-height: 1; text-decoration: none;
+  color: var(--color-neutral-400);
+}
+.fp-notpeek:hover, .fp-notpeek:focus-visible { color: var(--color-accent); background: var(--color-surface); }

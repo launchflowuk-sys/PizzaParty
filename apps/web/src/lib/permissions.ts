@@ -21,7 +21,7 @@ export const ROLE_LABEL: Record<StaffRole, string> = {
 export const SCREENS = [
   "dashboard", "kitchen", "orders", "dispatch", "menu", "deals",
   "promos", "loyalty", "inventory", "customers", "campaigns", "reviews", "marketing",
-  "staff", "hours", "zones", "launchflow", "help",
+  "staff", "hours", "zones", "notifications", "launchflow", "help",
 ] as const;
 export type Screen = (typeof SCREENS)[number];
 
@@ -29,7 +29,7 @@ export const SCREEN_LABEL: Record<Screen, string> = {
   dashboard: "Dashboard", kitchen: "Kitchen queue", orders: "Orders", dispatch: "Dispatch",
   menu: "Menu & pricing", deals: "Deals", promos: "Promotions", loyalty: "Rewards club", inventory: "Inventory",
   customers: "Customers", campaigns: "Campaigns", reviews: "Reviews", marketing: "Marketing", staff: "Staff",
-  hours: "Hours & pause", zones: "Delivery zones", launchflow: "LaunchFlow", help: "Help",
+  hours: "Hours & pause", zones: "Delivery zones", notifications: "Notifications", launchflow: "LaunchFlow", help: "Help",
 };
 
 /**

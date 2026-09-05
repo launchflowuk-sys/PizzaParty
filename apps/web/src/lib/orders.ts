@@ -4,7 +4,11 @@ import { prisma, type Order, type OrderStatus, type Prisma } from "@launchflow/d
 import { env } from "./env";
 import { getConfig } from "./config";
 import { gbp } from "./money";
-import { escapeHtml, postPrinter, sendEmail, sendSms } from "./notify";
+// sendSms is still used directly for the referral reward, which is a message
+// to a third party about somebody else's order and so sits outside the
+// per-order notification rules.
+import { postPrinter, sendSms } from "./notify";
+import { notify, STATUS_EVENT } from "./notifications";
 import { formatTime } from "./availability";
 import { deliveryTermsFor } from "./postcode";
 import { revalidateTag } from "next/cache";
@@ -70,7 +74,18 @@ export const KITCHEN_NEXT: Partial<Record<OrderStatus, { label: string; to: Orde
 };
 
 export const orderInclude = {
-  items: { where: { parentId: null }, include: { modifiers: true, components: { include: { modifiers: true } } }, orderBy: { id: "asc" } },
+  // `product` is selected only for its photograph, which the customer emails
+  // put against each line. Narrow on purpose: pulling whole products here would
+  // drag the description and every price band into memory for nothing.
+  items: {
+    where: { parentId: null },
+    include: {
+      modifiers: true,
+      components: { include: { modifiers: true } },
+      product: { select: { image: true } },
+    },
+    orderBy: { id: "asc" },
+  },
   location: true,
   customer: true,
   payment: true,
@@ -130,8 +145,8 @@ export async function markPlaced(orderId: string, actor: string, paymentData?: P
   const productIds = order.items.flatMap((i) => [i.productId, ...i.components.map((c) => c.productId)]).filter((x): x is string => !!x);
   if (productIds.length) await prisma.product.updateMany({ where: { id: { in: productIds } }, data: { ordersCount: { increment: 1 } } });
   revalidateTag(MENU_TAG);
-  await notifyKitchen(order);
-  await notifyCustomer(order, "placed");
+  await notify("order_placed", order);
+  await notifyPrinter(order);
   return order;
 }
 
@@ -163,8 +178,17 @@ export async function transitionOrder(orderId: string, to: OrderStatus, actor: s
   const order = await prisma.order.update({ where: { id: orderId }, data, include: orderInclude });
   await addEvent(orderId, to, actor, opts.reason ?? (opts.etaMinutes ? `ETA ${opts.etaMinutes} min` : ""));
   if (to === "completed") await awardLoyalty(order);
-  if (to === "rejected" && order.payment?.stripePaymentIntentId && order.payment.status === "succeeded") await refundOrder(order, "rejected");
-  await notifyCustomer(order, to);
+
+  const event = STATUS_EVENT[to];
+  if (event) await notify(event, order, { reason: opts.reason });
+
+  if (to === "rejected" && order.payment?.stripePaymentIntentId && order.payment.status === "succeeded") {
+    const refunded = await refundOrder(order, "rejected");
+    // Only once the money has actually moved. Telling somebody their refund is
+    // on its way before Stripe has accepted it is how a shop ends up promising
+    // money it has not sent.
+    if (refunded !== null) await notify("order_refunded", order, { refund: refunded });
+  }
   return order;
 }
 
@@ -211,36 +235,38 @@ async function awardLoyalty(order: FullOrder) {
   await prisma.customer.update({ where: { id: order.customerId }, data: { loyaltyPoints: { increment: points } } });
 }
 
-async function refundOrder(order: FullOrder, reason: string) {
+/** Returns the pence actually refunded, or null if Stripe refused. */
+async function refundOrder(order: FullOrder, reason: string): Promise<number | null> {
   try {
     const { getStripe, connectOpts } = await import("./stripe");
     const cfg = getConfig();
     const refund = await getStripe().refunds.create({ payment_intent: order.payment!.stripePaymentIntentId }, connectOpts(cfg.payments.stripeAccountId));
     await prisma.payment.update({ where: { orderId: order.id }, data: { status: "refunded", refundedAmount: refund.amount } });
     await addEvent(order.id, "refunded", "system", `Refunded ${gbp(refund.amount)} (${reason})`);
+    return refund.amount;
   } catch (e) {
     await addEvent(order.id, "refund_failed", "system", (e as Error).message);
+    return null;
   }
 }
 
-async function notifyKitchen(order: FullOrder) {
+/**
+ * The receipt printer.
+ *
+ * Deliberately outside the notification rules. Email and SMS are messages to a
+ * person who can be over-messaged and cost money to reach; the printer is a
+ * machine in the kitchen that either has a docket or does not. Putting it
+ * behind the same toggles would invite somebody to switch off the one output
+ * the kitchen physically works from.
+ */
+async function notifyPrinter(order: FullOrder) {
   const cfg = getConfig();
-  const text = orderText(order);
-  const tasks: Promise<unknown>[] = [];
-  if (cfg.notifications.kitchenSms) {
-    tasks.push(sendSms(cfg.notifications.kitchenSms, `NEW ORDER ${text.split("\n").slice(0, 2).join(" | ")} — ${env.siteUrl}/kitchen`).then((r) => addEvent(order.id, "sms_sent", "system", `kitchen sms ${r.ok ? "ok" : r.error}`)));
-  }
-  if (cfg.notifications.kitchenEmail) {
-    tasks.push(sendEmail(cfg.notifications.kitchenEmail, `New order #${order.number} — ${order.fulfilment} ${gbp(order.total)}`, `<pre style="font:14px/1.5 monospace">${escapeHtml(text)}</pre><p><a href="${env.siteUrl}/kitchen">Open kitchen screen</a></p>`)
-      .then((r) => addEvent(order.id, "email_sent", "system", `kitchen email ${r.ok ? "ok" : r.error}`)));
-  }
-  if (cfg.notifications.printerWebhook) {
-    tasks.push(postPrinter(cfg.notifications.printerWebhook, { id: order.id, number: order.number, text, order: printPayload(order) })
-      .then((r) => addEvent(order.id, "print_sent", "system", r.ok ? "ok" : r.error ?? "failed")));
-  }
-  await Promise.allSettled(tasks);
+  if (!cfg.notifications.printerWebhook) return;
+  const r = await postPrinter(cfg.notifications.printerWebhook, {
+    id: order.id, number: order.number, text: orderText(order), order: printPayload(order),
+  });
+  await addEvent(order.id, "print_sent", "system", r.ok ? "ok" : r.error ?? "failed");
 }
-
 function printPayload(order: FullOrder) {
   return {
     number: order.number, fulfilment: order.fulfilment, paymentMethod: order.paymentMethod, status: order.status,
@@ -252,40 +278,6 @@ function printPayload(order: FullOrder) {
   };
 }
 
-async function notifyCustomer(order: FullOrder, status: OrderStatus) {
-  const cfg = getConfig();
-  const tz = order.location.timezone;
-  const link = orderUrl(order);
-  let sms = "";
-  switch (status) {
-    case "placed":
-      sms = `${cfg.name}: thanks ${order.customerName.split(" ")[0]}! Order #${order.number} received (${gbp(order.total)}). Track it: ${link}`;
-      break;
-    case "accepted":
-      sms = order.fulfilment === "delivery"
-        ? `${cfg.name}: order #${order.number} accepted. Estimated delivery ${order.etaAt ? formatTime(order.etaAt, tz) : `${order.etaMinutes} min`}. ${link}`
-        : `${cfg.name}: order #${order.number} accepted. Ready for collection at ${order.etaAt ? formatTime(order.etaAt, tz) : `${order.etaMinutes} min`}. ${link}`;
-      break;
-    case "ready":
-      sms = order.fulfilment === "collection" ? `${cfg.name}: order #${order.number} is ready to collect.` : "";
-      break;
-    case "out_for_delivery":
-      sms = `${cfg.name}: order #${order.number} is on its way.`;
-      break;
-    case "rejected":
-      sms = `${cfg.name}: sorry, we couldn't take order #${order.number}${order.rejectReason ? ` (${order.rejectReason})` : ""}. ${order.paymentMethod === "card" ? "Your payment will be refunded." : ""} Call us on ${cfg.contact.phone || "the shop"}.`;
-      break;
-  }
-  if (sms) {
-    const r = await sendSms(order.customerPhone, sms);
-    await addEvent(order.id, "sms_sent", "system", `${status} → customer ${r.ok ? "ok" : r.error}`);
-  }
-  if (status === "placed" && order.customerEmail) {
-    const r = await sendEmail(order.customerEmail, `Your ${cfg.name} order #${order.number}`, `<p>Thanks ${escapeHtml(order.customerName)}, we've got your order.</p><pre style="font:14px/1.5 monospace">${escapeHtml(orderText(order))}</pre><p><a href="${link}">Track your order</a></p>`);
-    await addEvent(order.id, "email_sent", "system", `placed → customer ${r.ok ? "ok" : r.error}`);
-  }
-}
-
 export async function sendReviewRequests(limit = 50): Promise<number> {
   const cfg = getConfig();
   if (!cfg.contact.reviewUrl) return 0;
@@ -294,17 +286,19 @@ export async function sendReviewRequests(limit = 50): Promise<number> {
   if (!client) return 0;
   const orders = await prisma.order.findMany({
     where: { clientId: client.id, status: "completed", completedAt: { lte: cutoff }, reviewRequestedAt: null },
-    take: limit, orderBy: { completedAt: "asc" },
+    take: limit, orderBy: { completedAt: "asc" }, include: orderInclude,
   });
   let n = 0;
   for (const o of orders) {
+    // Stamped before sending, not after. A send that throws halfway would
+    // otherwise leave the order eligible again on the next run, and the
+    // customer gets asked for a review twice.
     await prisma.order.update({ where: { id: o.id }, data: { reviewRequestedAt: new Date() } });
-    const r = await sendSms(o.customerPhone, `${cfg.name}: hope you enjoyed your order! A quick Google review helps us loads: ${cfg.contact.reviewUrl}`);
-    await addEvent(o.id, "sms_sent", "system", `review request ${r.ok ? "ok" : r.error}`);
+    const r = await notify("review_request", o);
     // Recorded as a send so the shop sees the real SMS bill, and so the shared
     // cooldown keeps a win-back text from landing the same afternoon.
     try {
-      await recordReviewRequest({ clientId: client.id, customerId: o.customerId, ok: r.ok, error: r.error });
+      await recordReviewRequest({ clientId: client.id, customerId: o.customerId, ok: r.sent > 0, error: r.sent > 0 ? undefined : "no channel enabled" });
     } catch (e) {
       console.error("[marketing] could not record review request", (e as Error).message);
     }

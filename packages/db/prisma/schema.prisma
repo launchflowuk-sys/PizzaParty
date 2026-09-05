@@ -35,6 +35,14 @@ model Client {
   kitchenSms        String   @default("")
   printerWebhook    String   @default("")
   reviewUrl         String   @default("")
+  /// Where the owner wants to hear about orders. Deliberately separate from
+  /// the public email and phone above - those go on the website, and nobody
+  /// wants every order landing in the inbox customers write to.
+  ownerEmail        String   @default("")
+  ownerSms          String   @default("")
+  /// The master switch. One place to silence everything, so a shop having a
+  /// bad night is not hunting through thirty toggles.
+  notificationsOn   Boolean  @default(true)
   configHash        String   @default("")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -52,6 +60,7 @@ model Client {
   staff          Staff[]
   reviews        Review[]
   automations    Automation[]
+  notificationRules NotificationRule[]
   marketingSends MarketingSend[]
   smsInbound     SmsInbound[]
   loyaltyRewards LoyaltyReward[]
@@ -614,6 +623,7 @@ model Driver {
   locationId    String    @default("")
   name          String
   phone         String    @default("")
+  email         String    @default("")
   vehicle       String    @default("")
   /// available | on_delivery | off
   status        String    @default("available")
@@ -767,4 +777,34 @@ model SmsInbound {
   receivedAt DateTime  @default(now())
 
   @@index([clientId, receivedAt])
+}
+
+/// One switch per (event, who hears it, how).
+///
+/// Texts cost money per message and email costs nothing, so a shop that sends
+/// everything by SMS runs out of credit in a week. Every notification therefore
+/// exists on both channels and each one can be turned off on its own - the
+/// normal setup is email for everything and SMS only where somebody genuinely
+/// needs to look at their phone.
+///
+/// A missing row means off. Defaults are seeded in packages/db/src/notifications.ts
+/// so a new shop starts sensible rather than silent.
+model NotificationRule {
+  id           String  @id @default(cuid())
+  clientId     String
+  client       Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  /// order_placed | order_accepted | order_preparing | order_ready |
+  /// order_out_for_delivery | order_completed | order_rejected |
+  /// order_refunded | review_request
+  event        String
+  /// customer | kitchen | admin | driver
+  audience     String
+  /// email | sms
+  channel      String
+  enabled      Boolean @default(false)
+  /// Minutes to wait before sending. Only the review request uses this today.
+  delayMinutes Int     @default(0)
+
+  @@unique([clientId, event, audience, channel])
+  @@index([clientId, event])
 }

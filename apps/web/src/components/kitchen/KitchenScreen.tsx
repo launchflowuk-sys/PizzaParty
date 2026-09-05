@@ -47,6 +47,16 @@ export function KitchenScreen() {
   const audio = useRef<AudioContext | null>(null);
   const known = useRef<Set<string>>(new Set());
   const first = useRef(true);
+  /**
+   * New orders nobody has looked at yet.
+   *
+   * The beep alone is not enough on a wall tablet in a loud kitchen: it fires
+   * once, and if the extractor is on or somebody is at the counter it is simply
+   * missed. This is the visual half of the same alert - it stays on screen
+   * until a person taps it, so an order cannot go unnoticed just because nobody
+   * heard anything.
+   */
+  const [pending, setPending] = useState<O[]>([]);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/kitchen/orders", { cache: "no-store" });
@@ -56,11 +66,26 @@ export function KitchenScreen() {
     if (d.alerts) setAlerts(d.alerts);
     const fresh = d.orders.filter((o) => o.status === "placed" && !known.current.has(o.id));
     d.orders.forEach((o) => known.current.add(o.id));
-    if (!first.current && fresh.length && audio.current) beep(audio.current);
+    if (!first.current && fresh.length) {
+      if (audio.current) beep(audio.current);
+      setPending((q) => [...q, ...fresh]);
+      // Only when the tab is not the one being looked at - a system popup over
+      // a screen somebody is already using is just in the way.
+      if (typeof Notification !== "undefined" && Notification.permission === "granted" && document.hidden) {
+        for (const o of fresh) {
+          new Notification(`New order #${o.number}`, { body: `${o.fulfilment} · £${(o.total / 100).toFixed(2)}`, tag: o.id });
+        }
+      }
+    }
     first.current = false;
   }, []);
 
   useEffect(() => { void load(); const t = setInterval(load, 5000); return () => clearInterval(t); }, [load]);
+  useEffect(() => {
+    if (sound && typeof Notification !== "undefined" && Notification.permission === "default") {
+      void Notification.requestPermission();
+    }
+  }, [sound]);
   // Nag while unaccepted orders exist
   useEffect(() => {
     const t = setInterval(() => { if (audio.current && orders.some((o) => o.status === "placed")) beep(audio.current); }, 20000);
@@ -81,6 +106,29 @@ export function KitchenScreen() {
     // fp-kitchenwrap is what carries the status colour tokens; without it the
     // green advance button has no --ok to paint with and comes out blank.
     <div className="fp-kitchenwrap" style={{ padding: "16px 20px 40px" }}>
+      {pending.length > 0 ? (
+        <div className="fp-newalert" role="alert">
+          <div className="fp-newalert-card">
+            <span className="fp-newalert-count">
+              {pending.length === 1 ? "New order" : `${pending.length} new orders`}
+            </span>
+            <div className="fp-newalert-list">
+              {pending.slice(0, 4).map((o) => (
+                <div key={o.id} className="fp-newalert-row">
+                  <strong>#{o.number}</strong>
+                  <span>{o.fulfilment.replace("_", " ")}</span>
+                  <span>{gbp(o.total)}</span>
+                </div>
+              ))}
+              {pending.length > 4 ? <div className="fp-newalert-more">and {pending.length - 4} more</div> : null}
+            </div>
+            <button className="btn btn-primary fp-newalert-ok" onClick={() => setPending([])} autoFocus>
+              Got it
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Kitchen queue</span>

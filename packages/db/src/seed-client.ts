@@ -12,6 +12,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { prisma } from "./index";
 import { clientDir, dayKeys, loadClientConfig, loadMenuConfig, toPence, type ClientConfig, type MenuConfig } from "@launchflow/config";
+import { DEFAULT_RULES } from "./notifications";
 
 function hashConfig(slug: string): string {
   const h = createHash("sha256");
@@ -193,6 +194,21 @@ async function seedOps(clientId: string, slug: string) {
         expiryDays: r.expiryDays ?? 60,
         sortOrder: i,
       })),
+    });
+  }
+
+  // Notification switches, once, into an empty table.
+  //
+  // Same reasoning as the rewards above: which events text and which only
+  // email is a running cost the shop tunes with real orders in front of it, and
+  // a re-seed must not quietly switch SMS back on for everything and start
+  // spending their credit again.
+  if ((await prisma.notificationRule.count({ where: { clientId } })) === 0) {
+    await prisma.notificationRule.createMany({
+      data: DEFAULT_RULES.flatMap((d) => [
+        { clientId, event: d.event, audience: d.audience, channel: "email", enabled: d.email, delayMinutes: d.delayMinutes ?? 0 },
+        { clientId, event: d.event, audience: d.audience, channel: "sms", enabled: d.sms, delayMinutes: d.delayMinutes ?? 0 },
+      ]),
     });
   }
 
