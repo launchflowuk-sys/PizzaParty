@@ -1,68 +1,20 @@
 # Farm Pizza — photos still needed
 
-Generate square **1024x1024 colour** JPGs. The site desaturates them, so ask for
-strong light and texture, not colourful ingredients — see `docs/IMAGE-SPEC.md`.
+46 of 68 products are photographed. Square **1024x1024 colour** JPGs; I resize
+to 800x800 and wire them up. Drop them anywhere and send them over.
 
-**Where they go:** drop each file into `config/farm-pizza/assets/products/`
-using the exact filename below. Nothing else to do — the site picks them up
-from the filename and the placeholder tile disappears.
+## 1. Spaghetti Bolognese — needs a retry  (1)
 
+Two attempts came back as spaghetti **on a pizza base**. It is a pasta dish, so
+the prompt has to say so and say what it is not:
 
-## A. Worth doing first — a monogram looks worst here  (17)
-
-### `cheesy-garlic-bread-pizza.jpg` — Cheesy Garlic Bread Pizza
-> Cheesy Garlic Bread Pizza, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `potato-skins-cheese.jpg` — Potato Skins with Cheese
-> Potato Skins with Cheese, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `potato-skins-cheese-bacon.jpg` — Potato Skins with Cheese & Bacon
-> Potato Skins with Cheese & Bacon, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `jalapeno-poppers.jpg` — Jalapeño Cream Cheese Poppers
-> Jalapeño Cream Cheese Poppers — six pieces, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `mozzarella-sticks.jpg` — Mozzarella Sticks
-> Mozzarella Sticks — six pieces, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `stuffed-mushroom.jpg` — Stuffed Mushroom
-> Stuffed Mushroom, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `onion-rings.jpg` — Onion Rings
-> Onion Rings — ten pieces, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `chicken-dippers.jpg` — Chicken Dippers
-> Chicken Dippers — six pieces, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `chicken-nuggets.jpg` — Chicken Nuggets
-> Chicken Nuggets — ten pieces, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `chicken-strips.jpg` — Chicken Strips
-> Chicken Strips — six pieces, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `chicken-box.jpg` — Chicken Box
-> Chicken Box — 3 chicken strips, 3 nuggets, 3 hot wings, 3 bbq wings, 3 dippers, potato wedges and 2 dips, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `tex-mix-platter.jpg` — Tex-Mix Platter
-> Tex-Mix Platter — 3 jalapeño cream cheese, potato wedges, 4 nuggets, 3 dippers, 3 bbq wings and two dips, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `spaghetti-bolognese.jpg` — Spaghetti Bolognese
-> Spaghetti Bolognese, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `meat-lasagne.jpg` — Meat Lasagne
-> Meat Lasagne, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `strawberry-cheesecake.jpg` — Strawberry Cheesecake
-> Strawberry Cheesecake, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `tennessee-toffee-pie.jpg` — Tennessee Toffee Pie
-> Tennessee Toffee Pie, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
-
-### `dips.jpg` — Dips
-> Dips, plated as a takeaway side. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
+### `spaghetti-bolognese.jpg`
+> A white oval takeaway dish of spaghetti bolognese: long spaghetti strands coated
+in a rich beef ragu, grated parmesan on top. **Not a pizza. No dough, no bread, no
+pizza base, no crust of any kind.** Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
 
 
-## B. Pizzas — 11 already shot, these 19 complete the set  (19)
+## 2. Pizzas — 11 done, these complete the grid  (19)
 
 ### `the-favourite.jpg` — The Favourite
 > A whole 12-inch pizza on a plain surface, topped with ham & mushrooms. Blistered charred crust edge, glossy melted mozzarella. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
@@ -122,11 +74,8 @@ from the filename and the placeholder tile disappears.
 > A whole 12-inch pizza on a plain surface, topped with two different pizzas on one base - tell us which two in the notes. Blistered charred crust edge, glossy melted mozzarella. Top-down flat lay, colour photograph. Plain mid-tone grey surface, no props, no herbs scattered, no wooden board. Strong directional light from the left with a visible soft shadow. Sharp texture and tonal contrast. Square 1024x1024, food fills the frame edge to edge.
 
 
-## C. Leave these — branded packaging, use a real photo or none  (2)
+## 3. Drinks — leave these  (2)
 
-### `dr-pepper-can.jpg` — Dr Pepper
-Branded can. Do not generate — photograph the real thing or leave the tile.
-
-### `milkshake.jpg` — Milkshake
-Own-brand drink. A real photo is better than a generated one.
+`dr-pepper-can` is branded packaging: photograph the real can, do not generate it.
+`milkshake` is own-brand, so generate it if you want one — but a real photo is better.
 

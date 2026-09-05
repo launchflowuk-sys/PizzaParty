@@ -1604,7 +1604,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/cheesy-garlic-bread-pizza.jpg"
     },
     {
       "slug": "potato-skins-cheese",
@@ -1627,7 +1627,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/potato-skins-cheese.jpg"
     },
     {
       "slug": "potato-skins-cheese-bacon",
@@ -1648,7 +1648,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/potato-skins-cheese-bacon.jpg"
     },
     {
       "slug": "potato-wedges",
@@ -1719,7 +1719,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/jalapeno-poppers.jpg"
     },
     {
       "slug": "mozzarella-sticks",
@@ -1742,7 +1742,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/mozzarella-sticks.jpg"
     },
     {
       "slug": "stuffed-mushroom",
@@ -1765,7 +1765,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/stuffed-mushroom.jpg"
     },
     {
       "slug": "onion-rings",
@@ -1789,7 +1789,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/onion-rings.jpg"
     },
     {
       "slug": "chicken-dippers",
@@ -1809,7 +1809,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-dippers.jpg"
     },
     {
       "slug": "hot-chicken-wings",
@@ -1869,7 +1869,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-nuggets.jpg"
     },
     {
       "slug": "chicken-strips",
@@ -1889,7 +1889,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-strips.jpg"
     },
     {
       "slug": "chicken-box",
@@ -1909,7 +1909,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-box.jpg"
     },
     {
       "slug": "tex-mix-platter",
@@ -1929,7 +1929,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/tex-mix-platter.jpg"
     },
     {
       "slug": "spaghetti-bolognese",
@@ -1973,7 +1973,7 @@
         "egg"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/meat-lasagne.jpg"
     },
     {
       "slug": "chocolate-fudge-cake",
@@ -2021,7 +2021,7 @@
         "egg"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/strawberry-cheesecake.jpg"
     },
     {
       "slug": "tennessee-toffee-pie",
@@ -2045,7 +2045,7 @@
         "egg"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/tennessee-toffee-pie.jpg"
     },
     {
       "slug": "coke-can",
@@ -2273,7 +2273,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/dips.jpg"
     },
     {
       "slug": "milkshake",
