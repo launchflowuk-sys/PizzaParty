@@ -8,7 +8,7 @@ import { AdminNotice } from "@/components/admin/AdminNotice";
 import { updateProductText } from "../../actions";
 import {
   addSize, deleteSize, updateSize, toggleSizeSoldOut,
-  deleteProduct, moveProductToCategory, toggleProductGroup, updateProductMeta,
+  deleteProduct, moveProductToCategory, toggleProductGroup, updateProductMeta, updateProductStory,
 } from "../../menu-actions";
 
 export const dynamic = "force-dynamic";
@@ -98,6 +98,28 @@ export default async function EditProduct({
               <input name="description" defaultValue={product.description} className="input" style={{ width: "100%", marginTop: 4 }} />
             </label>
             <button className="btn btn-primary">Save</button>
+          </form>
+
+          <form action={updateProductStory} style={{ marginTop: 14 }}>
+            <input type="hidden" name="back" value={back} />
+            <input type="hidden" name="id" value={product.id} />
+            <label style={{ fontSize: 12, fontWeight: 700, color: "var(--color-neutral-700)" }}>
+              The few lines on its own page
+              <HelpSpot title="What is this for, and where does it show?" article="menu-and-pricing" anchor="adding-a-new-item">
+                The short description above is the one-line list of what is on it — it shows on the menu
+                cards, in search results and when somebody is picking a pizza inside a deal. This box is
+                the longer bit that only appears on the item&rsquo;s own page, where there is room to sell it.
+              </HelpSpot>
+              <textarea
+                name="story"
+                defaultValue={product.story}
+                className="input"
+                rows={4}
+                style={{ display: "block", width: "100%", marginTop: 4, lineHeight: 1.5 }}
+                placeholder="A few appetising lines about what it is and how it eats."
+              />
+            </label>
+            <button className="btn btn-primary" style={{ marginTop: 8 }}>Save</button>
           </form>
 
           <form action={moveProductToCategory} style={{ display: "flex", gap: 10, alignItems: "flex-end", marginTop: 14 }}>

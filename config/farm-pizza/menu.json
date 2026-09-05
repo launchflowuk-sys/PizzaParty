@@ -110,42 +110,42 @@
         {
           "id": "mushrooms",
           "name": "Mushrooms",
-          "price": 1.0
+          "price": 1
         },
         {
           "id": "onions",
           "name": "Onions",
-          "price": 1.0
+          "price": 1
         },
         {
           "id": "peppers",
           "name": "Peppers",
-          "price": 1.0
+          "price": 1
         },
         {
           "id": "sweetcorn",
           "name": "Sweetcorn",
-          "price": 1.0
+          "price": 1
         },
         {
           "id": "pineapple",
           "name": "Pineapple",
-          "price": 1.0
+          "price": 1
         },
         {
           "id": "jalapenos",
           "name": "Jalapeños",
-          "price": 1.0
+          "price": 1
         },
         {
           "id": "olives",
           "name": "Olives",
-          "price": 1.0
+          "price": 1
         },
         {
           "id": "fresh-tomato",
           "name": "Fresh tomato",
-          "price": 1.0
+          "price": 1
         }
       ]
     }
@@ -196,7 +196,8 @@
         "milk"
       ],
       "featured": true,
-      "image": "products/original.jpg"
+      "image": "products/original.jpg",
+      "story": "Cheese and tomato, done properly. A generous layer of mozzarella over our tomato base, baked until the edges catch and the middle goes molten. The pizza every other pizza on this menu is built on."
     },
     {
       "slug": "the-favourite",
@@ -240,7 +241,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Called the favourite because it keeps getting ordered. Sweet cured ham and earthy mushrooms over tomato and mozzarella — the combination that never once turned up wrong for anybody."
     },
     {
       "slug": "hawaiian",
@@ -284,7 +286,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Yes, pineapple. Sweet, slightly caramelised at the edges where the heat catches it, cutting straight through salty ham and melted mozzarella. Argue about it all you like; it sells every single night."
     },
     {
       "slug": "pepperoni-lover",
@@ -330,7 +333,8 @@
         "milk"
       ],
       "featured": true,
-      "image": "products/pepperoni-lover.jpg"
+      "image": "products/pepperoni-lover.jpg",
+      "story": "For the ones who order pepperoni and then ask for extra pepperoni. Double slices, extra cheese, and the spiced oil running through all of it. Straightforward, and gloriously so."
     },
     {
       "slug": "country-chicken",
@@ -374,7 +378,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/country-chicken.jpg"
+      "image": "products/country-chicken.jpg",
+      "story": "Smoky BBQ sauce instead of tomato, then Chinese chicken, sweet red onions and mushrooms. The sauce caramelises against the cheese at the edges and turns slightly sticky. Deeply savoury, a bit moreish."
     },
     {
       "slug": "seafood",
@@ -418,7 +423,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Prawns, anchovies, tuna and sweetcorn — salty, briny and a little bit sweet all at once. A genuine change of pace from the meat side of the menu, and better than it has any right to be."
     },
     {
       "slug": "farm-chicken",
@@ -462,7 +468,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Simple and honest. Tender chicken with onions and mushrooms over tomato and mozzarella, letting the three of them do the work. Comforting rather than clever."
     },
     {
       "slug": "vegetarian",
@@ -508,7 +515,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/vegetarian.jpg"
+      "image": "products/vegetarian.jpg",
+      "story": "Mushrooms, onions, peppers and sweetcorn over tomato and mozzarella. Sweet from the corn and the onion, earthy from the mushrooms, and satisfying in a way that has nothing to do with what it is missing."
     },
     {
       "slug": "hot-vegetarian",
@@ -548,14 +556,15 @@
       ],
       "tags": [
         "vegetarian",
-        "spicy"
+        "hot"
       ],
       "allergens": [
         "gluten",
         "milk"
       ],
       "featured": false,
-      "image": "products/hot-vegetarian.jpg"
+      "image": "products/hot-vegetarian.jpg",
+      "story": "The Vegetarian with its temper up. Mushrooms, onions and peppers, then hot chilli scattered through so the heat builds slowly across the slice rather than hitting all at once."
     },
     {
       "slug": "farm-pizza-classic",
@@ -599,7 +608,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Our own. Tomato base, mushrooms, bacon and sausage, finished with fresh tomato that stays juicy in the oven and keeps the whole thing from going heavy. The one we would put our name on — and did."
     },
     {
       "slug": "meat-combo",
@@ -643,7 +653,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/meat-combo.jpg"
+      "image": "products/meat-combo.jpg",
+      "story": "Ham, beef, pork and pepperoni, four different kinds of savoury doing four different jobs. Salty, sweet, rich and spiced, all in the same mouthful."
     },
     {
       "slug": "bbq-meat-combo",
@@ -687,7 +698,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "The Meat Combo swapped onto a smoky BBQ base. Ham, beef, pork and pepperoni over sauce that goes sticky and dark at the crust. Sweeter, deeper and messier in the best way."
     },
     {
       "slug": "hot-and-spicy",
@@ -726,14 +738,15 @@
         "extra-toppings"
       ],
       "tags": [
-        "spicy"
+        "hot"
       ],
       "allergens": [
         "gluten",
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Built to bite back. Pepperoni, chicken and beef for the substance, then onion and jalapeño for the heat — sharp and bright rather than a slow burn."
     },
     {
       "slug": "bbq-chicken",
@@ -777,7 +790,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/bbq-chicken.jpg"
+      "image": "products/bbq-chicken.jpg",
+      "story": "Smoky BBQ sauce, Chinese chicken, mushrooms, sweetcorn and green pepper. The sweetcorn pops against the smoke, the peppers stay just crisp. One of the easiest pizzas on here to keep eating."
     },
     {
       "slug": "american-hot",
@@ -823,7 +837,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "The classic hot one. Pepperoni and jalapeño over sweet onion, so you get the spiced fat from the pepperoni and the clean vinegar heat of the chilli in the same bite."
     },
     {
       "slug": "chicken-hot",
@@ -862,14 +877,15 @@
         "extra-toppings"
       ],
       "tags": [
-        "spicy"
+        "hot"
       ],
       "allergens": [
         "gluten",
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Tandoori-spiced chicken with jalapeño, onions and mushrooms. Warm, aromatic spice underneath and a sharper chilli heat on top — two different kinds of hot on one base."
     },
     {
       "slug": "out-of-this-world",
@@ -913,7 +929,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Sausage, beef, onions, peppers and mushrooms, loaded on thick. Savoury and substantial, with the peppers and onions going sweet against all that meat. Named optimistically, eaten enthusiastically."
     },
     {
       "slug": "mexican-hot",
@@ -952,20 +969,68 @@
         "extra-toppings"
       ],
       "tags": [
-        "spicy"
+        "hot"
       ],
       "allergens": [
         "gluten",
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Beef, onions and mushrooms with jalapeño for heat, then sliced tomatoes laid over the top that burst and go jammy in the oven. The fresh tomato keeps it lively rather than heavy."
     },
     {
       "slug": "hotter-than-hot",
       "category": "pizzas",
       "name": "Hotter Than Hot",
       "description": "Pepperoni, beef, sausage & green chilli",
+      "sizes": [
+        {
+          "id": "small",
+          "name": "7\" Small",
+          "price": 8.39
+        },
+        {
+          "id": "medium",
+          "name": "10\" Medium",
+          "price": 13.64
+        },
+        {
+          "id": "large",
+          "name": "13\" Large",
+          "price": 15.74
+        },
+        {
+          "id": "xlarge",
+          "name": "15\" X-Large",
+          "price": 17.84
+        },
+        {
+          "id": "xxlarge",
+          "name": "20\" XX-Large",
+          "price": 19.94
+        }
+      ],
+      "modifierGroups": [
+        "base",
+        "extra-toppings"
+      ],
+      "tags": [
+        "extra-hot"
+      ],
+      "allergens": [
+        "gluten",
+        "milk"
+      ],
+      "featured": false,
+      "image": "",
+      "story": "Do not order this casually. Pepperoni, beef and sausage carrying green chilli scattered right through — a real, building heat that keeps going after the slice is gone. Have a drink to hand."
+    },
+    {
+      "slug": "bbq-special",
+      "category": "pizzas",
+      "name": "BBQ Special",
+      "description": "Texas BBQ sauce, chicken, bacon, peppers, jalapeño & sweetcorn",
       "sizes": [
         {
           "id": "small",
@@ -1005,51 +1070,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
-    },
-    {
-      "slug": "bbq-special",
-      "category": "pizzas",
-      "name": "BBQ Special",
-      "description": "Texas BBQ sauce, chicken, bacon, peppers, jalapeño & sweetcorn",
-      "sizes": [
-        {
-          "id": "small",
-          "name": "7\" Small",
-          "price": 8.39
-        },
-        {
-          "id": "medium",
-          "name": "10\" Medium",
-          "price": 13.64
-        },
-        {
-          "id": "large",
-          "name": "13\" Large",
-          "price": 15.74
-        },
-        {
-          "id": "xlarge",
-          "name": "15\" X-Large",
-          "price": 17.84
-        },
-        {
-          "id": "xxlarge",
-          "name": "20\" XX-Large",
-          "price": 19.94
-        }
-      ],
-      "modifierGroups": [
-        "base",
-        "extra-toppings"
-      ],
-      "tags": [],
-      "allergens": [
-        "gluten",
-        "milk"
-      ],
-      "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Texas BBQ sauce, chicken, bacon, peppers, jalapeño and sweetcorn. Smoke, salt, sweet and heat all pulling against each other, with the bacon crisping at the edges. A lot going on, and all of it works."
     },
     {
       "slug": "chinese-special",
@@ -1093,7 +1115,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Double Chinese chicken, mushrooms, onions and sweetcorn. Twice the chicken means every slice is properly covered, and the sweetcorn cuts the savouriness just enough."
     },
     {
       "slug": "farm-pizza-special",
@@ -1139,7 +1162,8 @@
         "milk"
       ],
       "featured": true,
-      "image": "products/farm-pizza-special.jpg"
+      "image": "products/farm-pizza-special.jpg",
+      "story": "Everything we think belongs together. Beef, ham, pork and pepperoni for depth, onions and mushrooms for sweetness and earth, pineapple to lift the whole lot. Our biggest-hearted pizza."
     },
     {
       "slug": "italian-meat-feast",
@@ -1183,7 +1207,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/italian-meat-feast.jpg"
+      "image": "products/italian-meat-feast.jpg",
+      "story": "Four meats on BBQ sauce instead of tomato — pepperoni, beef, chicken and sausage. The sauce caramelises underneath and turns the whole thing rich, smoky and slightly sweet."
     },
     {
       "slug": "italian-meatball",
@@ -1227,7 +1252,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Proper meatballs with pepperoni and sausage on a BBQ base. The meatballs stay soft and juicy while the pepperoni crisps around them. Hearty, and not remotely shy."
     },
     {
       "slug": "pepperoni-special",
@@ -1271,7 +1297,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/pepperoni-special.jpg"
+      "image": "products/pepperoni-special.jpg",
+      "story": "Pepperoni given a smoky BBQ base and softened with mushrooms and onions. The sauce takes the edge off the salt and the whole thing eats sweeter than you expect."
     },
     {
       "slug": "tex-bbq",
@@ -1315,7 +1342,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "BBQ sauce, chicken, bacon and pepperoni. Three meats, one smoky sauce, and bacon that crisps up against the cheese. Simple, and very hard to stop eating."
     },
     {
       "slug": "meat-machine",
@@ -1361,7 +1389,8 @@
         "milk"
       ],
       "featured": true,
-      "image": "products/meat-machine.jpg"
+      "image": "products/meat-machine.jpg",
+      "story": "Six meats: ham, pepperoni, beef, chicken, bacon and sausage. There is barely any cheese visible by the time it goes in the oven. If you came here to eat meat, this is the one."
     },
     {
       "slug": "italian-chicken",
@@ -1405,7 +1434,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Chicken four ways — Chinese, Mexican, BBQ and roast — on a double BBQ base with green peppers. Each one is seasoned differently, so the flavour keeps shifting slice to slice. Genuinely unlike anything else on the menu."
     },
     {
       "slug": "mega-ball",
@@ -1449,7 +1479,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Double meatballs, plus beef, sausage, pepperoni and onion. Soft meatballs, crisped pepperoni, sweet onion running through it. Heavy, and completely unapologetic about it."
     },
     {
       "slug": "half-and-half",
@@ -1493,7 +1524,8 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Can't decide? Don't. Two different pizzas on one base, split down the middle — just tell us which two in the notes when you order and we'll build it."
     },
     {
       "slug": "garlic-bread",
@@ -1516,7 +1548,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/garlic-bread.jpg"
+      "image": "products/garlic-bread.jpg",
+      "story": "Four pieces, baked until the edges go crisp and the middle stays soft, with garlic butter soaking all the way through. The thing everybody reaches for while the pizza is still too hot."
     },
     {
       "slug": "garlic-bread-cheese",
@@ -1539,7 +1572,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/garlic-bread-cheese.jpg"
+      "image": "products/garlic-bread-cheese.jpg",
+      "story": "Our garlic bread under a blanket of melted mozzarella, baked until it bubbles and browns in patches. Four pieces, and they never last."
     },
     {
       "slug": "garlic-bread-cheese-pepperoni",
@@ -1560,7 +1594,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/garlic-bread-cheese-pepperoni.jpg"
+      "image": "products/garlic-bread-cheese-pepperoni.jpg",
+      "story": "Garlic bread, melted cheese and pepperoni that crisps at the edges and leaves its spiced oil behind in the butter. Four pieces of a very good idea."
     },
     {
       "slug": "garlic-bread-cheese-bacon",
@@ -1581,7 +1616,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/garlic-bread-cheese-bacon.jpg"
+      "image": "products/garlic-bread-cheese-bacon.jpg",
+      "story": "Garlic butter, melted mozzarella and salty bacon crisped through it. Four pieces. Rich enough to be a starter for two, though it rarely gets shared."
     },
     {
       "slug": "cheesy-garlic-bread-pizza",
@@ -1604,7 +1640,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/cheesy-garlic-bread-pizza.jpg"
+      "image": "products/cheesy-garlic-bread-pizza.jpg",
+      "story": "Garlic bread built on a full pizza base and covered in mozzarella. Somewhere between a starter and a pizza in its own right — pull-apart, buttery and made for the middle of the table."
     },
     {
       "slug": "potato-skins-cheese",
@@ -1627,7 +1664,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/potato-skins-cheese.jpg"
+      "image": "products/potato-skins-cheese.jpg",
+      "story": "Potato skins baked until the edges go crisp and papery, then filled with melted cheese. Crunch on the outside, soft and molten in the middle."
     },
     {
       "slug": "potato-skins-cheese-bacon",
@@ -1648,7 +1686,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/potato-skins-cheese-bacon.jpg"
+      "image": "products/potato-skins-cheese-bacon.jpg",
+      "story": "Crisp potato skins loaded with melted cheese and salty bacon. The bacon goes crunchy under the grill and the cheese pools underneath it."
     },
     {
       "slug": "potato-wedges",
@@ -1672,7 +1711,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/potato-wedges.jpg"
+      "image": "products/potato-wedges.jpg",
+      "story": "Thick-cut wedges, crisp and golden outside, fluffy the whole way through. The reliable one — good on their own, better dragged through a dip."
     },
     {
       "slug": "curly-fries",
@@ -1696,7 +1736,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/curly-fries.jpg"
+      "image": "products/curly-fries.jpg",
+      "story": "Seasoned, spiralled and fried until the tight little curls at the ends go properly crunchy. Impossible to eat just a few of."
     },
     {
       "slug": "jalapeno-poppers",
@@ -1712,14 +1753,16 @@
       ],
       "modifierGroups": [],
       "tags": [
-        "vegetarian"
+        "vegetarian",
+        "spicy"
       ],
       "allergens": [
         "gluten",
         "milk"
       ],
       "featured": false,
-      "image": "products/jalapeno-poppers.jpg"
+      "image": "products/jalapeno-poppers.jpg",
+      "story": "Six jalapeños filled with cool cream cheese and fried in a crisp golden coating. The heat hits first, the cream cheese puts it out. Then you have another one."
     },
     {
       "slug": "mozzarella-sticks",
@@ -1742,7 +1785,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/mozzarella-sticks.jpg"
+      "image": "products/mozzarella-sticks.jpg",
+      "story": "Six, crisp on the outside and molten in the middle, with that long cheese pull everybody stops to look at. Best eaten hot, which means straight away."
     },
     {
       "slug": "stuffed-mushroom",
@@ -1765,7 +1809,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/stuffed-mushroom.jpg"
+      "image": "products/stuffed-mushroom.jpg",
+      "story": "Whole mushrooms filled, baked and served hot, going deep and savoury as they cook down. An easy, earthy little side that holds its own."
     },
     {
       "slug": "onion-rings",
@@ -1789,7 +1834,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/onion-rings.jpg"
+      "image": "products/onion-rings.jpg",
+      "story": "Ten of them, in a crisp golden batter with the onion inside gone soft and sweet. The side that quietly disappears off the middle of the table."
     },
     {
       "slug": "chicken-dippers",
@@ -1809,7 +1855,8 @@
         "gluten"
       ],
       "featured": false,
-      "image": "products/chicken-dippers.jpg"
+      "image": "products/chicken-dippers.jpg",
+      "story": "Six tender chicken dippers in a crisp golden coating. Easy to share, easier to eat, and made for a dip on the side."
     },
     {
       "slug": "hot-chicken-wings",
@@ -1824,12 +1871,15 @@
         }
       ],
       "modifierGroups": [],
-      "tags": [],
+      "tags": [
+        "hot"
+      ],
       "allergens": [
         "gluten"
       ],
       "featured": false,
-      "image": "products/hot-chicken-wings.jpg"
+      "image": "products/hot-chicken-wings.jpg",
+      "story": "Eight wings coated in a hot sauce that clings to the skin and gets right into the corners. Sticky fingers guaranteed, napkins strongly advised."
     },
     {
       "slug": "bbq-chicken-wings",
@@ -1849,7 +1899,8 @@
         "gluten"
       ],
       "featured": false,
-      "image": "products/bbq-chicken-wings.jpg"
+      "image": "products/bbq-chicken-wings.jpg",
+      "story": "Eight wings in a sweet, smoky BBQ glaze that goes tacky and dark under the heat. Sticky, sweet and properly satisfying."
     },
     {
       "slug": "chicken-nuggets",
@@ -1869,7 +1920,8 @@
         "gluten"
       ],
       "featured": false,
-      "image": "products/chicken-nuggets.jpg"
+      "image": "products/chicken-nuggets.jpg",
+      "story": "Ten nuggets, crisp on the outside and tender in the middle. No reinvention needed — just done well and served hot."
     },
     {
       "slug": "chicken-strips",
@@ -1889,7 +1941,8 @@
         "gluten"
       ],
       "featured": false,
-      "image": "products/chicken-strips.jpg"
+      "image": "products/chicken-strips.jpg",
+      "story": "Six strips of seasoned chicken breast in a crunchy coating, still juicy inside. Substantial enough to be the main event if you want them to be."
     },
     {
       "slug": "chicken-box",
@@ -1909,7 +1962,8 @@
         "gluten"
       ],
       "featured": false,
-      "image": "products/chicken-box.jpg"
+      "image": "products/chicken-box.jpg",
+      "story": "The lot: three chicken strips, three nuggets, three hot wings, three BBQ wings, three dippers, potato wedges and two dips. Every kind of chicken we do, in one box. Bring a friend, or don't."
     },
     {
       "slug": "tex-mix-platter",
@@ -1924,12 +1978,15 @@
         }
       ],
       "modifierGroups": [],
-      "tags": [],
+      "tags": [
+        "spicy"
+      ],
       "allergens": [
         "gluten"
       ],
       "featured": false,
-      "image": "products/tex-mix-platter.jpg"
+      "image": "products/tex-mix-platter.jpg",
+      "story": "A proper spread — three jalapeño cream cheese poppers, potato wedges, four nuggets, three dippers, three BBQ wings and two dips. Built for the middle of the table with several people round it."
     },
     {
       "slug": "spaghetti-bolognese",
@@ -1951,7 +2008,8 @@
         "egg"
       ],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Slow-cooked beef ragù over spaghetti, rich and savoury with the sauce clinging to every strand. The comfort option, and none the worse for it."
     },
     {
       "slug": "meat-lasagne",
@@ -1973,7 +2031,8 @@
         "egg"
       ],
       "featured": false,
-      "image": "products/meat-lasagne.jpg"
+      "image": "products/meat-lasagne.jpg",
+      "story": "Layers of pasta, seasoned beef ragù and béchamel, baked until the top goes golden and the edges catch. Comes out hot, heavy and exactly what you wanted."
     },
     {
       "slug": "chocolate-fudge-cake",
@@ -1997,7 +2056,8 @@
         "egg"
       ],
       "featured": false,
-      "image": "products/chocolate-fudge-cake.jpg"
+      "image": "products/chocolate-fudge-cake.jpg",
+      "story": "Dark, dense and seriously chocolatey, with a fudge topping that stays soft. A small slice goes a long way. You will still want a big one."
     },
     {
       "slug": "strawberry-cheesecake",
@@ -2021,7 +2081,8 @@
         "egg"
       ],
       "featured": false,
-      "image": "products/strawberry-cheesecake.jpg"
+      "image": "products/strawberry-cheesecake.jpg",
+      "story": "Cool, creamy cheesecake on a biscuit base under a sweet strawberry topping. Light enough to manage after a pizza, which is the whole trick."
     },
     {
       "slug": "tennessee-toffee-pie",
@@ -2045,7 +2106,8 @@
         "egg"
       ],
       "featured": false,
-      "image": "products/tennessee-toffee-pie.jpg"
+      "image": "products/tennessee-toffee-pie.jpg",
+      "story": "Smooth toffee filling on a crumbly biscuit base, sweet and buttery and dangerously easy to finish. The one people order and then regret sharing."
     },
     {
       "slug": "coke-can",
@@ -2065,7 +2127,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "products/coke-can.jpg"
+      "image": "products/coke-can.jpg",
+      "story": "Ice-cold Coca-Cola in a 330ml can. The classic partner to a slice, and no argument about it."
     },
     {
       "slug": "diet-coke-can",
@@ -2085,7 +2148,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "products/diet-coke-can.jpg"
+      "image": "products/diet-coke-can.jpg",
+      "story": "Diet Coke, 330ml, cold and crisp. All the bite, none of the sugar."
     },
     {
       "slug": "fanta-can",
@@ -2105,7 +2169,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "products/fanta-can.jpg"
+      "image": "products/fanta-can.jpg",
+      "story": "Fanta Orange, 330ml. Sweet, fizzy and sharp — a good foil for anything spicy off the menu."
     },
     {
       "slug": "7up-can",
@@ -2125,7 +2190,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "products/7up-can.jpg"
+      "image": "products/7up-can.jpg",
+      "story": "7UP, 330ml. Clean, crisp lemon and lime, and a proper palate-cleanser between slices."
     },
     {
       "slug": "dr-pepper-can",
@@ -2145,7 +2211,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Dr Pepper, 330ml. That unmistakable flavour nobody can quite describe. Cold, obviously."
     },
     {
       "slug": "coke-bottle",
@@ -2165,7 +2232,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "products/coke-bottle.jpg"
+      "image": "products/coke-bottle.jpg",
+      "story": "A 1.5 litre bottle of Coca-Cola — enough to go round the whole table, with some left for the second slice."
     },
     {
       "slug": "pepsi-bottle",
@@ -2185,7 +2253,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "products/pepsi-bottle.jpg"
+      "image": "products/pepsi-bottle.jpg",
+      "story": "Pepsi by the 1.5 litre bottle. Sweet, cold and plenty of it."
     },
     {
       "slug": "7up-bottle",
@@ -2205,7 +2274,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "products/7up-bottle.jpg"
+      "image": "products/7up-bottle.jpg",
+      "story": "7UP, 1.5 litres. Crisp lemon and lime for the table, and it goes with everything on this menu."
     },
     {
       "slug": "tango-bottle",
@@ -2225,7 +2295,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": "products/tango-bottle.jpg"
+      "image": "products/tango-bottle.jpg",
+      "story": "Tango Orange, 1.5 litres. Sharp, sweet and loud about it — the one the kids ask for."
     },
     {
       "slug": "dips",
@@ -2273,7 +2344,8 @@
         "milk"
       ],
       "featured": false,
-      "image": "products/dips.jpg"
+      "image": "products/dips.jpg",
+      "story": "The finishing touch. Garlic and herb, BBQ, sweet chilli and the rest — for the crusts, the wedges, the wings, and honestly for everything else too."
     },
     {
       "slug": "milkshake",
@@ -2303,7 +2375,8 @@
       ],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "",
+      "story": "Thick, cold and properly creamy. The pudding you can drink, and a very good excuse not to choose between one and the other."
     },
     {
       "slug": "haagen-dazs",
@@ -2347,7 +2420,8 @@
         "egg"
       ],
       "featured": false,
-      "image": "products/haagen-dazs.jpg"
+      "image": "products/haagen-dazs.jpg",
+      "story": "A full 500ml tub, straight to your door. Thick, rich and properly creamy — the good stuff, no apologies."
     },
     {
       "slug": "ben-jerrys",
@@ -2391,7 +2465,8 @@
         "egg"
       ],
       "featured": false,
-      "image": "products/ben-jerrys.jpg"
+      "image": "products/ben-jerrys.jpg",
+      "story": "A 465ml tub of the real thing, chunks and swirls and all. Gets there cold, ready for the sofa."
     }
   ],
   "deals": [

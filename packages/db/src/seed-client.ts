@@ -283,7 +283,7 @@ async function seedMenu(clientId: string, menu: MenuConfig, reset: boolean) {
   for (const [i, p] of menu.products.entries()) {
     const categoryId = catIds.get(p.category)!;
     const data = {
-      categoryId, name: p.name, description: p.description, image: p.image, tags: p.tags, allergens: p.allergens,
+      categoryId, name: p.name, description: p.description, story: p.story, image: p.image, tags: p.tags, allergens: p.allergens,
       featured: p.featured, sortOrder: i, active: true, soldOut: p.soldOut,
     };
     const row = await prisma.product.upsert({

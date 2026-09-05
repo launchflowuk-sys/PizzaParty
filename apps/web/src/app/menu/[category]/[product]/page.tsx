@@ -7,13 +7,13 @@ import { toPicker } from "@/lib/picker";
 import { breadcrumbJsonLd, pageTitle, productJsonLd } from "@/lib/seo";
 import { gbpShort } from "@/lib/money";
 import { JsonLd } from "@/components/JsonLd";
+import { DietBadges } from "@/components/DietBadges";
 import { Photo } from "@/components/Photo";
 import { AddToBasket } from "@/components/product/AddToBasket";
 
 export const dynamic = "force-dynamic";
 type Params = { params: Promise<{ category: string; product: string }> };
 
-const TAG_LABEL: Record<string, string> = { vegetarian: "V", vegan: "VG", spicy: "Spicy", new: "New" };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { category, product } = await params;
@@ -78,16 +78,16 @@ export default async function ProductPage({ params }: Params) {
         <h1 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 44, lineHeight: 1.05, letterSpacing: "-.02em", margin: "0 0 12px" }}>
           {p.name}
         </h1>
+        {/* The ingredient line first, set apart, because it is what somebody
+            scanning for "is there pineapple on this" actually needs. */}
         {p.description ? (
-          <p style={{ fontSize: 16, lineHeight: 1.6, color: "var(--color-neutral-800)", margin: "0 0 12px" }}>{p.description}</p>
+          <p style={{ fontSize: 16, lineHeight: 1.6, fontWeight: 600, color: "var(--color-text)", margin: "0 0 12px" }}>{p.description}</p>
         ) : null}
-        {p.tags.filter((t) => TAG_LABEL[t]).length ? (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {p.tags.filter((t) => TAG_LABEL[t]).map((t) => (
-              <span key={t} className="tag tag-neutral">{TAG_LABEL[t]}</span>
-            ))}
-          </div>
+        {/* Then the few lines that sell it. */}
+        {p.story ? (
+          <p style={{ fontSize: 16, lineHeight: 1.7, color: "var(--color-neutral-800)", margin: "0 0 16px", maxWidth: "52ch" }}>{p.story}</p>
         ) : null}
+        <DietBadges tags={p.tags} size={26} />
 
         <AddToBasket product={toPicker(p)} />
       </div>

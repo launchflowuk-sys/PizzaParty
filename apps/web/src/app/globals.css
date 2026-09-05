@@ -53,6 +53,9 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   .fp-stats { grid-template-columns: repeat(2, 1fr); gap: 24px; }
   .fp-dealrow { grid-template-columns: 90px 1fr; row-gap: 12px; }
   .fp-dealrow > p { grid-column: 1 / -1; }
+  /* Without this the action lands in the 90px price column and the label wraps
+     to three lines. It gets the full row and sizes to its own text. */
+  .fp-dealrow > .btn { grid-column: 1 / -1; justify-self: start; }
 }
 
 @media (max-width: 700px) {
@@ -375,13 +378,18 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
    the top of the image stays appetising while the words stay legible. */
 .fp-hero {
   position: relative;
-  isolation: isolate;
   min-height: clamp(520px, 72vh, 700px);
   display: flex;
   align-items: flex-end;
-  overflow: hidden;
   background: var(--color-neutral-900, #111);
 }
+/* No `overflow: hidden` and no `isolation: isolate` here, deliberately.
+   Both used to be on this rule and between them they broke the menu search:
+   the clip cut the results list off at the bottom edge of the photograph, and
+   the isolate trapped its z-index inside the hero, so the list rendered behind
+   whatever section came next. Neither was earning its place - the photograph
+   and the scrim are `inset: 0` so they cannot escape, and the steam clips
+   itself in .fp-hero-steam. */
 /* The hero photograph is never desaturated, whatever brand.photoStyle says —
    it is the appetite shot, and a grey one does not sell pizza. */
 .fp-hero > img { filter: none !important; z-index: 0; }
@@ -390,9 +398,14 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   position: absolute;
   inset: 0;
   z-index: 1;
-  background:
-    linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.56) 32%, rgba(0,0,0,.12) 64%, rgba(0,0,0,0) 100%),
-    linear-gradient(to right, rgba(0,0,0,.55) 0%, rgba(0,0,0,.18) 42%, rgba(0,0,0,0) 70%);
+  /* One soft vignette rising off the bottom edge, and nothing else.
+     There used to be a second wash running left to right to 55% black, and
+     between the two the headline sat on what read as a translucent black
+     panel - a box nobody asked for, sitting over the photograph that is meant
+     to be selling the food. Legibility comes from the type now: the headline
+     and the lines under it carry their own shadow, so the picture stays a
+     picture. */
+  background: linear-gradient(to top, rgba(0,0,0,.60) 0%, rgba(0,0,0,.26) 24%, rgba(0,0,0,0) 56%);
 }
 
 .fp-hero-inner {
@@ -496,7 +509,12 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
    "Tonight, it's <item>". The lead and the moving word sit on their own lines
    so a long item name cannot reflow the line above it, and the block reserves
    its height so nothing below shifts as the text types. */
-.fp-hero-h1-lead { display: block; font-size: .46em; letter-spacing: -.01em; opacity: .88; margin-bottom: .12em; }
+.fp-hero-h1-lead {
+  display: block; font-size: .46em; letter-spacing: -.01em; opacity: .88; margin-bottom: .12em;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6), 0 2px 16px rgba(0,0,0,.45);
+}
+/* The kicker and the line under the headline lost the wash too. */
+.fp-hero-kicker, .fp-hero-sub { text-shadow: 0 1px 2px rgba(0,0,0,.6), 0 2px 14px rgba(0,0,0,.4); }
 .fp-hero-h1-swap {
   display: block;
   min-height: 1.02em;
@@ -511,7 +529,10 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
 .fp-hero-h1-word {
   font-variant-ligatures: none;
   color: #fff;
-  text-shadow: 0 2px 22px rgba(0,0,0,.55);
+  /* Two shadows rather than one: a tight dark edge that holds the letterforms
+     against a busy photograph, and a wide soft one that lifts the whole word
+     off it. A single broad blur alone went muddy over the pizza. */
+  text-shadow: 0 1px 2px rgba(0,0,0,.6), 0 2px 20px rgba(0,0,0,.5);
 }
 .fp-hero-h1-hi { color: var(--color-accent); }
 
@@ -723,7 +744,20 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
    Screens were one long column of forms with nothing separating them. A titled
    panel tells you where one job ends and the next begins. */
 .fp-panel { border: 2px solid var(--color-text); margin-bottom: 24px; background: var(--color-bg); }
-.fp-panel > header {
+
+/* The filled bar at the top of a panel.
+   `header` inside a panel and `.fp-panelbar` inside a <summary> are the same
+   thing and are styled together, so a collapsible panel cannot drift away from
+   a plain one.
+   The radius is not decoration: the panel is rounded, and a filled bar with
+   square corners sitting against that curve pokes its corners straight through
+   the outline. Inset by the 2px border so the fill follows the inside of the
+   frame rather than sitting proud of it. `overflow: hidden` on the panel would
+   have been the one-line fix, but help hotspots open absolutely positioned
+   sheets that hang outside the panel and it would have cut every one of them
+   in half. */
+.fp-panel > header,
+.fp-panel > summary > .fp-panelbar {
   background: var(--color-text);
   color: #fff;
   padding: 9px 14px;
@@ -735,7 +769,30 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  border-radius: calc(var(--radius-md) - 2px) calc(var(--radius-md) - 2px) 0 0;
 }
+/* Shut, the bar is the whole panel, so it is rounded all the way round. */
+.fp-panel:not([open]) > summary > .fp-panelbar {
+  border-radius: calc(var(--radius-md) - 2px);
+}
+.fp-panel > summary { list-style: none; cursor: pointer; }
+.fp-panel > summary::-webkit-details-marker { display: none; }
+/* Tone follows the panel, the same as a plain header. */
+.fp-panel[data-tone="ok"]     > summary > .fp-panelbar { background: var(--ok); }
+.fp-panel[data-tone="warn"]   > summary > .fp-panelbar { background: var(--warn); }
+.fp-panel[data-tone="danger"] > summary > .fp-panelbar { background: var(--danger); }
+
+/* Anything filling the bottom edge of a panel has the same problem in reverse.
+   The body itself, and the last row inside a body that is a list of rows - a
+   sold-out item carries a pink fill, and square corners on the last one show
+   through the curve exactly as the header bars did. */
+.fp-panel > .body:last-child,
+.fp-panel > .body:last-child > *:last-child {
+  border-bottom-left-radius: calc(var(--radius-md) - 2px);
+  border-bottom-right-radius: calc(var(--radius-md) - 2px);
+}
+/* A row's own bottom divider is the panel edge once it is the last one. */
+.fp-panel > .body:last-child > *:last-child { border-bottom: 0; }
 .fp-panel > .body { padding: 18px; }
 .fp-panel[data-tone="danger"] > header { background: var(--danger); }
 .fp-panel[data-tone="warn"]   > header { background: var(--warn); }
@@ -988,10 +1045,19 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
 .fp-cell:hover { background: var(--color-surface); border-color: var(--color-neutral-400); }
 
 /* ── Buttons that never wrap ──────────────────────────────────────────────
-   "Add to basket" on three lines was a squashed pill in a flex row with no
-   minimum. Storefront actions get a floor, a single line, and room. */
-.fp-cell .btn, .fp-cta-lg, .fp-hero-cta .btn {
+   A button label broken over three lines inside a 999px radius is not a
+   button, it is a grey blob - which is what "Add the deal" became in the
+   90px column the deal rows collapse to on a phone.
+   This was fixed twice before and both times it was scoped to the component
+   that happened to be broken that day (.fp-cell, the hero), so the next place
+   a button appeared started out broken again. The rule belongs on the button.
+   Admin and kitchen keep their own smaller height: `.fp-admin .btn` is two
+   classes and outranks the bare `.btn` below whatever the source order. */
+.btn, button.btn, .lf-btn {
   white-space: nowrap;
+}
+.btn { min-height: 46px; }
+.fp-cell .btn, .fp-cta-lg, .fp-hero-cta .btn {
   min-height: 46px;
 }
 .fp-cell > div:last-child { display: flex; gap: 8px; }
@@ -1059,7 +1125,9 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
 .fp-herosearch { position: relative; }
 .fp-searchdrop {
   position: absolute;
-  z-index: 30;
+  /* Above the sticky nav (20) and the sticky basket bar (40): while the list
+     is open it is the thing being used. */
+  z-index: 45;
   top: calc(100% + 8px);
   left: 0;
   right: 0;
@@ -1082,6 +1150,13 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
   text-transform: uppercase;
   padding: 7px 14px;
 }
+/* The first category bar sits against the rounded top of the list, so its
+   square corners would show through the curve. Only the first one needs it -
+   the rest are mid-list. Same fault as the panel bars in the back office; see
+   the note on .fp-panel > header. */
+.fp-searchdrop > div:first-child .fp-searchdrop-cat {
+  border-radius: calc(var(--radius-md) - 2px) calc(var(--radius-md) - 2px) 0 0;
+}
 .fp-searchdrop-row {
   display: flex;
   align-items: center;
@@ -1095,6 +1170,43 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
 .fp-searchdrop-row[data-active] { background: color-mix(in srgb, var(--color-action) 12%, transparent); }
 .fp-searchdrop-name { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .fp-searchdrop-note { font-weight: 400; font-size: 12px; color: var(--color-neutral-700); }
+/* ── Diet badges ──────────────────────────────────────────────────────────
+   A filled circle, not a letter floating in the price line. Basil green for
+   the veg pair so it reads as "safe for me" at a glance down a long list, and
+   the accent for spicy so it reads as a warning instead. */
+.fp-diet-set { display: inline-flex; gap: 4px; vertical-align: middle; }
+.fp-diet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: var(--font-body);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #fff;
+  /* The glyph sits a touch high in a circle at this size. */
+  padding-top: 1px;
+  flex: none;
+}
+.fp-diet[data-tone="veg"] { background: var(--color-accent-2, #3E6B48); }
+/* Chillies sit as a group with a single label, tightened up so three of them
+   read as one rating rather than three separate badges. */
+.fp-heat { display: inline-flex; align-items: center; line-height: 1; letter-spacing: -.12em; }
+
+/* The ingredient line in a search result. Clamped to two lines so a loaded
+   pizza cannot push the rest of the results off the screen. */
+.fp-searchdrop-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--color-neutral-800);
+  margin-top: 2px;
+}
 .fp-searchdrop-price { font-weight: 800; font-size: 15px; white-space: nowrap; }
 .fp-searchdrop-empty { margin: 0; padding: 16px; font-size: 14px; color: var(--color-neutral-800); }
 .fp-searchdrop-all {

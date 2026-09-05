@@ -89,11 +89,9 @@ export default async function AdminMenu({
       </p>
 
       {/* ---- Add an item ---- */}
-      <details className="fp-panel" style={{ marginBottom: 12 }}>
-        <summary style={{ listStyle: "none", cursor: "pointer" }}>
-          <div style={{ background: "var(--ok)", color: "#fff", padding: "10px 14px", fontSize: 12, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase" }}>
-            + Add an item
-          </div>
+      <details className="fp-panel" data-tone="ok" style={{ marginBottom: 12 }}>
+        <summary>
+          <div className="fp-panelbar">+ Add an item</div>
         </summary>
         <div className="body">
           <form action={createProduct} style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "flex-end" }}>
@@ -131,8 +129,8 @@ export default async function AdminMenu({
 
       {/* ---- Sections ---- */}
       <details className="fp-panel" style={{ marginBottom: 20 }}>
-        <summary style={{ listStyle: "none", cursor: "pointer" }}>
-          <div style={{ background: "var(--color-text)", color: "#fff", padding: "10px 14px", display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase" }}>
+        <summary>
+          <div className="fp-panelbar">
             <span>Sections</span>
             <span style={{ opacity: .85 }}>{categories.length}</span>
           </div>
@@ -178,13 +176,13 @@ export default async function AdminMenu({
         const out = c.products.filter((p) => p.soldOut).length;
         return (
           <details key={c.id} data-menu-group open={c.products.length <= 12} className="fp-panel" style={{ marginTop: 16 }}>
-            <summary style={{ listStyle: "none", cursor: "pointer" }}>
-              <div style={{ background: "var(--color-text)", color: "#fff", padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase" }}>
+            <summary>
+              <div className="fp-panelbar">
+                <span>
                   {c.name}
                   {out > 0 ? <span className="tag tag-danger" style={{ marginLeft: 10 }}>{out} sold out</span> : null}
                 </span>
-                <span data-menu-count data-menu-count-value={c.products.length} style={{ fontSize: 12, fontWeight: 700, opacity: .85 }}>
+                <span data-menu-count data-menu-count-value={c.products.length} style={{ fontWeight: 700, opacity: .85 }}>
                   {c.products.length}
                 </span>
               </div>

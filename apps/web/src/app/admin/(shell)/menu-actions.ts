@@ -206,6 +206,23 @@ export async function deleteProduct(fd: FormData) {
 }
 
 /**
+ * The few lines on the item's own page.
+ *
+ * Kept separate from `description` on purpose. The short line is what the menu
+ * cards, the search results and the deal picker show, and three sentences would
+ * wreck all three; this is the long form that only the item's own page has room
+ * for.
+ */
+export async function updateProductStory(fd: FormData) {
+  await guard();
+  await prisma.product.update({
+    where: { id: str(fd, "id") },
+    data: { story: str(fd, "story").slice(0, 1200) },
+  });
+  bump();
+}
+
+/**
  * Photo, labels and allergens.
  *
  * Labels and allergens are typed as a plain comma-separated list because that is

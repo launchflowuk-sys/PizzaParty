@@ -3,10 +3,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { gbpShort } from "@/lib/money";
+import { DietBadges } from "@/components/DietBadges";
 
 export type SearchItem = {
   slug: string;
   name: string;
+  /** The ingredient line. A list of pizza names alone assumes the customer
+   *  already knows the menu, which a first-time visitor does not. */
+  description: string;
+  tags: string[];
   category: string;
   href: string;
   fromPrice: number;
@@ -171,7 +176,9 @@ export function MenuSearchPill({
                       >
                         <span className="fp-searchdrop-name">
                           {it.name}
+                          <DietBadges tags={it.tags} size={17} />
                           {it.soldOut ? <span className="tag tag-neutral" style={{ marginLeft: 8 }}>Sold out</span> : null}
+                          {it.description ? <span className="fp-searchdrop-desc">{it.description}</span> : null}
                           <span className="fp-searchdrop-note">{it.sizeNote}</span>
                         </span>
                         <span className="fp-searchdrop-price">{gbpShort(it.fromPrice)}</span>

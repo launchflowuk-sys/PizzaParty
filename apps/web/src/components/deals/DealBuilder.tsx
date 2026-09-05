@@ -5,6 +5,7 @@ import { useBasket } from "@/components/basket/store";
 import { gbp } from "@/lib/money";
 import type { BasketComponent } from "@/lib/basket-types";
 import { OptionPicker, useSelection, type PickerProduct } from "@/components/product/OptionPicker";
+import { DietBadges } from "@/components/DietBadges";
 
 export type BuilderDeal = {
   slug: string; name: string; price: number;
@@ -37,7 +38,16 @@ function SlotPicker({ deal, slotIndex, n, onPick }: { deal: BuilderDeal; slotInd
                 opacity: o.soldOut ? 0.45 : 1, minHeight: 64, justifyContent: "center", gap: 4,
               }}
             >
-              <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16 }}>{o.name}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 16 }}>{o.name}</span>
+                <DietBadges tags={o.tags} size={18} />
+              </span>
+              {/* A column of pizza names and nothing else asks the customer to
+                  already know the menu. The ingredient line is what they are
+                  actually choosing between. */}
+              {o.description ? (
+                <span style={{ fontSize: 13, lineHeight: 1.45, color: "var(--color-neutral-800)" }}>{o.description}</span>
+              ) : null}
               {o.soldOut ? <span style={{ fontSize: 12, color: "var(--color-accent-700)" }}>Sold out</span> : null}
             </button>
           ))}

@@ -25,7 +25,8 @@ export type TileItem = {
 
 export type TileCategory = { slug: string; name: string; count: number };
 
-const TAG_LABEL: Record<string, string> = { vegetarian: "V", vegan: "VG", spicy: "Spicy", new: "New" };
+import { DietBadges } from "@/components/DietBadges";
+
 
 /** Menu screen from `Farm Pizza.dc.html`: sticky category rail, search, and a 3-up
  *  ruled grid. Filtering is client-side to match the prototype's live behaviour; the
@@ -69,9 +70,7 @@ export function MenuBrowser({ categories, items, initialQuery = "" }: {
               </div>
               <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: "var(--color-neutral-700)", flex: 1 }}>{it.description}</p>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", minHeight: 20 }}>
-                {it.tags.filter((t) => TAG_LABEL[t]).map((t) => (
-                  <span key={t} className="tag tag-neutral">{TAG_LABEL[t]}</span>
-                ))}
+                <DietBadges tags={it.tags} />
                 <span style={{ fontSize: 11, color: "var(--color-neutral-700)" }}>{it.sizeNote}</span>
               </div>
               <div style={{ display: "flex", gap: 8 }}>

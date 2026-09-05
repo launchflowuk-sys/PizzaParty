@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { gbpShort } from "@/lib/money";
+import { DietBadges } from "@/components/DietBadges";
 
 type P = { slug: string; name: string; description: string; image: string; tags: string[]; soldOut: boolean; sizes: { price: number }[] };
 
@@ -13,9 +14,7 @@ export function ProductCard({ product, href, image }: { product: P; href: string
         {product.description ? <p className="text-sm text-muted mt-1 line-clamp-2">{product.description}</p> : null}
         <p className="mt-2 text-sm font-semibold">
           {product.soldOut ? <span className="text-danger">Sold out</span> : <>{product.sizes.length > 1 ? "from " : ""}{gbpShort(min)}</>}
-          {product.tags.includes("vegetarian") ? <span className="ml-2 text-success text-xs font-bold" title="Vegetarian">V</span> : null}
-          {product.tags.includes("vegan") ? <span className="ml-2 text-success text-xs font-bold" title="Vegan">VE</span> : null}
-          {product.tags.includes("spicy") ? <span className="ml-2 text-danger text-xs" title="Spicy">🌶</span> : null}
+          <span className="ml-2"><DietBadges tags={product.tags} /></span>
         </p>
       </div>
       {image ? (

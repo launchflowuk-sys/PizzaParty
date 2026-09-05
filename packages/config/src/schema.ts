@@ -176,6 +176,9 @@ export const MenuProductSchema = z.object({
   category: slug,
   name: z.string().min(1),
   description: z.string().default(""),
+  /** The few appetising lines on the item's own page. `description` stays the
+   *  short ingredient line the cards, search and the deal picker show. */
+  story: z.string().default(""),
   image: z.string().default(""),
   price: money.optional(), // shorthand for a single "regular" size
   sizes: z.array(ProductSizeSchema).default([]),

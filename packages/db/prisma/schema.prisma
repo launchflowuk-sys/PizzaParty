@@ -148,6 +148,11 @@ model Product {
   slug        String
   name        String
   description String   @default("")
+  /// The few appetising lines on the item's own page. Kept apart from
+  /// `description`, which is the short ingredient line the cards, the listings
+  /// and the search results show - three sentences would wreck those, and the
+  /// page needs more than five words to sell anything.
+  story       String   @default("")
   image       String   @default("")
   tags        String[] @default([]) // vegetarian, vegan, spicy, new, popular
   allergens   String[] @default([])

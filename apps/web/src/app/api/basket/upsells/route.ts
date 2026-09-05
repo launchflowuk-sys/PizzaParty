@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   const prefer = ["drinks", "sides", "desserts", "dips", "extras"];
   const items = menu.categories
     .filter((c) => prefer.some((p) => c.slug.includes(p)))
-    .flatMap((c) => c.products.filter((p) => !have.has(p.slug) && !p.soldOut).slice(0, 3).map((p) => ({ name: p.name, href: productPath(c, p), price: Math.min(...p.sizes.map((s) => s.price)) })))
+    .flatMap((c) => c.products.filter((p) => !have.has(p.slug) && !p.soldOut).slice(0, 3).map((p) => ({ name: p.name, description: p.description, href: productPath(c, p), price: Math.min(...p.sizes.map((s) => s.price)) })))
     .slice(0, 6);
   return NextResponse.json({ items });
 }

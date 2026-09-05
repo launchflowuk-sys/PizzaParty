@@ -60,7 +60,7 @@ export function productsFromCsv(text: string): { products: MenuProduct[]; catego
     let p = products.get(pSlug);
     if (!p) {
       p = {
-        slug: pSlug, category: catSlug, name, description: r.description ?? "", image: r.image ?? "",
+        slug: pSlug, category: catSlug, name, description: r.description ?? "", story: r.story ?? "", image: r.image ?? "",
         sizes: [], modifierGroups: list(r.modifier_groups), tags: list(r.tags), allergens: list(r.allergens),
         featured: bool(r.featured), soldOut: bool(r.sold_out),
       };

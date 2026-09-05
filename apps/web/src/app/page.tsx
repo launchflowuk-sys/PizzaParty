@@ -47,6 +47,8 @@ export default async function Home() {
         name: p.name,
         category: c.name,
         href: productPath(c, p),
+        description: p.description,
+        tags: p.tags,
         fromPrice: prices.length ? Math.min(...prices) : 0,
         sizeNote: p.sizes.length > 1 ? `${p.sizes.length} sizes` : (p.sizes[0]?.name ?? ""),
         soldOut: p.soldOut,
@@ -197,7 +199,7 @@ export default async function Home() {
                   <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 20, lineHeight: 1.1 }}>{d.name}</div>
                 </div>
                 <p style={{ margin: 0, fontSize: 14, color: "var(--color-neutral-800)" }}>{d.description}</p>
-                <Link href={`/deals/${d.slug}`} className="btn btn-secondary">Add the deal</Link>
+                <Link href={`/deals/${d.slug}`} className="btn btn-primary">Add the deal</Link>
               </div>
             ))}
           </div>

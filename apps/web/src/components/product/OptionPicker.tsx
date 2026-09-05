@@ -5,6 +5,11 @@ import type { BasketModifier } from "@/lib/basket-types";
 
 export type PickerProduct = {
   slug: string; name: string; soldOut: boolean;
+  /** The short ingredient line. Shown wherever the customer is choosing between
+   *  products by name alone - a list of pizza names tells them nothing. */
+  description: string;
+  /** Diet and heat, so the badges follow the item into the deal picker. */
+  tags: string[];
   sizes: { key: string; name: string; price: number; soldOut: boolean }[];
   groups: { key: string; name: string; minSelect: number; maxSelect: number; modifiers: { key: string; name: string; price: number; soldOut: boolean }[] }[];
 };

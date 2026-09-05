@@ -19,14 +19,21 @@ export async function POST(req: NextRequest) {
   await new Promise((r) => setTimeout(r, 300));
   const res = NextResponse.json({ ok: true });
 
+  // Both of these are manager-level, and a manager can reach the kitchen. They
+  // used to be handed the admin cookie only, so signing in with the shop
+  // password and then pressing "Kitchen queue" asked for a second, unrelated
+  // PIN that only the owner had ever been told. The staff-PIN branch below
+  // already knew to hand out both; these two did not.
   if (key && env.launchflowKey && safeEqual(key, env.launchflowKey)) {
     res.cookies.set(COOKIE.agency, await signToken({ role: "agency", sub: "launchflow" }), cookieOptions("agency"));
     res.cookies.set(COOKIE.admin, await signToken({ role: "admin", sub: "launchflow", sr: "manager", nm: "LaunchFlow" }), cookieOptions("admin"));
+    res.cookies.set(COOKIE.kitchen, await signToken({ role: "kitchen", sub: "launchflow" }), cookieOptions("kitchen"));
     return res;
   }
 
   if (password && env.adminPassword && safeEqual(password, env.adminPassword)) {
     res.cookies.set(COOKIE.admin, await signToken({ role: "admin", sub: "owner", sr: "manager", nm: "Owner" }), cookieOptions("admin"));
+    res.cookies.set(COOKIE.kitchen, await signToken({ role: "kitchen", sub: "owner" }), cookieOptions("kitchen"));
     return res;
   }
 
