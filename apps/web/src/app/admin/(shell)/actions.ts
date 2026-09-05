@@ -268,29 +268,8 @@ export async function sendCampaign(fd: FormData) {
 
 /* ─── Inventory ─────────────────────────────────────────────────────────── */
 
-export async function reorderStock(fd: FormData) {
-  const client = await guard("inventory");
-  const id = String(fd.get("id") ?? "");
-  // Scoped by clientId so one tenant cannot touch another's stock line.
-  await prisma.stockItem.updateMany({ where: { id, clientId: client.id }, data: { onOrder: true } });
-  revalidatePath("/admin/inventory");
-}
-
-export async function reorderAllBelowPar() {
-  const client = await guard("inventory");
-  const items = await prisma.stockItem.findMany({ where: { clientId: client.id }, select: { id: true, onHand: true, par: true } });
-  const ids = items.filter((i) => i.onHand < i.par).map((i) => i.id);
-  if (ids.length) await prisma.stockItem.updateMany({ where: { id: { in: ids }, clientId: client.id }, data: { onOrder: true } });
-  revalidatePath("/admin/inventory");
-}
-
-export async function receiveStock(fd: FormData) {
-  const client = await guard("inventory");
-  const id = String(fd.get("id") ?? "");
-  const item = await prisma.stockItem.findFirst({ where: { id, clientId: client.id } });
-  if (item) await prisma.stockItem.updateMany({ where: { id, clientId: client.id }, data: { onHand: item.par, onOrder: false } });
-  revalidatePath("/admin/inventory");
-}
+/* Stock moved to stock-actions.ts, which can also add, edit and remove lines,
+   book in a delivery by quantity, and reorder one supplier at a time. */
 
 /* ─── Dispatch ──────────────────────────────────────────────────────────── */
 
