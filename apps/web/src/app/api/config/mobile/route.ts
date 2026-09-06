@@ -33,6 +33,17 @@ export async function GET() {
       primary: cfg.brand.primary,
       reviewUrl: cfg.contact.reviewUrl ?? "",
     },
+    /**
+     * Artwork the app needs before it has fetched a menu.
+     *
+     * Resolved to absolute URLs here for the same reason the menu's are: a
+     * phone has no idea what this server's origin is, and hardcoding it in the
+     * app is how a tenant rename breaks every install.
+     */
+    media: {
+      hero: assetUrl("hero.webp"),
+      banner: assetUrl("banner.jpg"),
+    },
     fulfilment: cfg.fulfilment,
     payments: {
       // So the app can hide a card button that would only fail.
