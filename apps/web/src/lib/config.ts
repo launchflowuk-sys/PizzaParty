@@ -33,6 +33,23 @@ export function assetUrl(rel: string): string {
   return "/brand/" + rel.replace(/^assets\//, "");
 }
 
+/**
+ * The same asset, but reachable from a phone.
+ *
+ * `assetUrl` returns a site-relative path, which is right for markup the
+ * browser resolves against its own origin and useless in a JSON payload: a
+ * native app has no origin, so `/brand/products/original.jpg` resolves to
+ * nothing and every product photo silently renders as an empty grey box.
+ *
+ * Anything the app reads - the menu, the deals, the bootstrap config - must go
+ * through this one instead.
+ */
+export function absoluteAssetUrl(rel: string): string {
+  const url = assetUrl(rel);
+  if (!url || /^https?:\/\//.test(url)) return url;
+  return env.siteUrl + url;
+}
+
 export const localitySlug = (locality: string) => locality.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 export const localityPath = (config: ClientConfig, locality: string) =>
   `/${config.seo.cuisine.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-delivery-${localitySlug(locality)}`;

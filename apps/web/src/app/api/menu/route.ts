@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { getMenu } from "@/lib/menu";
-import { assetUrl } from "@/lib/config";
+import { absoluteAssetUrl } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     slug: c.slug,
     name: c.name,
     description: c.description || undefined,
-    image: c.image ? assetUrl(c.image) : null,
+    image: c.image ? absoluteAssetUrl(c.image) : null,
     count: c.products.length,
     products: c.products.map((p) => ({
       slug: p.slug,
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       description: p.description || "",
       story: p.story || undefined,
       // Resolved here so the app never has to know how assets are served.
-      image: p.image ? assetUrl(p.image) : null,
+      image: p.image ? absoluteAssetUrl(p.image) : null,
       tags: p.tags,
       allergens: p.allergens,
       soldOut: p.soldOut,

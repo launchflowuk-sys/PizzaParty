@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dealsToday, getMenu } from "@/lib/menu";
-import { assetUrl } from "@/lib/config";
+import { absoluteAssetUrl } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export async function GET() {
       slug: d.slug,
       name: d.name,
       description: d.description || "",
-      image: d.image ? assetUrl(d.image) : null,
+      image: d.image ? absoluteAssetUrl(d.image) : null,
       price: d.price,
       featured: d.featured,
       // Empty means every day / any fulfilment. Sent through so the app can

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getConfig, assetUrl } from "@/lib/config";
+import { getConfig, absoluteAssetUrl } from "@/lib/config";
 import { getLocations } from "@/lib/menu";
 import { availability } from "@/lib/availability";
 import { stripeEnabled } from "@/lib/stripe";
@@ -29,7 +29,7 @@ export async function GET() {
       phone: cfg.contact.phone ?? "",
       email: cfg.contact.email ?? "",
       address: cfg.contact.address ?? "",
-      logo: assetUrl(cfg.brand.logo),
+      logo: absoluteAssetUrl(cfg.brand.logo),
       primary: cfg.brand.primary,
       reviewUrl: cfg.contact.reviewUrl ?? "",
     },
@@ -41,8 +41,8 @@ export async function GET() {
      * app is how a tenant rename breaks every install.
      */
     media: {
-      hero: assetUrl("hero.webp"),
-      banner: assetUrl("banner.jpg"),
+      hero: absoluteAssetUrl("hero.webp"),
+      banner: absoluteAssetUrl("banner.jpg"),
     },
     fulfilment: cfg.fulfilment,
     payments: {
