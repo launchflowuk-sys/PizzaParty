@@ -308,6 +308,10 @@ model Customer {
   /// Nullable rather than "" so the unique index can hold the many customers
   /// who have not been given a code yet.
   referralCode       String?
+  /// When the customer asked for their account to be deleted. The row survives
+  /// because the orders hanging off it do - the privacy page commits to six
+  /// years for tax - but everything identifying a person has been cleared.
+  deletedAt          DateTime?
   referredById       String?
   referralRewardedAt DateTime?
   createdAt          DateTime  @default(now())
