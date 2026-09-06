@@ -2529,3 +2529,116 @@ footer::before {
 .fp-adminwho .who strong { font-weight: 600; color: var(--color-text); font-size: 13px; }
 .fp-adminwho .links { display: grid; gap: 2px; margin-bottom: 10px; }
 .fp-adminwho .links a { font-size: 12px; }
+
+/* == Receipts ==============================================================
+   Sized for 80mm thermal paper because that is what a takeaway actually owns,
+   but this is plain HTML - so the same page prints to an A4 laser, a phone
+   over AirPrint, or anything else with a driver. That is the whole reason
+   printing is done through the browser rather than by talking to one
+   manufacturer's protocol.
+
+   Everything here is black on white and set in a monospace face. Thermal
+   printers have no colour, dither photographs badly, and render a monospace
+   grid crisply at small sizes - which is why a docket has looked like this
+   since long before any of us. */
+.rc-page { background: #fff; color: #000; padding: 16px; }
+.rc {
+  width: 72mm; max-width: 100%; margin: 0 auto 24px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px; line-height: 1.45; color: #000; background: #fff;
+}
+.rc-logo { text-align: center; margin-bottom: 6px; }
+/* Greyscale and hard contrast: a thermal head has one colour and a mid-tone
+   logo comes out as mud. */
+.rc-logo img { width: 92px; height: auto; filter: grayscale(1) contrast(1.6); }
+
+.rc-shop { text-align: center; display: grid; gap: 1px; margin-bottom: 8px; }
+.rc-shop strong { font-size: 15px; font-weight: 700; letter-spacing: .04em; }
+.rc-shop span { font-size: 11px; }
+
+.rc-title {
+  text-align: center; font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; margin-bottom: 8px;
+}
+
+/* The order number is what somebody shouts across a kitchen. */
+.rc-number { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.rc-number .n { font-size: 30px; font-weight: 700; line-height: 1; letter-spacing: -.02em; }
+.rc-number .t { font-size: 13px; font-weight: 700; letter-spacing: .08em; }
+
+.rc-when { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; margin: 4px 0 8px; }
+.rc-when span { font-weight: 400; }
+
+/* Money to collect is the line a driver must not miss, so it is inverted. */
+.rc-pay { text-align: center; font-size: 13px; font-weight: 700; letter-spacing: .04em; padding: 5px 4px; margin-bottom: 8px; }
+.rc-pay.cash { background: #000; color: #fff; }
+.rc-pay.paid { border: 1px solid #000; }
+
+.rc-rule { border: 0; border-top: 1px dashed #000; margin: 8px 0; }
+
+.rc-who { display: grid; gap: 1px; font-size: 12px; }
+.rc-who strong { font-size: 13px; }
+.rc-addr { display: grid; gap: 1px; margin-top: 4px; font-weight: 700; }
+
+.rc-items { width: 100%; border-collapse: collapse; }
+.rc-items td { vertical-align: top; padding: 4px 0; border-bottom: 1px dotted #999; }
+.rc-items .q { width: 22px; font-weight: 700; font-size: 14px; }
+.rc-items .p { text-align: right; white-space: nowrap; padding-left: 6px; }
+.rc-items .d strong { font-weight: 700; display: block; }
+.rc-items .d span { display: block; font-size: 11px; padding-left: 8px; }
+.rc-items .d .m { font-weight: 700; }
+.rc-items .d .c::before { content: "› "; }
+/* A note is an instruction somebody has to act on, not decoration. */
+.rc-items .d .note { font-weight: 700; text-transform: uppercase; padding-left: 0; margin-top: 2px; }
+
+.rc-totals { width: 100%; border-collapse: collapse; }
+.rc-totals td { padding: 2px 0; }
+.rc-totals td:last-child { text-align: right; }
+.rc-totals .big td { font-size: 17px; font-weight: 700; padding-top: 6px; border-top: 1px solid #000; }
+
+.rc-kitchen-total { text-align: right; font-size: 13px; font-weight: 700; margin-top: 6px; }
+
+.rc-notes { border: 1px solid #000; padding: 6px 8px; margin-top: 8px; display: grid; gap: 2px; }
+.rc-notes strong { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+
+.rc-foot { text-align: center; font-size: 11px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #000; display: grid; gap: 2px; }
+
+/* On-screen only: the strip for choosing a copy. */
+.rc-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  max-width: 72mm; margin: 0 auto 16px; padding-bottom: 10px; border-bottom: 1px solid #ccc;
+  font: 12px/1.5 system-ui, sans-serif; color: #444;
+}
+.rc-bar-links { display: flex; gap: 8px; }
+.rc-bar-links a { color: #000; text-transform: capitalize; }
+
+@media print {
+  /* The browser's own margins would waste the first centimetre of an 80mm
+     roll, and on a receipt that is most of the header. */
+  @page { size: 80mm auto; margin: 3mm; }
+  html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+  .rc-page { padding: 0; }
+  .rc-bar { display: none !important; }
+  .rc { width: auto; margin: 0; page-break-inside: avoid; }
+  /* Each copy on its own sheet, so the driver's note is not attached to the
+     customer's receipt. The last one must not eject a blank page after it. */
+  .rc + .rc { page-break-before: always; }
+  /* Nothing from the app itself follows the receipt onto the paper. */
+  header, footer, nav, .fp-stickybar, .fp-newalert { display: none !important; }
+}
+
+/* Reprint links on a ticket. Quiet, because they are the exception - the
+   docket normally prints itself - but big enough to hit with a thumb. */
+.fp-ticket-print {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin: 8px 0 10px; padding-top: 8px;
+  border-top: 1px dashed var(--color-divider);
+}
+.fp-ticket-print a {
+  padding: 7px 10px; border-radius: var(--radius-pill);
+  border: 1px solid var(--color-divider); background: var(--color-bg);
+  font-size: 12px; font-weight: 600; color: var(--color-neutral-800);
+  text-decoration: none !important; white-space: nowrap; min-height: 34px;
+  display: inline-flex; align-items: center;
+}
+.fp-ticket-print a:hover { border-color: var(--color-accent); color: var(--color-accent); }

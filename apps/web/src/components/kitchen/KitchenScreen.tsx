@@ -57,6 +57,38 @@ export function KitchenScreen() {
    * heard anything.
    */
   const [pending, setPending] = useState<O[]>([]);
+  /**
+   * Print the docket the moment an order lands.
+   *
+   * Remembered per device, because it is a property of the tablet by the pass
+   * rather than of the shop - the office machine should not start spitting out
+   * kitchen dockets because somebody switched this on downstairs.
+   */
+  const [autoPrint, setAutoPrint] = useState(false);
+  const printQueue = useRef<string[]>([]);
+  const printing = useRef(false);
+  const frame = useRef<HTMLIFrameElement | null>(null);
+  // `load` is a useCallback with an empty dependency list, so it would capture
+  // whatever autoPrint was on first render and never see it change. A ref is
+  // read fresh every time.
+  const autoPrintRef = useRef(false);
+
+  /**
+   * Work through the queue one docket at a time.
+   *
+   * Sequential because printing is modal: pointing the frame at a second order
+   * while the first is still going loses it, and a lost docket is a lost order.
+   * The gap is a guess at how long a thermal printer needs, which is the honest
+   * description of it - the browser gives no signal that a job has finished.
+   */
+  const drainPrints = useCallback(() => {
+    if (printing.current) return;
+    const id = printQueue.current.shift();
+    if (!id || !frame.current) return;
+    printing.current = true;
+    frame.current.src = `/kitchen/print/${id}?copy=kitchen&auto=1`;
+    setTimeout(() => { printing.current = false; drainPrints(); }, 4000);
+  }, []);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/kitchen/orders", { cache: "no-store" });
@@ -69,6 +101,10 @@ export function KitchenScreen() {
     if (!first.current && fresh.length) {
       if (audio.current) beep(audio.current);
       setPending((q) => [...q, ...fresh]);
+      if (autoPrintRef.current) {
+        printQueue.current.push(...fresh.map((o) => o.id));
+        drainPrints();
+      }
       // Only when the tab is not the one being looked at - a system popup over
       // a screen somebody is already using is just in the way.
       if (typeof Notification !== "undefined" && Notification.permission === "granted" && document.hidden) {
@@ -78,9 +114,13 @@ export function KitchenScreen() {
       }
     }
     first.current = false;
-  }, []);
+  }, [drainPrints]);
 
   useEffect(() => { void load(); const t = setInterval(load, 5000); return () => clearInterval(t); }, [load]);
+  useEffect(() => { autoPrintRef.current = autoPrint; }, [autoPrint]);
+  useEffect(() => {
+    try { setAutoPrint(localStorage.getItem("fp-autoprint") === "1"); } catch { /* private browsing */ }
+  }, []);
   useEffect(() => {
     if (sound && typeof Notification !== "undefined" && Notification.permission === "default") {
       void Notification.requestPermission();
@@ -106,6 +146,15 @@ export function KitchenScreen() {
     // fp-kitchenwrap is what carries the status colour tokens; without it the
     // green advance button has no --ok to paint with and comes out blank.
     <div className="fp-kitchenwrap" style={{ padding: "16px 20px 40px" }}>
+      {/* Where the printing happens. Off-screen rather than display:none - a
+          hidden frame is not rendered, and an unrendered page cannot print. */}
+      <iframe
+        ref={frame}
+        title="Printing"
+        aria-hidden="true"
+        tabIndex={-1}
+        style={{ position: "fixed", width: 1, height: 1, left: -9999, top: 0, border: 0, opacity: 0 }}
+      />
       {pending.length > 0 ? (
         <div className="fp-newalert" role="alert">
           <div className="fp-newalert-card">
@@ -188,6 +237,18 @@ export function KitchenScreen() {
             onClick={() => { if (!audio.current) audio.current = new AudioContext(); void audio.current.resume(); setSound(true); beep(audio.current); }}
           >
             {sound ? "Sound on" : "Enable sound"}
+          </button>
+          <button
+            className={autoPrint ? "btn btn-secondary" : "btn btn-secondary"}
+            style={{ minHeight: 44 }}
+            aria-pressed={autoPrint}
+            onClick={() => {
+              const to = !autoPrint;
+              setAutoPrint(to);
+              try { localStorage.setItem("fp-autoprint", to ? "1" : "0"); } catch { /* private browsing */ }
+            }}
+          >
+            {autoPrint ? "Auto-print on" : "Auto-print off"}
           </button>
           <HelpSpot title="Why does this say Enable sound again?" article="kitchen-queue" anchor="the-beep">
             Browsers will not play a sound until somebody presses something, so every reload or tablet restart
@@ -334,6 +395,19 @@ export function KitchenScreen() {
                           ))}
                         </div>
                       </details>
+
+                      {/* Reprint. The kitchen copy replaces one that has been
+                          spilled on; the delivery note is what goes out with
+                          the driver, so it is only offered when there is a
+                          driver to give it to. */}
+                      <div className="fp-ticket-print">
+                        <a href={`/kitchen/print/${o.id}?copy=kitchen&auto=1`} target="_blank" rel="noreferrer">Kitchen copy</a>
+                        <a href={`/kitchen/print/${o.id}?copy=customer&auto=1`} target="_blank" rel="noreferrer">Receipt</a>
+                        {o.fulfilment === "delivery" ? (
+                          <a href={`/kitchen/print/${o.id}?copy=driver&auto=1`} target="_blank" rel="noreferrer">Delivery note</a>
+                        ) : null}
+                        <a href={`/kitchen/print/${o.id}?copy=all&auto=1`} target="_blank" rel="noreferrer">All</a>
+                      </div>
 
                       {o.status === "placed" ? (
                         <div style={{ display: "grid", gap: 8 }}>

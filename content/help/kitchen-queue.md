@@ -75,7 +75,30 @@ For {shop} there is **no kitchen text, no kitchen email and no printer** connect
 
 So: if this tab is closed, if the tablet has gone to sleep, or if somebody has wandered off to another website on it, **nothing tells anyone an order has arrived**. The customer is sitting there watching a tracking page that says you received it.
 
+When the tab *is* open, a new order now puts a large box on top of the queue as well as beeping. It stays there until somebody taps **Got it** — it does not fade away on its own, because an order nobody noticed is the exact thing it is there to prevent.
+
 Keep the tablet awake, plugged in, and on this page. If you would rather have a text or an email when an order lands, ring LaunchFlow — it is a settings change, and it is worth doing before the next busy night.
+
+## Printing a docket
+
+Every ticket has a row of print links under **Open the whole order**:
+
+- **Kitchen copy** — the big order number, the time it is wanted, the items and any notes. No prices; nobody assembling food needs them and they crowd out the toppings that change what goes in the box. This is the one to stick on the worktop.
+- **Receipt** — the itemised bill with the logo, the shop's address and the total. Goes in the bag.
+- **Delivery note** — only on delivery orders. The address, the phone number, and in large letters whether there is **cash to collect**. This is the one the driver carries.
+- **All** — the whole set, each on its own sheet.
+
+### Printing it automatically
+
+**Auto-print** at the top of the screen prints the kitchen copy the moment an order lands, so a docket is waiting before anyone has looked at the board. It remembers per device, so switching it on out here does not start the office machine printing.
+
+Whether it prints silently or asks first is the browser's decision, not ours. A tablet set up with Chrome started in kiosk-printing mode prints straight to the default printer with no dialog, which is how a kitchen tablet should be set up — ask LaunchFlow to do it once. Without that, the print box opens and somebody taps once.
+
+### Which printers work
+
+Any of them. The receipt is an ordinary web page, so it prints through the tablet or PC to whatever is installed — a thermal roll on USB, the network printer in the office, or a phone over AirPrint. It is laid out for 80mm thermal paper because that is what a takeaway owns, and it falls back sensibly on A4.
+
+Nothing needs to be bought from a particular manufacturer, and nothing needs the printer to be reachable from the internet.
 
 ## One queue for every branch
 
@@ -85,6 +108,5 @@ The board shows every shop's tickets together and does not filter by branch. {sh
 
 - **No editing a ticket.** Not the items, not the address, not the total. If an order came through wrong, ring the customer and either reject it before you start cooking, or sort it out between you.
 - **No cancelling.** Once you have accepted a ticket, this screen only moves it forward.
-- **No re-print and no print view.** The screen is the ticket.
 - **No notes.** There is nowhere to write "customer rang, rang doorbell twice". Keep your own book.
 - **No history.** You cannot see who accepted a ticket or when.
