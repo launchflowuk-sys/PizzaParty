@@ -2114,9 +2114,13 @@ footer::before {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 2px;
   padding: 0;
-  margin: 0;
-  /* Left-aligned with the rest of the page rather than floating in its own
-     centred band - it is a row of facts about this shop, not a banner. */
+  /* Block only. A bare `margin: 0` here also reset the `margin-inline: auto`
+     this element inherits from .fp-wrap, which left the whole band pinned to
+     the left edge of the viewport at 1200px wide while every other section on
+     the page stayed centred. */
+  margin-block: 0;
+  /* Text left inside each cell - the band itself is still centred with the
+     rest of the page. */
   text-align: left;
   justify-items: stretch;
   background: var(--color-divider);
