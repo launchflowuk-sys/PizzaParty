@@ -20,7 +20,7 @@ export const NOTIFY_EVENTS = [
 ] as const;
 
 export const NOTIFY_AUDIENCES = ["customer", "kitchen", "admin", "driver"] as const;
-export const NOTIFY_CHANNELS = ["email", "sms"] as const;
+export const NOTIFY_CHANNELS = ["email", "sms", "push"] as const;
 
 export type NotifyEvent = (typeof NOTIFY_EVENTS)[number];
 export type NotifyAudience = (typeof NOTIFY_AUDIENCES)[number];
@@ -49,6 +49,21 @@ export const EVENT_HINT: Record<NotifyEvent, string> = {
   order_rejected: "The shop could not take it. Say why, and say what happens to their money.",
   order_refunded: "Money has actually gone back. Separate from the refusal above.",
   review_request: "Sent later, once the meal has been eaten.",
+};
+
+/**
+ * Which channels can actually reach each audience.
+ *
+ * Only the customer has an app, so push is only offered on their row. Drawing
+ * a push switch against the kitchen would be a control that silently does
+ * nothing, which is worse than not offering it - staff would switch it on and
+ * assume the tablet was covered.
+ */
+export const CHANNELS_FOR: Record<NotifyAudience, readonly NotifyChannel[]> = {
+  customer: ["email", "sms", "push"],
+  kitchen: ["email", "sms"],
+  admin: ["email", "sms"],
+  driver: ["email", "sms"],
 };
 
 export const AUDIENCE_LABEL: Record<NotifyAudience, string> = {
@@ -92,35 +107,35 @@ export const APPLICABLE: Record<NotifyEvent, NotifyAudience[]> = {
  * order being refused, and the driver being handed a job. Everything else is
  * email until the shop decides otherwise.
  */
-type Default = { event: NotifyEvent; audience: NotifyAudience; email: boolean; sms: boolean; delayMinutes?: number };
+type Default = { event: NotifyEvent; audience: NotifyAudience; email: boolean; sms: boolean; push?: boolean; delayMinutes?: number };
 
 export const DEFAULT_RULES: Default[] = [
-  { event: "order_placed", audience: "customer", email: true, sms: true },
+  { event: "order_placed", audience: "customer", email: true, sms: true, push: true },
   { event: "order_placed", audience: "kitchen", email: true, sms: true },
   { event: "order_placed", audience: "admin", email: true, sms: false },
 
-  { event: "order_accepted", audience: "customer", email: true, sms: true },
+  { event: "order_accepted", audience: "customer", email: true, sms: true, push: true },
   { event: "order_accepted", audience: "admin", email: false, sms: false },
 
   // Off by default. A text every time a pizza goes in the oven is how a shop
   // teaches its customers to ignore its texts.
-  { event: "order_preparing", audience: "customer", email: false, sms: false },
+  { event: "order_preparing", audience: "customer", email: false, sms: false, push: true },
 
-  { event: "order_ready", audience: "customer", email: true, sms: true },
+  { event: "order_ready", audience: "customer", email: true, sms: true, push: true },
   { event: "order_ready", audience: "driver", email: false, sms: true },
   { event: "order_ready", audience: "admin", email: false, sms: false },
 
-  { event: "order_out_for_delivery", audience: "customer", email: true, sms: true },
+  { event: "order_out_for_delivery", audience: "customer", email: true, sms: true, push: true },
   { event: "order_out_for_delivery", audience: "admin", email: false, sms: false },
 
-  { event: "order_completed", audience: "customer", email: true, sms: false },
+  { event: "order_completed", audience: "customer", email: true, sms: false, push: false },
   { event: "order_completed", audience: "admin", email: true, sms: false },
 
-  { event: "order_rejected", audience: "customer", email: true, sms: true },
+  { event: "order_rejected", audience: "customer", email: true, sms: true, push: true },
   { event: "order_rejected", audience: "admin", email: true, sms: false },
 
-  { event: "order_refunded", audience: "customer", email: true, sms: false },
+  { event: "order_refunded", audience: "customer", email: true, sms: false, push: true },
   { event: "order_refunded", audience: "admin", email: true, sms: false },
 
-  { event: "review_request", audience: "customer", email: true, sms: false, delayMinutes: 45 },
+  { event: "review_request", audience: "customer", email: true, sms: false, push: true, delayMinutes: 45 },
 ];

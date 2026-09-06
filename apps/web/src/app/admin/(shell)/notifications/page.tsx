@@ -1,6 +1,6 @@
 import {
   prisma, APPLICABLE, AUDIENCE_LABEL, EVENT_HINT, EVENT_LABEL,
-  NOTIFY_AUDIENCES, NOTIFY_EVENTS, type NotifyAudience, type NotifyEvent,
+  NOTIFY_AUDIENCES, NOTIFY_EVENTS, CHANNELS_FOR, type NotifyAudience, type NotifyEvent,
 } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { requireScreen } from "@/lib/session";
@@ -37,6 +37,8 @@ export default async function AdminNotifications({ searchParams }: Params) {
 
   // What the texts are costing. The whole point of the screen is that this
   // number is a choice rather than a surprise on the bill.
+  // Only SMS is counted. Push and email are free, which is the entire argument
+  // this screen exists to make.
   const smsPerOrder = NOTIFY_EVENTS.reduce(
     (n, ev) => n + (APPLICABLE[ev].filter((a) => isOn(ev, a, "sms")).length),
     0,
@@ -177,7 +179,7 @@ export default async function AdminNotifications({ searchParams }: Params) {
                       return (
                         <td key={a}>
                           <div className="fp-notcell">
-                            {(["email", "sms"] as const).map((c) => {
+                            {CHANNELS_FOR[a].map((c) => {
                               const key = `${ev}|${a}|${c}`;
                               return (
                                 <label key={c} className={`fp-notsw ${c}`}>
@@ -186,14 +188,14 @@ export default async function AdminNotifications({ searchParams }: Params) {
                                       "off" and "absent" are the same thing on save. */}
                                   <input type="hidden" name="rule" value={key} />
                                   <input type="checkbox" name="on" value={key} defaultChecked={isOn(ev, a, c)} />
-                                  <span>{c === "email" ? "Email" : "Text"}</span>
+                                  <span>{c === "email" ? "Email" : c === "sms" ? "Text" : "Push"}</span>
                                   <a
                                     className="fp-notpeek"
                                     href={`/admin/notifications/preview?event=${ev}&audience=${a}&channel=${c}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    title={`Preview this ${c === "email" ? "email" : "text"}`}
-                                    aria-label={`Preview the ${EVENT_LABEL[ev]} ${c === "email" ? "email" : "text"} to the ${AUDIENCE_LABEL[a].toLowerCase()}`}
+                                    title={`Preview this ${c === "email" ? "email" : c === "sms" ? "text" : "notification"}`}
+                                    aria-label={`Preview the ${EVENT_LABEL[ev]} ${c === "email" ? "email" : c === "sms" ? "text" : "notification"} to the ${AUDIENCE_LABEL[a].toLowerCase()}`}
                                   >&#8599;</a>
                                 </label>
                               );

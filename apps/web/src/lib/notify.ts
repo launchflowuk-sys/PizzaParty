@@ -112,3 +112,76 @@ export async function postPrinter(url: string, payload: unknown): Promise<{ ok: 
 export function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
+
+/* ---------- Push (Expo) ---------- */
+
+export type PushMessage = {
+  to: string;
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+};
+
+export type PushResult = {
+  ok: boolean;
+  sent: number;
+  /** Tokens Expo says are dead. The caller disables these rather than retrying forever. */
+  dead: string[];
+  error?: string;
+};
+
+/**
+ * Send to phones, through Expo's push service.
+ *
+ * Deliberately **not** the dry-run pattern the other two channels use. `sendSms`
+ * and `sendEmail` return `{ ok: true }` when they are unconfigured, which is how
+ * an order ends up with "sms_sent" against a message nobody received. Push has
+ * no credentials to be missing - if there are no devices there is nothing to
+ * send, and that is reported as nothing sent rather than as success.
+ *
+ * Expo answers per token. A device that has uninstalled the app comes back as
+ * DeviceNotRegistered, and that token is returned in `dead` so the caller can
+ * retire it. Left alone, those accumulate and every send gets slower and
+ * noisier for the rest of the shop's life.
+ */
+export async function sendPush(messages: PushMessage[]): Promise<PushResult> {
+  if (messages.length === 0) return { ok: true, sent: 0, dead: [] };
+
+  const dead: string[] = [];
+  let sent = 0;
+
+  // Expo accepts 100 per request. A shop with a few hundred devices on a
+  // marketing send would otherwise be one enormous request that fails whole.
+  for (let i = 0; i < messages.length; i += 100) {
+    const chunk = messages.slice(i, i + 100);
+    try {
+      const res = await fetch("https://exp.host/--/api/v2/push/send", {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json" },
+        body: JSON.stringify(chunk.map((m) => ({ ...m, sound: "default", priority: "high" }))),
+        signal: AbortSignal.timeout(15_000),
+      });
+
+      if (!res.ok) {
+        return { ok: false, sent, dead, error: `Expo returned ${res.status}` };
+      }
+
+      const body = (await res.json()) as {
+        data?: { status: string; message?: string; details?: { error?: string } }[];
+      };
+
+      (body.data ?? []).forEach((r, n) => {
+        if (r.status === "ok") { sent++; return; }
+        // The app was deleted, or notifications were turned off at the OS.
+        // Expo answers positionally, but guard the lookup rather than trust
+        // the two arrays to stay the same length.
+        const token = chunk[n]?.to;
+        if (token && r.details?.error === "DeviceNotRegistered") dead.push(token);
+      });
+    } catch (e) {
+      return { ok: false, sent, dead, error: (e as Error).message };
+    }
+  }
+
+  return { ok: true, sent, dead };
+}

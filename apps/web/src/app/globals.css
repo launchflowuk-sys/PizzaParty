@@ -2689,3 +2689,8 @@ footer::before {
   font-size: 13px; color: var(--color-neutral-700); text-decoration: underline; cursor: pointer;
 }
 .fp-login-back:hover { color: var(--color-text); }
+
+/* Push is the free channel and the one to encourage, so it reads as the
+   calm option rather than competing with the amber SMS switch. */
+.fp-notsw.push input { accent-color: var(--info); }
+.fp-notsw.push:has(input:checked) { background: var(--info-bg); border-color: var(--info-line); color: var(--info); }

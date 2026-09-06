@@ -208,6 +208,8 @@ async function seedOps(clientId: string, slug: string) {
       data: DEFAULT_RULES.flatMap((d) => [
         { clientId, event: d.event, audience: d.audience, channel: "email", enabled: d.email, delayMinutes: d.delayMinutes ?? 0 },
         { clientId, event: d.event, audience: d.audience, channel: "sms", enabled: d.sms, delayMinutes: d.delayMinutes ?? 0 },
+        // Push only where somebody could receive it - only the customer has an app.
+        ...(d.push === undefined ? [] : [{ clientId, event: d.event, audience: d.audience, channel: "push", enabled: d.push, delayMinutes: d.delayMinutes ?? 0 }]),
       ]),
     });
   }

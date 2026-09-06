@@ -413,3 +413,57 @@ export function loginCodeEmail(code: string): Mail {
     }),
   };
 }
+
+/* ───────────────────────────────  push  ─────────────────────────────── */
+
+/**
+ * The same events, on a lock screen.
+ *
+ * Shorter than the text messages, not longer: a notification is read in the
+ * half-second before somebody decides whether to unlock. Title carries the
+ * fact, body carries the detail, and neither repeats the shop's name because
+ * the icon already says it.
+ *
+ * `data.orderId` is what the app taps through to. Without it the notification
+ * opens the app at the menu, which is the wrong screen for somebody who just
+ * got told their food has left.
+ */
+export function pushFor(event: NotifyEvent, audience: NotifyAudience, ctx: MailContext):
+  { title: string; body: string; data: Record<string, unknown> } | null {
+  if (audience !== "customer") return null;
+
+  const { order } = ctx;
+  const collection = order.fulfilment === "collection";
+  const data = { orderId: order.id, number: order.number, event };
+
+  switch (event) {
+    case "order_placed":
+      return { title: `Order #${order.number} received`, body: `Thanks ${first(order.customerName)} — we've sent it to the kitchen.`, data };
+    case "order_accepted":
+      return {
+        title: "Order confirmed",
+        body: collection ? `Ready to collect at ${when(order)}.` : `Estimated delivery ${when(order)}.`,
+        data,
+      };
+    case "order_preparing":
+      return { title: "It's in the oven", body: "Not long now.", data };
+    case "order_ready":
+      return collection ? { title: "Ready to collect", body: `Order #${order.number} is boxed and waiting.`, data } : null;
+    case "order_out_for_delivery":
+      return { title: "On its way", body: `Arriving around ${when(order)}.`, data };
+    case "order_completed":
+      return { title: "Enjoy your food", body: "Your receipt is in your email.", data };
+    case "order_rejected":
+      return {
+        title: "We couldn't take your order",
+        body: ctx.reason ? `${ctx.reason}. ${order.paymentMethod === "card" ? "You're being refunded." : "You haven't been charged."}` : "Tap for details.",
+        data,
+      };
+    case "order_refunded":
+      return { title: "Refund sent", body: `${gbp(ctx.refund ?? order.total)} is on its way back to your card.`, data };
+    case "review_request":
+      return { title: "How was it?", body: "Twenty seconds to leave a review would help us a lot.", data };
+    default:
+      return null;
+  }
+}

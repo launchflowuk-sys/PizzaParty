@@ -1,8 +1,8 @@
 import "server-only";
 import { prisma, type NotifyAudience, type NotifyChannel, type NotifyEvent } from "@launchflow/db";
 import type { FullOrder } from "@/lib/orders";
-import { sendEmail, sendSms } from "@/lib/notify";
-import { emailFor, smsFor, type MailContext } from "@/lib/email/templates";
+import { sendEmail, sendPush, sendSms } from "@/lib/notify";
+import { emailFor, pushFor, smsFor, type MailContext } from "@/lib/email/templates";
 
 /**
  * One way in for every notification.
@@ -23,7 +23,7 @@ import { emailFor, smsFor, type MailContext } from "@/lib/email/templates";
  * and the kitchen still gets its food to cook.
  */
 
-type Recipient = { email: string; sms: string };
+type Recipient = { email: string; sms: string; devices: string[] };
 
 /** Who each audience actually is, for this order. */
 async function recipients(order: FullOrder): Promise<Record<NotifyAudience, Recipient>> {
@@ -39,11 +39,18 @@ async function recipients(order: FullOrder): Promise<Record<NotifyAudience, Reci
     select: { email: true, phone: true },
   });
 
+  // Every live device this customer has. Somebody with a phone and a tablet
+  // gets told on both, which is what they would expect.
+  const devices = await prisma.pushDevice.findMany({
+    where: { clientId: order.clientId, customerId: order.customerId, disabledAt: null },
+    select: { token: true },
+  });
+
   return {
-    customer: { email: order.customerEmail, sms: order.customerPhone },
-    kitchen: { email: client?.kitchenEmail ?? "", sms: client?.kitchenSms ?? "" },
-    admin: { email: client?.ownerEmail ?? "", sms: client?.ownerSms ?? "" },
-    driver: { email: driver?.email ?? "", sms: driver?.phone ?? "" },
+    customer: { email: order.customerEmail, sms: order.customerPhone, devices: devices.map((d) => d.token) },
+    kitchen: { email: client?.kitchenEmail ?? "", sms: client?.kitchenSms ?? "", devices: [] },
+    admin: { email: client?.ownerEmail ?? "", sms: client?.ownerSms ?? "", devices: [] },
+    driver: { email: driver?.email ?? "", sms: driver?.phone ?? "", devices: [] },
   };
 }
 
@@ -104,12 +111,32 @@ export async function notify(
         const r = await sendEmail(who.email, mail.subject, mail.html);
         sent += r.ok ? 1 : 0;
         await record(order.id, r.ok ? "email_sent" : "email_failed", `${event} → ${audience}${r.ok ? "" : `: ${r.error}`}`);
-      } else {
+      } else if (channel === "sms") {
         const body = smsFor(event, audience, ctx);
         if (!body || !who.sms) { skipped++; continue; }
         const r = await sendSms(who.sms, body);
         sent += r.ok ? 1 : 0;
         await record(order.id, r.ok ? "sms_sent" : "sms_failed", `${event} → ${audience}${r.ok ? "" : `: ${r.error}`}`);
+      } else {
+        const note = pushFor(event, audience, ctx);
+        // Nothing to say, or nobody has the app. Both are "skipped" rather
+        // than a failure - a customer who has never installed it is not an
+        // error condition.
+        if (!note || who.devices.length === 0) { skipped++; continue; }
+
+        const r = await sendPush(who.devices.map((to) => ({ to, ...note })));
+        sent += r.sent;
+        await record(order.id, r.sent > 0 ? "push_sent" : "push_failed",
+          `${event} → ${audience}: ${r.sent}/${who.devices.length}${r.error ? ` (${r.error})` : ""}`);
+
+        // Retire tokens Expo says are dead. Left alone they accumulate for the
+        // life of the shop and every send gets slower for nothing.
+        if (r.dead.length) {
+          await prisma.pushDevice.updateMany({
+            where: { token: { in: r.dead } },
+            data: { disabledAt: new Date() },
+          }).catch(() => {});
+        }
       }
     }
   } catch (e) {
