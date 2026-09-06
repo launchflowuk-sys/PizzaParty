@@ -138,9 +138,17 @@ body { padding-bottom: env(safe-area-inset-bottom); }
     min-height: 44px; flex: 0 0 auto;
     border: 1px solid var(--color-divider);
   }
-  /* The square bullet and the storefront links are noise in a scrolling strip. */
+  /* The square bullet is noise in a scrolling strip. */
   .fp-adminrail nav a > span:first-child { display: none; }
-  .fp-adminrail > div:last-child { display: none; }
+  /* The name and the way out stay. Only the two secondary links fold away -
+     hiding the whole block is what left a phone with no sign-out button. */
+  .fp-adminwho {
+    margin-top: 10px; display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding-top: 10px; border-top: 1px solid var(--color-divider);
+  }
+  .fp-adminwho .who { margin-bottom: 0; }
+  .fp-adminwho .links { display: none; }
+  .fp-adminwho .btn, .fp-adminwho button { min-height: 40px; flex: 0 0 auto; }
   .fp-adminhead { flex-wrap: wrap; gap: 12px; }
   .fp-adminsplit { grid-template-columns: minmax(0,1fr); }
   .fp-stats4 { grid-template-columns: repeat(2, 1fr); }
@@ -2509,3 +2517,15 @@ footer::before {
   color: var(--color-neutral-400);
 }
 .fp-notpeek:hover, .fp-notpeek:focus-visible { color: var(--color-accent); background: var(--color-surface); }
+
+/* == Who is signed in, and the way out =====================================
+   This block used to be hidden wholesale on a phone by a rule whose comment
+   said it was removing "storefront links" - but it also held the name, the
+   role and the sign-out button, so on mobile there was no way to log out of
+   the back office at all. The parts are separated now: the name and the button
+   always show, and only the secondary links fold away on a narrow screen. */
+.fp-adminwho { margin-top: auto; font-size: 12px; color: var(--color-neutral-700); line-height: 1.5; }
+.fp-adminwho .who { display: grid; gap: 1px; margin-bottom: 8px; }
+.fp-adminwho .who strong { font-weight: 600; color: var(--color-text); font-size: 13px; }
+.fp-adminwho .links { display: grid; gap: 2px; margin-bottom: 10px; }
+.fp-adminwho .links a { font-size: 12px; }

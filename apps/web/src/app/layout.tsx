@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import type { Metadata, Viewport } from "next";
 import { Calistoga, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -34,7 +35,20 @@ export function generateMetadata(): Metadata {
 
 export const viewport: Viewport = { themeColor: "#f3f2f2", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+/**
+ * Screens that are not the shop.
+ *
+ * The back office and the kitchen have their own chrome and their own way out.
+ * Wrapping them in the storefront's header, footer and basket bar put a "Order
+ * now" button and a menu of takeaway links on top of the till - which on a
+ * phone pushed the actual controls off the screen entirely.
+ */
+const OPS = ["/admin", "/kitchen"];
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Set by middleware; layouts are not given the URL they render.
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const isOps = OPS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   const cfg = getConfig();
   const style = {
     "--brand-primary": cfg.brand.primary,
@@ -44,9 +58,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-GB" className={`${display.variable} ${sans.variable}`} style={style} data-photo={cfg.brand.photoStyle}>
       <body style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
-        <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} fulfilment={cfg.fulfilment} loyalty={cfg.loyalty.enabled} />
+        {isOps ? null : <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} fulfilment={cfg.fulfilment} loyalty={cfg.loyalty.enabled} />}
         <main style={{ flex: 1 }}>{children}</main>
-        <Footer
+        {isOps ? null : <Footer
           name={cfg.name}
           phone={cfg.contact.phone}
           address={cfg.contact.address}
@@ -54,8 +68,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           loyalty={cfg.loyalty.enabled}
           logo={assetUrl(cfg.brand.logo)}
           payments={paymentMarks()}
-        />
-        <StickyBar />
+        />}
+        {isOps ? null : <StickyBar />}
       </body>
     </html>
   );

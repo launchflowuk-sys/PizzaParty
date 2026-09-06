@@ -67,12 +67,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           ))}
         </nav>
 
-        <div style={{ marginTop: "auto", fontSize: 12, color: "var(--color-neutral-700)", lineHeight: 1.5 }}>
-          <div style={{ fontWeight: 600, color: "var(--color-text)" }}>{staff.name}</div>
-          <div style={{ marginBottom: 8 }}>{ROLE_LABEL[staff.role]}</div>
-          <Link href="/" style={{ fontSize: 12 }}>Open the storefront &rarr;</Link>
-          <br />
-          <Link href="/admin/launchflow" style={{ fontSize: 12 }}>LaunchFlow &rarr;</Link>
+        <div className="fp-adminwho">
+          <div className="who">
+            <strong>{staff.name}</strong>
+            <span>{ROLE_LABEL[staff.role]}</span>
+          </div>
+          <div className="links">
+            <Link href="/">Open the storefront &rarr;</Link>
+            <Link href="/admin/launchflow">LaunchFlow &rarr;</Link>
+          </div>
           <SignOutButton />
         </div>
       </aside>

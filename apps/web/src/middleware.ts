@@ -24,7 +24,13 @@ export async function middleware(req: NextRequest) {
     const agency = pathname.startsWith("/admin/launchflow") ? await verifyToken(req.cookies.get(COOKIE.agency)?.value, "agency") : null;
     if (!admin && !agency) return NextResponse.redirect(new URL(`/admin/login?next=${encodeURIComponent(pathname)}`, req.url));
   }
-  return NextResponse.next();
+  // A layout cannot see the URL it is rendering. The root layout needs to,
+  // because it wraps the storefront chrome around every page - including the
+  // back office and the kitchen screen, which want none of it. Passing the
+  // path on as a header is the supported way to tell it.
+  const headers = new Headers(req.headers);
+  headers.set("x-pathname", pathname);
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {
