@@ -69,6 +69,16 @@ function serialiseOrder(order: NonNullable<Awaited<ReturnType<typeof getFullOrde
       })),
       notes: i.notes || "",
       lineTotal: i.lineTotal,
+      /**
+       * The original basket line, exactly as it was submitted.
+       *
+       * This is what makes "order again" possible. The rendered fields above
+       * are names for a human to read - rebuilding a basket from them would
+       * mean matching "Large" back to a size key by string, which breaks the
+       * first time the shop renames a size. The stored line still holds the
+       * real product, size and modifier keys.
+       */
+      raw: i.line,
     })),
     subtotal: order.subtotal,
     deliveryFee: order.deliveryFee,
