@@ -2670,3 +2670,22 @@ footer::before {
   display: inline-flex; align-items: center;
 }
 .fp-ticket-print a:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+/* == Signing in ============================================================
+   One field, because "email or mobile?" is a decision nobody should have to
+   make before typing. The form is narrow on purpose - a login box the width of
+   the page reads as a form to fill in rather than one line and a button. */
+.fp-login { display: grid; gap: 10px; max-width: 380px; margin-top: 16px; }
+.fp-login label { font-size: 13px; font-weight: 700; }
+.fp-login-hint { margin: 0; font-size: 13px; line-height: 1.5; color: var(--color-neutral-700); }
+.fp-login-err { margin: 0; font-size: 13px; line-height: 1.5; color: var(--danger); font-weight: 600; }
+/* Wide tracking so six digits can be checked against a text message by eye. */
+.fp-login-code {
+  text-align: center; font-size: 26px; letter-spacing: .34em;
+  font-family: ui-monospace, Menlo, Consolas, monospace; padding-inline: 8px;
+}
+.fp-login-back {
+  background: none; border: 0; padding: 4px 0; text-align: left;
+  font-size: 13px; color: var(--color-neutral-700); text-decoration: underline; cursor: pointer;
+}
+.fp-login-back:hover { color: var(--color-text); }

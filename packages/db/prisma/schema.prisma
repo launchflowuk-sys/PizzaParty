@@ -324,6 +324,10 @@ model Customer {
 
   @@unique([clientId, phone])
   @@unique([clientId, referralCode])
+  /// Signing in by email looks a customer up by address. Deliberately not
+  /// unique: a household shares one, and a unique constraint would make the
+  /// second person to order from that address fail at checkout.
+  @@index([clientId, email])
   @@index([clientId, lastOrderAt])
   @@index([referredById])
 }

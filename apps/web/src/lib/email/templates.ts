@@ -380,3 +380,36 @@ export function smsFor(event: NotifyEvent, audience: NotifyAudience, ctx: MailCo
 
   return null;
 }
+
+/* ───────────────────────────── logging in ───────────────────────────── */
+
+/**
+ * Six digits, and as little else as possible.
+ *
+ * The code is the entire message, so it is the biggest thing on the page and
+ * sits in the preheader too - most people read it off the notification and
+ * never open the email at all. Letter-spaced so it can be copied by eye
+ * without miscounting, and deliberately not a link: a login email that asks
+ * you to click something is training people to click links in emails.
+ */
+export function loginCodeEmail(code: string): Mail {
+  const b = brand();
+  return {
+    subject: `${code} is your ${b.name} code`,
+    html: shell({
+      preheader: `${code} — expires in 10 minutes`,
+      b,
+      content:
+        say("Here's your code", "Type this in to finish signing in. It works for ten minutes.")
+        + `<div style="text-align:center;margin:22px 0 8px">
+             <div style="display:inline-block;background:#F7F6F3;border:1px solid #e6e4df;border-radius:8px;padding:16px 26px;
+                         font-family:ui-monospace,Menlo,Consolas,monospace;font-size:38px;font-weight:700;
+                         letter-spacing:.22em;color:#1a1a1a;line-height:1">${esc(code)}</div>
+           </div>`
+        + `<p style="margin:18px 0 0;font-size:14px;line-height:1.55;color:#777">
+             If you did not ask to sign in, you can ignore this email — nobody can get into your
+             account without the code above, and it stops working in ten minutes.
+           </p>`,
+    }),
+  };
+}
