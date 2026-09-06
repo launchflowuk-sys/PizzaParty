@@ -67,11 +67,17 @@ export function LoginForm() {
     return (
       <form onSubmit={send} className="fp-login">
         <label htmlFor="identifier">Mobile number or email</label>
+        {/* Always the email keyboard, never the phone pad. Switching on what
+            has been typed is circular: a phone pad has no "@", so an email can
+            never be started, so looksLikeEmail never becomes true, so the
+            keyboard never switches - the field ends up accepting only digits
+            while the label offers both. The email keyboard carries letters,
+            digits and "@", so it serves a mobile number perfectly well. */}
         <input
           id="identifier"
           className="input"
           type="text"
-          inputMode={looksLikeEmail ? "email" : "tel"}
+          inputMode="email"
           autoComplete="username"
           autoCapitalize="off"
           autoCorrect="off"
