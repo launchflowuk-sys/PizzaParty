@@ -483,9 +483,13 @@ Because the header is checked first, a shared device or a WebView cannot have it
 
 #### 5.4.6 The hard dependency nobody should discover late
 
-**Sign-in requires Twilio.** With `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM` unset, `sendSms` writes the code to the server log and returns `{ ok: true }`, so `/api/account/otp/send` reports success and nobody ever receives a code. On the website this is survivable because guest checkout exists. In an app, "create an account" that silently never texts is a store rejection and a bad first impression.
+**No longer true as of 6 September 2026 — sign-in no longer requires Twilio.** `/api/account/otp/send` now takes an `identifier` that is either a mobile number or an email address, and sends the six-digit code by whichever was given. The app should offer the same single field. Email is the free route and the one to lead with.
 
-So: **Twilio must be live before the app ships.** Until it is, the app must keep guest checkout fully working and must never gate the ordering path behind sign-in. Test the OTP path against a staging deployment with real Twilio credentials, not against a dry-run local server.
+The original warning is kept below because the failure mode it describes is still live for the SMS half, and is still the worst kind:
+
+**Sending a code by text requires Twilio.** With `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM` unset, `sendSms` writes the code to the server log and returns `{ ok: true }`, so the endpoint reports success and nobody ever receives a code. On the website this is survivable because guest checkout exists. In an app, "create an account" that silently never texts is a store rejection and a bad first impression.
+
+So: **email sign-in must be the default offered in the app**, and Twilio must be live before the SMS option is shown. Until it is, the app must keep guest checkout fully working and must never gate the ordering path behind sign-in. Test the OTP path against a staging deployment with real Twilio credentials, not against a dry-run local server.
 
 Rate limits already enforced server-side and to be surfaced verbatim in the UI: 3 codes per 10 minutes, 5 wrong attempts, 10-minute code expiry, 90-day session.
 

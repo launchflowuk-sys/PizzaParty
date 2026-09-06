@@ -48,9 +48,24 @@ export async function POST(req: NextRequest) {
   });
 
   const token = randomBytes(24).toString("base64url");
-  await prisma.session.create({ data: { customerId: customer.id, token, expiresAt: new Date(Date.now() + 90 * 86400_000) } });
+  const expiresAt = new Date(Date.now() + 90 * 86400_000);
+  await prisma.session.create({ data: { customerId: customer.id, token, expiresAt } });
+  const signed = await signToken({ role: "customer", sub: token });
 
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set(COOKIE.customer, await signToken({ role: "customer", sub: token }), cookieOptions("customer"));
+  /**
+   * The app cannot use the cookie, so it is handed the same signed credential
+   * in the body - but only when it says it is the app.
+   *
+   * A browser must never receive this in a readable body: the cookie is
+   * httpOnly precisely so that a cross-site script cannot read the session,
+   * and returning it as JSON would hand that away for nothing.
+   */
+  const native = (req.headers.get("x-lf-client") ?? "").startsWith("mobile");
+
+  const res = NextResponse.json({
+    ok: true,
+    ...(native ? { token: signed, expiresAt: expiresAt.toISOString() } : {}),
+  });
+  res.cookies.set(COOKIE.customer, signed, cookieOptions("customer"));
   return res;
 }

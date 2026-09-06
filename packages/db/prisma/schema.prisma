@@ -61,6 +61,7 @@ model Client {
   reviews        Review[]
   automations    Automation[]
   notificationRules NotificationRule[]
+  pushDevices    PushDevice[]
   marketingSends MarketingSend[]
   smsInbound     SmsInbound[]
   loyaltyRewards LoyaltyReward[]
@@ -321,6 +322,8 @@ model Customer {
   smsInbound     SmsInbound[]
   referredBy     Customer?       @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
   referrals      Customer[]      @relation("Referrals")
+
+  pushDevices        PushDevice[]
 
   @@unique([clientId, phone])
   @@unique([clientId, referralCode])
@@ -811,4 +814,31 @@ model NotificationRule {
 
   @@unique([clientId, event, audience, channel])
   @@index([clientId, event])
+}
+
+/// A phone that has agreed to receive notifications.
+///
+/// Registered without a customer on purpose: a guest who has not signed in
+/// still ordered food and still wants to know when it is on its way, so the
+/// device is recorded first and attached to a customer when they log in.
+///
+/// `disabledAt` is set when Expo reports DeviceNotRegistered - the app was
+/// deleted, or permission was withdrawn. The row is kept rather than deleted
+/// so the same token is not endlessly retried.
+model PushDevice {
+  id         String    @id @default(cuid())
+  clientId   String
+  client     Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  /// Expo push token. The natural key - one row per device, whoever is signed in.
+  token      String    @unique
+  platform   String    @default("")
+  deviceId   String    @default("")
+  appVersion String    @default("")
+  lastSeenAt DateTime  @default(now())
+  disabledAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([clientId, customerId])
 }

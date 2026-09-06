@@ -1,5 +1,5 @@
 import "server-only";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@launchflow/db";
 import { COOKIE, verifyToken, type Role } from "./auth";
@@ -10,9 +10,23 @@ export async function requireRole(role: Exclude<Role, "customer">) {
   return verifyToken(jar.get(COOKIE[role])?.value, role);
 }
 
+/**
+ * The signed-in customer, from a cookie or a bearer token.
+ *
+ * A native app cannot use the cookie - it is httpOnly and tied to a browser
+ * jar - so the same signed credential is also accepted in an Authorization
+ * header. It is deliberately the *same* credential rather than a second auth
+ * system: already signed, already carrying an expiry, already pointing at a
+ * revocable Session row.
+ *
+ * The header is checked first so that a shared device, or the app's own
+ * WebView, cannot have a stale cookie silently override the token the app is
+ * actually authenticated with.
+ */
 export async function currentCustomer() {
+  const bearer = (await headers()).get("authorization")?.replace(/^Bearer\s+/i, "").trim();
   const jar = await cookies();
-  const p = await verifyToken(jar.get(COOKIE.customer)?.value, "customer");
+  const p = await verifyToken(bearer || jar.get(COOKIE.customer)?.value, "customer");
   if (!p) return null;
   const session = await prisma.session.findUnique({ where: { token: p.sub }, include: { customer: { include: { addresses: { orderBy: { createdAt: "desc" } } } } } });
   if (!session || session.expiresAt < new Date()) return null;
