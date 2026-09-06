@@ -85,7 +85,7 @@ export function BasketView() {
         <aside
           style={{
             border: "2px solid var(--color-text)", padding: 24, display: "grid", gap: 10,
-            position: "sticky", top: 104, fontSize: 14,
+            position: "sticky", top: "var(--header-h)", fontSize: 14,
           }}
         >
           <div style={{ display: "flex", gap: 10, alignItems: "center", paddingBottom: 12, borderBottom: "1px solid var(--color-divider)", fontSize: 13 }}>

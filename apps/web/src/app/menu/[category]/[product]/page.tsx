@@ -57,7 +57,7 @@ export default async function ProductPage({ params }: Params) {
         ]}
       />
 
-      <div className="fp-product-media" style={{ position: "sticky", top: 104 }}>
+      <div className="fp-product-media" style={{ position: "sticky", top: "var(--header-h)" }}>
         <Photo
           src={assetUrl(p.image)}
           alt={p.name}

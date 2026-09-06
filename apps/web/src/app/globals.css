@@ -40,12 +40,26 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .fp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
 .fp-dealrow { display: grid; grid-template-columns: 120px 1fr 2fr auto; gap: 32px; align-items: center; }
 
+/* How far down the page a sticky sidebar has to start to clear the header.
+   Was hardcoded as `top: 104` in four separate components - the desktop
+   header's height, written as a number, in files that had no idea why. Any
+   change to the header silently broke all four at once. */
+:root { --header-h: 104px; }
+
 @media (max-width: 1000px) {
+  /* The header is not pinned at this width, so there is nothing for a sticky
+     sidebar to clear. */
+  :root { --header-h: 0px; }
   .fp-grid-4 { grid-template-columns: repeat(3, 1fr); }
   .fp-split-hero, .fp-split-half { grid-template-columns: minmax(0,1fr); gap: 32px; }
   .fp-split-rail { grid-template-columns: minmax(0,1fr); gap: 24px; }
-  /* The category rail and the product photograph stop sticking once stacked. */
-  .fp-split-rail > aside, .fp-split-half > div:first-child { position: static !important; }
+  /* The product photograph stops sticking once stacked - a picture that stays
+     put while the options scroll underneath it is just in the way.
+     The category rail is deliberately NOT in this list any more. It has a
+     horizontal chip-strip design a few hundred lines below that was written
+     for exactly this width and has never once been active, because this
+     `!important` was quietly overriding its `position`. */
+  .fp-split-half > div:first-child { position: static !important; }
   /* Explicit class - the selector above misses this one, because the section's
      first child is a JSON-LD script rather than the photo. A sticky photograph on
      a phone means the rest of the page scrolls underneath it. */
@@ -245,7 +259,11 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
    chip strip instead, so the first pizza is visible immediately. */
 @media (max-width: 1000px) {
   .fp-split-rail > aside {
-    position: sticky; top: 0; z-index: 15;
+    /* Below the header's z-index deliberately. Two sticky things both pinned
+       at top:0 is a collision waiting to happen, and if one has to lose it is
+       this one - a category strip drawn over the shop's own logo and basket
+       button is the worse of the two failures. */
+    position: sticky; top: 0; z-index: 8;
     background: var(--color-bg);
     padding: 8px 0 10px; margin-bottom: 4px;
     border-bottom: 2px solid var(--color-divider);
@@ -305,6 +323,16 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
   .nav > .seg .seg-opt { flex: 1; justify-content: center; min-height: 44px; }
   /* The basket is the primary action - keep it comfortably tappable. */
   .nav > a[href="/basket"] { min-height: 44px; }
+
+  /* Not pinned on a phone.
+     Stacked into four rows this header is around 240px tall - a third of the
+     screen - so pinning it meant the food started below the fold and stayed
+     there. It also collided with the menu's own sticky category strip, which
+     pinned at the same top:0 with a higher z-index and drew straight over the
+     logo, the basket and the nav.
+     The basket is still one tap away: the bar at the bottom of the screen
+     appears as soon as there is anything in it. */
+  .nav { position: static !important; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

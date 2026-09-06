@@ -107,7 +107,7 @@ export function MenuBrowser({ categories, items, initialQuery = "" }: {
         className="fp-wrap fp-split-rail"
         style={{ padding: "40px 32px 64px" }}
       >
-        <aside style={{ position: "sticky", top: 104 }}>
+        <aside style={{ position: "sticky", top: "var(--header-h)" }}>
           <span className="fp-kicker" style={{ marginBottom: 12 }}>Menu</span>
           <div style={{ display: "grid", borderBottom: "2px solid var(--color-divider)" }}>
             {categories.map((c) => (
