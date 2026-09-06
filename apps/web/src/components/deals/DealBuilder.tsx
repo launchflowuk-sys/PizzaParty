@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useKeepInView } from "@/lib/keep-in-view";
 import { useRouter } from "next/navigation";
 import { useBasket } from "@/components/basket/store";
 import { gbp } from "@/lib/money";
@@ -107,15 +108,10 @@ export function DealBuilder({ deal }: { deal: BuilderDeal }) {
   // Which step is live. Used only to know when to scroll, not to render.
   const stepRef = useRef<HTMLDivElement>(null);
   const stepKey = next ? `${next.slot}-${next.n}` : "done";
-  useEffect(() => {
-    const el = stepRef.current;
-    if (!el) return;
-    // Only correct the position when the choice has actually moved off screen,
-    // so picking something already in view does not yank the page about.
-    const box = el.getBoundingClientRect();
-    const offScreen = box.top < 72 || box.top > window.innerHeight - 140;
-    if (offScreen) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [stepKey]);
+  // Picking a pizza collapses a list that is over 5000px tall, so the page
+  // shrinks by more than a screen and the browser clamps the scroll to the new
+  // bottom - the footer. See lib/keep-in-view for the measurements.
+  useKeepInView(stepRef, stepKey, { offset: 12 });
 
   function done() {
     const components: BasketComponent[] = flat.map((x) => ({ slot: x.slot, product: x.p!.product.slug, size: x.p!.size, modifiers: x.p!.modifiers }));
@@ -170,13 +166,17 @@ export function DealBuilder({ deal }: { deal: BuilderDeal }) {
       <div ref={stepRef} style={{ scrollMarginTop: 96 }} />
 
       {next ? (
+        // Keyed on the step so the picker re-mounts, and with it the entrance
+        // animation replays - the new choice arrives rather than appearing to
+        // have been there all along.
+        <div key={`${next.slot}-${next.n}`} className="fp-step-enter">
         <SlotPicker
-          key={`${next.slot}-${next.n}`}
           deal={deal}
           slotIndex={next.slot}
           n={next.n}
           onPick={(p) => setPicks((prev) => prev.map((arr, s) => (s === next.slot ? arr.map((v, i) => (i === next.n ? p : v)) : arr)))}
         />
+        </div>
       ) : null}
 
       <div

@@ -5,7 +5,9 @@
 @import "./modernist.css";
 @source "../../../../packages/ui/src";
 
-html { scroll-padding-top: 4.5rem; }
+/* Clears the pinned header on desktop. Zero on a phone, where the header
+   scrolls away with the page - see --header-h. */
+html { scroll-padding-top: var(--header-h, 4.5rem); }
 body { padding-bottom: env(safe-area-inset-bottom); }
 .hide-scrollbar { scrollbar-width: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -1321,8 +1323,14 @@ html, body { max-width: 100%; overflow-x: clip; }
    now past the end, which lands you at the footer. Anchored jumps clear the
    sticky headers, and pages that end in a fixed action bar reserve room for it
    so the last control is never underneath it. */
-:root { scroll-behavior: smooth; }
-@media (prefers-reduced-motion: reduce) { :root { scroll-behavior: auto; } }
+/* Deliberately NOT smooth on the root.
+   Smooth scrolling turns every programmatic scroll into an animation, and an
+   animation that is still running when the layout changes underneath it lands
+   wherever the page happens to be - which on this site meant the footer. Only
+   in-page anchor jumps get it, where there is no competing layout change. */
+:root { scroll-behavior: auto; }
+:root:has(:target) { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { :root, :root:has(:target) { scroll-behavior: auto; } }
 
 [id], .fp-panel, details.fp-panel > summary { scroll-margin-top: 88px; }
 .fp-admin [id], .fp-admin .fp-panel { scroll-margin-top: 16px; }
@@ -2694,3 +2702,55 @@ footer::before {
    calm option rather than competing with the amber SMS switch. */
 .fp-notsw.push input { accent-color: var(--info); }
 .fp-notsw.push:has(input:checked) { background: var(--info-bg); border-color: var(--info-line); color: var(--info); }
+
+/* == Movement ==============================================================
+   Sparingly, and only where something has actually changed. The point is to
+   answer "did that work?" without the customer having to look for the answer -
+   a line arriving in a basket, a step being ticked off, a total going up.
+
+   Everything here is short. 160-220ms reads as responsive; past about 300ms it
+   reads as waiting, and on a takeaway that is the opposite of the impression
+   worth giving. All of it is switched off for anyone who has asked their
+   device for less motion - that is not optional. */
+
+@keyframes fp-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fp-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+@keyframes fp-flash {
+  from { background: var(--color-accent-100); }
+  to   { background: transparent; }
+}
+
+/* A line arriving in the basket, a chosen deal slot, a newly revealed step. */
+.fp-enter { animation: fp-rise .2s ease-out both; }
+
+/* The basket count, when it changes. The number is the feedback, so it is the
+   thing that moves - not the button around it. */
+.fp-count-bump { animation: fp-pop .28s ease-out; }
+
+/* A row whose value just changed. Colour rather than movement, because a row
+   that slides while you are reading it is harder to read, not easier. */
+.fp-changed { animation: fp-flash .6s ease-out; }
+
+/* Deal steps and option groups revealing themselves as you work down. The
+   stagger is tiny on purpose: enough to read as a sequence, not as a queue. */
+.fp-step-enter { animation: fp-rise .22s ease-out both; }
+.fp-step-enter:nth-child(2) { animation-delay: .04s; }
+.fp-step-enter:nth-child(3) { animation-delay: .08s; }
+.fp-step-enter:nth-child(4) { animation-delay: .12s; }
+
+/* Pressing something should feel like pressing something. */
+.btn, .fp-optionrow, .fp-ticket-print a { transition: transform .1s ease, background-color .14s ease, border-color .14s ease; }
+.btn:active { transform: scale(.98); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-enter, .fp-count-bump, .fp-changed, .fp-step-enter { animation: none !important; }
+  .btn:active { transform: none; }
+  .btn, .fp-optionrow, .fp-ticket-print a { transition: none; }
+}
