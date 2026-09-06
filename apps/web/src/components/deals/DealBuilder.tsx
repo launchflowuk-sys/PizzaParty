@@ -20,8 +20,22 @@ function SlotPicker({ deal, slotIndex, n, onPick }: { deal: BuilderDeal; slotInd
   const slot = deal.slots[slotIndex]!;
   const [chosen, setChosen] = useState<PickerProduct | null>(slot.options.length === 1 ? slot.options[0]! : null);
 
+  /**
+   * The collapse that actually moves the page happens *here*, not between
+   * steps.
+   *
+   * Choosing a pizza does not advance the deal - it swaps a grid of thirty
+   * options for that one product's sizes, inside the same step. Measured on a
+   * phone that is the document going from 5008px to 3391px, so the browser
+   * clamps the scroll to the new bottom and the customer is looking at the
+   * footer. Watching the step key alone never sees it, because the step key
+   * has not changed.
+   */
+  const boxRef = useRef<HTMLDivElement>(null);
+  useKeepInView(boxRef, chosen?.slug ?? "list", { offset: 12 });
+
   return (
-    <div style={{ border: "2px solid var(--color-text)", padding: 20, marginTop: 20 }}>
+    <div ref={boxRef} style={{ border: "2px solid var(--color-text)", padding: 20, marginTop: 20 }}>
       <span className="fp-kicker" style={{ marginBottom: 10 }}>
         {slot.name}{slot.qty > 1 ? ` · ${n + 1} of ${slot.qty}` : ""}
       </span>
