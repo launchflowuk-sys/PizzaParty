@@ -2,7 +2,7 @@
   "$schema": "../_schema/client.schema.json",
   "slug": "pizza-party",
   "name": "Pizza Party",
-  "domain": "pizzapartyonline.co.uk",
+  "domain": "pizzaparty.live",
   "legacyDomains": [],
   "brand": {
     "primary": "#F81808",
@@ -14,7 +14,7 @@
   },
   "contact": {
     "phone": "01375 400001",
-    "email": "",
+    "email": "orders@pizzaparty.live",
     "address": "162 Dock Road, Tilbury, Essex RM18 7BS",
     "reviewUrl": "",
     "social": {}
@@ -86,7 +86,7 @@
     "primaryKeyword": "pizza delivery tilbury"
   },
   "notifications": {
-    "kitchenEmail": "",
+    "kitchenEmail": "orders@pizzaparty.live",
     "kitchenSms": "",
     "printerWebhook": "",
     "reviewDelayMinutes": 45

@@ -5,13 +5,13 @@
       "slug": "pizzas",
       "name": "Pizzas",
       "description": "100% fresh dough every day. BBQ and garlic bases on request.",
-      "image": ""
+      "image": "categories/pizzas.jpg"
     },
     {
       "slug": "boxes",
       "name": "Sharing Boxes",
       "description": "Everything at once, for the middle of the table",
-      "image": ""
+      "image": "categories/boxes.jpg"
     },
     {
       "slug": "wraps",
@@ -29,25 +29,25 @@
       "slug": "grilled-chicken",
       "name": "Grilled Chicken",
       "description": "Flame-grilled, any flavour",
-      "image": ""
+      "image": "categories/grilled-chicken.jpg"
     },
     {
       "slug": "pasta",
       "name": "Pasta",
       "description": "",
-      "image": ""
+      "image": "categories/pasta.jpg"
     },
     {
       "slug": "sides",
       "name": "Sides",
       "description": "",
-      "image": ""
+      "image": "categories/sides.jpg"
     },
     {
       "slug": "dips",
       "name": "Dips",
       "description": "",
-      "image": ""
+      "image": "categories/dips.jpg"
     },
     {
       "slug": "kids-meals",
@@ -59,13 +59,13 @@
       "slug": "desserts",
       "name": "Desserts",
       "description": "",
-      "image": ""
+      "image": "categories/desserts.jpg"
     },
     {
       "slug": "drinks",
       "name": "Drinks",
       "description": "",
-      "image": ""
+      "image": "categories/drinks.jpg"
     }
   ],
   "modifierGroups": [
@@ -827,7 +827,7 @@
         "milk"
       ],
       "featured": true,
-      "image": ""
+      "image": "products/margherita.jpg"
     },
     {
       "slug": "double-pepperoni",
@@ -869,7 +869,7 @@
         "milk"
       ],
       "featured": true,
-      "image": ""
+      "image": "products/double-pepperoni.jpg"
     },
     {
       "slug": "meat-party",
@@ -909,7 +909,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/meat-party.jpg"
     },
     {
       "slug": "pepperoni-party",
@@ -949,7 +949,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/pepperoni-party.jpg"
     },
     {
       "slug": "farmhouse-special",
@@ -989,7 +989,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/farmhouse-special.jpg"
     },
     {
       "slug": "ham-and-pineapple",
@@ -1029,7 +1029,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/ham-and-pineapple.jpg"
     },
     {
       "slug": "ham-and-mushroom",
@@ -1069,7 +1069,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/ham-and-mushroom.jpg"
     },
     {
       "slug": "chicken-and-mushroom",
@@ -1109,7 +1109,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-and-mushroom.jpg"
     },
     {
       "slug": "kebab-delight",
@@ -1149,7 +1149,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/kebab-delight.jpg"
     },
     {
       "slug": "doner-kebab",
@@ -1189,7 +1189,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/doner-kebab.jpg"
     },
     {
       "slug": "new-york-special",
@@ -1229,7 +1229,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/new-york-special.jpg"
     },
     {
       "slug": "hot-veg-passion",
@@ -1272,7 +1272,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/hot-veg-passion.jpg"
     },
     {
       "slug": "bbq-chicken",
@@ -1314,7 +1314,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/bbq-chicken.jpg"
     },
     {
       "slug": "mexican-party",
@@ -1356,7 +1356,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/mexican-party.jpg"
     },
     {
       "slug": "veg-party",
@@ -1398,7 +1398,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/veg-party.jpg"
     },
     {
       "slug": "seafood",
@@ -1440,7 +1440,7 @@
         "crustaceans"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/seafood.jpg"
     },
     {
       "slug": "smokey-bbq",
@@ -1482,7 +1482,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/smokey-bbq.jpg"
     },
     {
       "slug": "hot-meaty",
@@ -1524,7 +1524,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/hot-meaty.jpg"
     },
     {
       "slug": "bbq-hot-meaty",
@@ -1566,7 +1566,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/bbq-hot-meaty.jpg"
     },
     {
       "slug": "chicken-supreme",
@@ -1606,7 +1606,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-supreme.jpg"
     },
     {
       "slug": "meat-maryland",
@@ -1646,7 +1646,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/meat-maryland.jpg"
     },
     {
       "slug": "flaming-meatballs",
@@ -1688,7 +1688,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/flaming-meatballs.jpg"
     },
     {
       "slug": "double-chicken",
@@ -1728,7 +1728,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/double-chicken.jpg"
     },
     {
       "slug": "jumbo-party",
@@ -1768,7 +1768,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/jumbo-party.jpg"
     },
     {
       "slug": "hot-tandoori-passion",
@@ -1810,7 +1810,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/hot-tandoori-passion.jpg"
     },
     {
       "slug": "pizza-party-special",
@@ -1853,7 +1853,7 @@
         "milk"
       ],
       "featured": true,
-      "image": ""
+      "image": "products/pizza-party-special.jpg"
     },
     {
       "slug": "half-and-half",
@@ -1895,7 +1895,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/half-and-half.jpg"
     },
     {
       "slug": "chicken-strips-wrap",
@@ -2169,7 +2169,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/grilled-wings-4.jpg"
     },
     {
       "slug": "grilled-wings-6",
@@ -2194,7 +2194,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/grilled-wings-6.jpg"
     },
     {
       "slug": "grilled-wings-8",
@@ -2219,7 +2219,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/grilled-wings-8.jpg"
     },
     {
       "slug": "combo-chicken-meal",
@@ -2233,7 +2233,7 @@
       "tags": [],
       "allergens": [],
       "featured": true,
-      "image": ""
+      "image": "products/combo-chicken-meal.jpg"
     },
     {
       "slug": "spaghetti-bolognese",
@@ -2247,7 +2247,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/spaghetti-bolognese.jpg"
     },
     {
       "slug": "beef-lasagne",
@@ -2262,7 +2262,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/beef-lasagne.jpg"
     },
     {
       "slug": "chips-large",
@@ -2300,7 +2300,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/curly-fries.jpg"
     },
     {
       "slug": "potato-wedges",
@@ -2312,7 +2312,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/potato-wedges.jpg"
     },
     {
       "slug": "salad-box",
@@ -2338,7 +2338,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/garlic-bread.jpg"
     },
     {
       "slug": "garlic-bread-with-cheese",
@@ -2353,7 +2353,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/garlic-bread-with-cheese.jpg"
     },
     {
       "slug": "garlic-pizza-bread-with-cheese",
@@ -2368,7 +2368,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/garlic-pizza-bread-with-cheese.jpg"
     },
     {
       "slug": "onion-rings",
@@ -2382,7 +2382,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/onion-rings.jpg"
     },
     {
       "slug": "cheesy-jalapenos",
@@ -2397,7 +2397,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/cheesy-jalapenos.jpg"
     },
     {
       "slug": "mozzarella-dippers",
@@ -2412,7 +2412,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/mozzarella-dippers.jpg"
     },
     {
       "slug": "chicken-strips",
@@ -2426,7 +2426,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-strips.jpg"
     },
     {
       "slug": "chicken-nuggets",
@@ -2440,7 +2440,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-nuggets.jpg"
     },
     {
       "slug": "bbq-chicken-wings",
@@ -2452,7 +2452,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/bbq-chicken-wings.jpg"
     },
     {
       "slug": "peri-peri-chicken-wings",
@@ -2464,7 +2464,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/peri-peri-chicken-wings.jpg"
     },
     {
       "slug": "sweet-chilli-chicken-wings",
@@ -2476,7 +2476,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/sweet-chilli-chicken-wings.jpg"
     },
     {
       "slug": "grilled-chicken-leg-side",
@@ -2502,7 +2502,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/jacket-potato-skins.jpg"
     },
     {
       "slug": "jacket-potato-skins-topping",
@@ -2516,7 +2516,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/jacket-potato-skins-topping.jpg"
     },
     {
       "slug": "garlic-herb",
@@ -2528,7 +2528,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/garlic-herb.jpg"
     },
     {
       "slug": "tomato-sauce",
@@ -2540,7 +2540,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/tomato-sauce.jpg"
     },
     {
       "slug": "chilli",
@@ -2552,7 +2552,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/chilli.jpg"
     },
     {
       "slug": "sweet-chilli",
@@ -2564,7 +2564,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/sweet-chilli.jpg"
     },
     {
       "slug": "sour-cream-chives",
@@ -2576,7 +2576,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/sour-cream-chives.jpg"
     },
     {
       "slug": "bbq",
@@ -2588,7 +2588,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/bbq.jpg"
     },
     {
       "slug": "kids-cheese-and-tomato",
@@ -2605,7 +2605,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/kids-cheese-and-tomato.jpg"
     },
     {
       "slug": "kids-nuggets",
@@ -2619,7 +2619,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/kids-nuggets.jpg"
     },
     {
       "slug": "kids-chicken-popcorn",
@@ -2633,7 +2633,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/kids-chicken-popcorn.jpg"
     },
     {
       "slug": "chocolate-fudge-cake",
@@ -2649,7 +2649,7 @@
         "eggs"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chocolate-fudge-cake.jpg"
     },
     {
       "slug": "strawberry-cheesecake",
@@ -2665,7 +2665,7 @@
         "eggs"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/strawberry-cheesecake.jpg"
     },
     {
       "slug": "pepsi-can",
@@ -2713,7 +2713,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/diet-coke-can.jpg"
     },
     {
       "slug": "dr-pepper-can",
@@ -2725,7 +2725,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/dr-pepper-can.jpg"
     },
     {
       "slug": "7up-can",
@@ -2737,7 +2737,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/7up-can.jpg"
     },
     {
       "slug": "tango-orange-can",
@@ -2761,7 +2761,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/pepsi-bottle.jpg"
     },
     {
       "slug": "pepsi-max-bottle",
@@ -2773,7 +2773,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/pepsi-max-bottle.jpg"
     },
     {
       "slug": "7up-bottle",
@@ -2785,7 +2785,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/7up-bottle.jpg"
     },
     {
       "slug": "tango-bottle",
@@ -2797,7 +2797,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/tango-bottle.jpg"
     },
     {
       "slug": "capri-sun",
@@ -2821,7 +2821,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/still-water.jpg"
     },
     {
       "slug": "box-mix",
@@ -2836,7 +2836,7 @@
         "milk"
       ],
       "featured": true,
-      "image": ""
+      "image": "products/box-mix.jpg"
     },
     {
       "slug": "boneless-box",
@@ -2850,7 +2850,7 @@
         "gluten"
       ],
       "featured": true,
-      "image": ""
+      "image": "products/boneless-box.jpg"
     }
   ],
   "deals": [
@@ -2860,7 +2860,7 @@
       "description": "Any two medium pizzas",
       "price": 16,
       "featured": false,
-      "image": "",
+      "image": "deals/any-2-pizzas-ten.jpg",
       "daysOfWeek": [],
       "fulfilment": [],
       "slots": [
@@ -2883,7 +2883,7 @@
       "description": "Any three medium pizzas",
       "price": 24,
       "featured": false,
-      "image": "",
+      "image": "deals/any-3-pizzas-ten.jpg",
       "daysOfWeek": [],
       "fulfilment": [],
       "slots": [
@@ -2906,7 +2906,7 @@
       "description": "Any two large pizzas",
       "price": 20,
       "featured": true,
-      "image": "",
+      "image": "deals/any-2-pizzas-twelve.jpg",
       "daysOfWeek": [],
       "fulfilment": [],
       "slots": [
@@ -2929,7 +2929,7 @@
       "description": "Any three large pizzas",
       "price": 30,
       "featured": false,
-      "image": "",
+      "image": "deals/any-3-pizzas-twelve.jpg",
       "daysOfWeek": [],
       "fulfilment": [],
       "slots": [
@@ -2952,7 +2952,7 @@
       "description": "Any two x-large pizzas",
       "price": 26,
       "featured": false,
-      "image": "",
+      "image": "deals/any-2-pizzas-fifteen.jpg",
       "daysOfWeek": [],
       "fulfilment": [],
       "slots": [
@@ -2975,7 +2975,7 @@
       "description": "Any three x-large pizzas",
       "price": 39,
       "featured": false,
-      "image": "",
+      "image": "deals/any-3-pizzas-fifteen.jpg",
       "daysOfWeek": [],
       "fulfilment": [],
       "slots": [
@@ -2997,7 +2997,7 @@
       "name": "Set Deal",
       "price": 19.99,
       "featured": false,
-      "image": "",
+      "image": "deals/set-deal.jpg",
       "description": "Any 12\" pizza, 7\" garlic pizza bread, chicken strips & cheesy chips",
       "daysOfWeek": [],
       "fulfilment": [],
@@ -3047,7 +3047,7 @@
       "name": "Party Deal For 4",
       "price": 24.99,
       "featured": true,
-      "image": "",
+      "image": "deals/party-deal-for-4.jpg",
       "description": "Any two 12\" pizzas with two side orders",
       "daysOfWeek": [],
       "fulfilment": [],
@@ -3079,7 +3079,7 @@
       "name": "Pizza Party Deal",
       "price": 21.99,
       "featured": false,
-      "image": "",
+      "image": "deals/pizza-party-deal.jpg",
       "description": "Any 15\" pizza, any two sides & a bottle of drink",
       "daysOfWeek": [],
       "fulfilment": [],
@@ -3120,7 +3120,7 @@
       "name": "Big Family Deal",
       "price": 34.99,
       "featured": true,
-      "image": "",
+      "image": "deals/big-family-deal.jpg",
       "description": "Any two 15\" pizzas, any two sides, garlic bread & a bottle of drink",
       "daysOfWeek": [],
       "fulfilment": [],
