@@ -543,6 +543,20 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
      first menu row have to be reachable without a long scroll. */
   .fp-hero { min-height: 0; height: auto; padding-top: 200px; display: block; }
   .fp-hero-inner { padding: 0 20px 32px; }
+
+  /* Two even columns rather than flex-wrap. Sized to their text these wrap into
+     a ragged block - a short name beside a long one, then the reverse - which
+     reads as broken alignment rather than as a list. Equal widths make them a
+     block, whatever the shop happens to call its best sellers. */
+  .fp-herosearch-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .fp-herosearch-chips button {
+    width: 100%;
+    padding-inline: 8px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .fp-hero-h1 { font-size: clamp(34px, 10vw, 46px); }
   .fp-hero-sub { font-size: 15px; margin-bottom: 20px; max-width: none; }
   .fp-hero-cta .btn { flex: 1 1 auto; text-align: center; }
