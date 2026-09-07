@@ -84,8 +84,16 @@ const RED = CLIENT.brand.primary;
  * Android: 62%. Below the 66% guaranteed-visible circle, because a teardrop
  * mask on some handsets cuts closer than the guidance implies.
  */
-const IOS_SCALE = 0.78;
-const ANDROID_SCALE = 0.62;
+const IOS_SCALE = Number(args.find((a) => a.startsWith("--ios-scale="))?.slice(13) ?? 0.78);
+const ANDROID_SCALE = Number(args.find((a) => a.startsWith("--android-scale="))?.slice(17) ?? 0.62);
+
+/**
+ * Both are overridable because the right number depends on the shape of the
+ * mark, not on taste. A roughly square logo can sit at 78% and still clear
+ * Apple's corner mask; a wide one hits the left and right edges long before
+ * its height does, because `fit: contain` scales to whichever side binds. Farm
+ * Pizza's defaults are unchanged so its shipped icon is not disturbed.
+ */
 
 /**
  * A soft light from above.
