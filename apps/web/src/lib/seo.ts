@@ -9,8 +9,23 @@ export function fill(tpl: string, vars: Record<string, string>) {
   return tpl.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? "");
 }
 
+/**
+ * The shop's towns, written the way a person would say them.
+ *
+ * `join(" & ")` is fine for a shop with two towns and reads badly the moment
+ * there is a third - "Tilbury & Grays & Chadwell St Mary" is not a sentence.
+ * The separator is a parameter because these appear both in prose, where "and"
+ * belongs, and in titles and meta descriptions, where "&" is shorter and every
+ * character counts against a truncation limit.
+ */
+export function localityList(cfg: ClientConfig, final: "&" | "and" = "&") {
+  const towns = cfg.seo.locality;
+  if (towns.length <= 1) return towns[0] ?? "";
+  return `${towns.slice(0, -1).join(", ")} ${final} ${towns[towns.length - 1]}`;
+}
+
 export function seoVars(cfg: ClientConfig, extra: Record<string, string> = {}) {
-  return { name: cfg.name, cuisine: cfg.seo.cuisine, locality: cfg.seo.locality.join(" & "), ...extra };
+  return { name: cfg.name, cuisine: cfg.seo.cuisine, locality: localityList(cfg), ...extra };
 }
 
 export function pageTitle(cfg: ClientConfig, page: string) {

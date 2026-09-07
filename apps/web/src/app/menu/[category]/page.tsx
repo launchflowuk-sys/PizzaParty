@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getConfig, assetUrl } from "@/lib/config";
 import { getMenu, productPath } from "@/lib/menu";
-import { breadcrumbJsonLd, menuSectionJsonLd, pageTitle } from "@/lib/seo";
+import { breadcrumbJsonLd, localityList, menuSectionJsonLd, pageTitle } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { CategoryChips } from "@/components/CategoryChips";
 import { ProductCard } from "@/components/ProductCard";
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const c = menu.categories.find((x) => x.slug === category);
   if (!c) return {};
   return {
-    title: { absolute: pageTitle(cfg, `${c.name} in ${cfg.seo.locality.join(" & ")}`) },
+    title: { absolute: pageTitle(cfg, `${c.name} in ${localityList(cfg)}`) },
     description: c.description || `Order ${c.name.toLowerCase()} from ${cfg.name} for delivery or collection. ${c.products.length} items from ${cfg.seo.locality[0]}.`,
     alternates: { canonical: `/menu/${c.slug}` },
   };
@@ -40,7 +40,7 @@ export default async function CategoryPage({ params }: Params) {
       <div className="grid gap-3 mt-4 sm:grid-cols-2">
         {c.products.map((p) => <ProductCard key={p.id} product={p} href={productPath(c, p)} image={assetUrl(p.image)} />)}
       </div>
-      <p className="mt-10 text-sm text-muted">{c.products.length} {c.name.toLowerCase()} available for delivery in {cfg.seo.locality.join(" and ")} and collection from {cfg.name}.</p>
+      <p className="mt-10 text-sm text-muted">{c.products.length} {c.name.toLowerCase()} available for delivery in {localityList(cfg, "and")} and collection from {cfg.name}.</p>
     </div>
   );
 }

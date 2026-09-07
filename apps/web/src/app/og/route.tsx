@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { getConfig } from "@/lib/config";
 import { getMenu, findProduct } from "@/lib/menu";
 import { gbpShort } from "@/lib/money";
+import { localityList } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest) {
   const cfg = getConfig();
   const slug = req.nextUrl.searchParams.get("product");
   let title = cfg.name;
-  let sub = `${cfg.seo.cuisine} delivery in ${cfg.seo.locality.join(" & ")}`;
+  let sub = `${cfg.seo.cuisine} delivery in ${localityList(cfg)}`;
   let price = "";
   if (slug) {
     const hit = findProduct(await getMenu(), slug);

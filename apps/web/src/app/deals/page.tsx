@@ -4,7 +4,7 @@ import Image from "next/image";
 import { prisma } from "@launchflow/db";
 import { getConfig, assetUrl } from "@/lib/config";
 import { getMenu, getClientRow, dealsToday } from "@/lib/menu";
-import { pageTitle } from "@/lib/seo";
+import { localityList, pageTitle } from "@/lib/seo";
 import { gbpShort, gbp } from "@/lib/money";
 import { ApplyCode } from "@/components/deals/ApplyCode";
 
@@ -14,7 +14,7 @@ export function generateMetadata(): Metadata {
   const cfg = getConfig();
   return {
     title: { absolute: pageTitle(cfg, "Deals & Meal Deals") },
-    description: `${cfg.name} meal deals and bundles. Order online for delivery in ${cfg.seo.locality.join(" & ")} or collection.`,
+    description: `${cfg.name} meal deals and bundles. Order online for delivery in ${localityList(cfg)} or collection.`,
     alternates: { canonical: "/deals" },
   };
 }

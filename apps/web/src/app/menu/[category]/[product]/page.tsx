@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getConfig, assetUrl } from "@/lib/config";
 import { getMenu, productPath } from "@/lib/menu";
 import { toPicker } from "@/lib/picker";
-import { breadcrumbJsonLd, pageTitle, productJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, localityList, pageTitle, productJsonLd } from "@/lib/seo";
 import { gbpShort } from "@/lib/money";
 import { JsonLd } from "@/components/JsonLd";
 import { DietBadges } from "@/components/DietBadges";
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const min = Math.min(...p.sizes.map((s) => s.price));
   return {
     title: { absolute: pageTitle(cfg, `${p.name} — ${c.name}`) },
-    description: `${p.description || p.name} ${p.sizes.length > 1 ? "from" : ""} ${gbpShort(min)}. Order online from ${cfg.name} for delivery in ${cfg.seo.locality.join(" & ")} or collection.`,
+    description: `${p.description || p.name} ${p.sizes.length > 1 ? "from" : ""} ${gbpShort(min)}. Order online from ${cfg.name} for delivery in ${localityList(cfg)} or collection.`,
     alternates: { canonical: productPath(c, p) },
     openGraph: { images: [`/og?product=${p.slug}`] },
   };

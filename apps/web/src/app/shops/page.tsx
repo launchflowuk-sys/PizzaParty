@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getConfig } from "@/lib/config";
 import { getLocations } from "@/lib/menu";
 import { availability, formatHours, formatTime } from "@/lib/availability";
-import { pageTitle, restaurantJsonLd } from "@/lib/seo";
+import { localityList, pageTitle, restaurantJsonLd } from "@/lib/seo";
 import { gbp } from "@/lib/money";
 import { JsonLd } from "@/components/JsonLd";
 
@@ -13,7 +13,7 @@ export function generateMetadata(): Metadata {
   const cfg = getConfig();
   return {
     title: { absolute: pageTitle(cfg, "Our shops") },
-    description: `${cfg.name} shop addresses, opening hours and phone numbers in ${cfg.seo.locality.join(" & ")}.`,
+    description: `${cfg.name} shop addresses, opening hours and phone numbers in ${localityList(cfg)}.`,
     alternates: { canonical: "/shops" },
   };
 }

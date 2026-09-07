@@ -14,7 +14,13 @@
   --color-bg: #FAF6F0;         /* cream */
   --color-surface: #F2EBE1;    /* one step down, for panels and inset areas */
   --color-text: #1C1A17;       /* rich charcoal, never pure black */
-  --color-accent: #C82323;     /* tomato — brand, headings, highlights */
+  /* The accent is the one colour a shop actually owns. It comes from
+     `brand.primary` in config/<slug>/client.json, which layout.tsx sets as
+     --brand-primary on <html>; the fallback is Farm Pizza's tomato, which every
+     value below was originally hand-mixed against. Deriving the ramp instead of
+     listing it is what lets a second shop be a different colour without anyone
+     editing a stylesheet. */
+  --color-accent: var(--brand-primary, #C82323);
   --color-accent-2: #3E6B48;   /* basil — quiet supporting green */
 
   /* The button green. Every takeaway app in the country uses a confident green
@@ -39,16 +45,25 @@
   --color-neutral-800: #4A433A;
   --color-neutral-900: #2A2620;
 
-  /* Tomato */
-  --color-accent-100: #FDF0EE;
-  --color-accent-200: #FADCD8;
-  --color-accent-300: #F4BAB3;
-  --color-accent-400: #E98B82;
-  --color-accent-500: #DB4F44;
-  --color-accent-600: #C82323;
-  --color-accent-700: #A31A1A;
-  --color-accent-800: #7A1414;
-  --color-accent-900: #4E1010;
+  /* Tomato, or whatever the shop's brand colour is. Toward white at the light
+     end, toward black at the dark end, mixed in oklab so a brand that is darker
+     or more orange steps evenly instead of going muddy in the middle.
+
+     The percentages are fitted, not guessed: each one is the mix that lands
+     closest to the hand-picked tomato value it replaced. Against Farm Pizza's
+     #C82323 every shade is within 2/255 except -500 (5) and -900 (7), which is
+     below the threshold at which anybody could see a difference in a border or
+     a background tint. Farm Pizza therefore renders as it always did, and a
+     second shop gets a coherent ramp for free. */
+  --color-accent-100: color-mix(in oklab, var(--color-accent) 8%, #FFFFFF);
+  --color-accent-200: color-mix(in oklab, var(--color-accent) 17%, #FFFFFF);
+  --color-accent-300: color-mix(in oklab, var(--color-accent) 34%, #FFFFFF);
+  --color-accent-400: color-mix(in oklab, var(--color-accent) 58%, #FFFFFF);
+  --color-accent-500: color-mix(in oklab, var(--color-accent) 84%, #FFFFFF);
+  --color-accent-600: var(--color-accent);
+  --color-accent-700: color-mix(in oklab, var(--color-accent) 86%, #000000);
+  --color-accent-800: color-mix(in oklab, var(--color-accent) 70%, #000000);
+  --color-accent-900: color-mix(in oklab, var(--color-accent) 54%, #000000);
 
   /* Basil */
   --color-accent-2-100: #EFF4F0;

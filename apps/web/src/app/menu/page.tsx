@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getConfig, assetUrl } from "@/lib/config";
 import { getMenu, productPath } from "@/lib/menu";
-import { menuJsonLd, pageTitle } from "@/lib/seo";
+import { localityList, menuJsonLd, pageTitle } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { MenuBrowser, type TileCategory, type TileItem } from "@/components/menu/MenuBrowser";
 
@@ -11,7 +11,7 @@ export function generateMetadata(): Metadata {
   const cfg = getConfig();
   return {
     title: { absolute: pageTitle(cfg, "Menu") },
-    description: `Full ${cfg.name} menu with prices. Order ${cfg.seo.cuisine.toLowerCase()} online for delivery or collection in ${cfg.seo.locality.join(" & ")}.`,
+    description: `Full ${cfg.name} menu with prices. Order ${cfg.seo.cuisine.toLowerCase()} online for delivery or collection in ${localityList(cfg)}.`,
     alternates: { canonical: "/menu" },
   };
 }
