@@ -112,6 +112,10 @@
                 "type": "string",
                 "default": ""
               },
+              "story": {
+                "type": "string",
+                "default": ""
+              },
               "image": {
                 "type": "string",
                 "default": ""

@@ -39,10 +39,16 @@ export async function GET() {
      * Resolved to absolute URLs here for the same reason the menu's are: a
      * phone has no idea what this server's origin is, and hardcoding it in the
      * app is how a tenant rename breaks every install.
+     *
+     * The filenames come from config rather than being spelled out here. They
+     * were "hero.webp" and "banner.jpg", which are Farm Pizza's files - a
+     * second shop got two absolute URLs to images it does not have, and the app
+     * drew two grey boxes. An empty string is a better answer than a 404,
+     * because the app already falls back on it.
      */
     media: {
-      hero: absoluteAssetUrl("hero.webp"),
-      banner: absoluteAssetUrl("banner.jpg"),
+      hero: absoluteAssetUrl(cfg.brand.hero),
+      banner: absoluteAssetUrl(cfg.brand.banner),
     },
     fulfilment: cfg.fulfilment,
     payments: {

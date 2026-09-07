@@ -61,6 +61,12 @@ export const ClientSchema = z.object({
     logo: z.string().default("assets/logo.svg"),
     og: z.string().default("assets/og.jpg"),
     hero: z.string().default("assets/hero.jpg"),
+    /**
+     * The wide image behind the deals strip in the app. Optional: the app
+     * already falls back to a flat panel when it is empty, which is a better
+     * result than a URL that 404s and leaves a grey box.
+     */
+    banner: z.string().default(""),
     tagline: z.string().default(""),
     /**
      * How food photography is rendered.

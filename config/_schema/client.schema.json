@@ -46,9 +46,21 @@
               "type": "string",
               "default": "assets/hero.jpg"
             },
+            "banner": {
+              "type": "string",
+              "default": ""
+            },
             "tagline": {
               "type": "string",
               "default": ""
+            },
+            "photoStyle": {
+              "type": "string",
+              "enum": [
+                "colour",
+                "grayscale"
+              ],
+              "default": "colour"
             }
           },
           "required": [
@@ -73,6 +85,10 @@
               "default": ""
             },
             "reviewUrl": {
+              "type": "string",
+              "default": ""
+            },
+            "googlePlaceId": {
               "type": "string",
               "default": ""
             },
@@ -143,6 +159,44 @@
                 "type": "integer",
                 "exclusiveMinimum": 0,
                 "default": 35
+              },
+              "deliveryBands": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "default": ""
+                    },
+                    "prefixes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 2
+                      },
+                      "minItems": 1
+                    },
+                    "fee": {
+                      "$ref": "#/definitions/Client/properties/locations/items/properties/deliveryFee",
+                      "default": 0
+                    },
+                    "minOrder": {
+                      "$ref": "#/definitions/Client/properties/locations/items/properties/deliveryFee",
+                      "default": 0
+                    },
+                    "extraMinutes": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "default": 0
+                    }
+                  },
+                  "required": [
+                    "prefixes"
+                  ],
+                  "additionalProperties": false
+                },
+                "default": []
               },
               "hours": {
                 "type": "object",
@@ -315,6 +369,33 @@
             "pointsPerPound": {
               "type": "number",
               "default": 1
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        },
+        "referral": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "refereeDiscount": {
+              "type": "number",
+              "default": 5
+            },
+            "referrerReward": {
+              "type": "number",
+              "default": 5
+            },
+            "minOrder": {
+              "type": "number",
+              "default": 15
+            },
+            "rewardExpiryDays": {
+              "type": "number",
+              "default": 90
             }
           },
           "additionalProperties": false,
