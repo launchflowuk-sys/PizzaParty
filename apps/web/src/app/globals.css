@@ -298,8 +298,13 @@ a:not(.btn):not(.nav-brand):not(.tag) { text-decoration: underline; }
 /* Brand mark. It is a circular badge, so it needs real size to read at all - at
    44px the farmhouse and the ring text turned to mush. `flex:none` and a fixed
    aspect stop the nav grid from squeezing it out of round. */
-.fp-logo { height: 56px; width: 56px; flex: none; object-fit: contain; }
-@media (max-width: 760px) { .fp-logo { height: 60px; width: 60px; } }
+/* Sized by height, not by a square box. A square box plus object-fit:contain
+   is fine for a square mark and cruel to a wide one: a 1185x762 logo fitted
+   into 56x56 renders 36px tall and looks like a mistake. aspect-ratio:auto is
+   needed because next/image writes width and height attributes, and the UA
+   stylesheet derives the ratio from those rather than from the file. */
+.fp-logo { height: 56px; width: auto; aspect-ratio: auto; max-width: min(260px, 46vw); flex: none; object-fit: contain; }
+@media (max-width: 760px) { .fp-logo { height: 54px; max-width: min(210px, 54vw); } }
 
 /* ── Nav ────────────────────────────────────────────────────────────────────
    Desktop is the prototype's single flush row. Below 760px it becomes three
@@ -2371,12 +2376,16 @@ footer::before {
 }
 .fp-footer-brand { display: grid; gap: 12px; align-content: start; }
 .fp-footer-logo {
-  width: 92px; height: auto;
-  /* The mark is on a dark ground now; a white plate behind it keeps it legible
-     without needing a second version of the artwork. */
+  /* Sized by height so a wide mark is not squashed into a square. The white
+     plate stays - the footer ground is dark and the artwork is not - but it is
+     a pill rather than a circle, because border-radius:50% on a 1.5:1 mark
+     gives an ellipse. */
+  height: 64px; width: auto; aspect-ratio: auto;
+  max-width: min(240px, 60vw);
+  object-fit: contain;
   background: #fff;
-  border-radius: 50%;
-  padding: 6px;
+  border-radius: 14px;
+  padding: 8px 12px;
 }
 .fp-footer-wordmark { font-family: var(--font-heading); font-weight: 800; font-size: 20px; color: #fff; }
 .fp-footer-addr { color: rgba(255,255,255,.66); line-height: 1.5; max-width: 26ch; }
