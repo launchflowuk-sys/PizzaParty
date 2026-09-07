@@ -8,9 +8,10 @@
     "primary": "#F81808",
     "secondary": "#14110F",
     "logo": "assets/logo.png",
-    "og": "assets/og.svg",
-    "hero": "assets/hero.svg",
-    "tagline": "Fresh dough every day, delivered across Tilbury and Grays"
+    "og": "assets/og.jpg",
+    "hero": "assets/hero.webp",
+    "tagline": "Fresh dough every day, delivered across Tilbury and Grays",
+    "banner": "assets/banner.jpg"
   },
   "contact": {
     "phone": "01375 400001",
