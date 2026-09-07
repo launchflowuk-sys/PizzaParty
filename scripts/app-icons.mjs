@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync, existsSync, copyFileSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,11 +35,45 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
  * survive, so the foreground logo is drawn smaller than the iOS one.
  */
 
-const SRC = join(ROOT, "docs", "App icon.png");
-const OUT = join(ROOT, "config", "farm-pizza", "assets", "app");
+/**
+ * Which shop, and what to draw.
+ *
+ *   node scripts/app-icons.mjs                        # farm-pizza, from docs/App icon.png
+ *   node scripts/app-icons.mjs pizza-party            # config/pizza-party/assets/icon.png
+ *   node scripts/app-icons.mjs pizza-party --logo=/path/to/logo.png
+ *
+ * The background colour is never passed in: it is read from the shop's own
+ * `brand.primary`, so an icon cannot end up a different red from the website.
+ */
+const args = process.argv.slice(2);
+const slug = args.find((a) => !a.startsWith("--")) ?? process.env.CLIENT_SLUG ?? "farm-pizza";
+const logoArg = args.find((a) => a.startsWith("--logo="))?.slice("--logo=".length);
 
-/** The shop's red. Same value as brand.primary in client.json. */
-const RED = "#C82323";
+const CLIENT = JSON.parse(readFileSync(join(ROOT, "config", slug, "client.json"), "utf8"));
+
+/** Farm Pizza's artwork predates this script taking a slug; keep it working. */
+const DEFAULT_SRC = slug === "farm-pizza"
+  ? join(ROOT, "docs", "App icon.png")
+  : join(ROOT, "config", slug, "assets", "icon.png");
+
+const SRC = logoArg ? resolve(logoArg) : DEFAULT_SRC;
+const OUT = join(ROOT, "config", slug, "assets", "app");
+
+if (!existsSync(SRC)) {
+  console.error(
+    `No artwork at ${SRC}
+` +
+    `Drop the shop's logo there, or pass --logo=<path>. It wants a square-ish PNG
+` +
+    `of the mark alone on transparency - not a lockup with the name beside it,
+` +
+    `which is unreadable at 60px.`,
+  );
+  process.exit(1);
+}
+
+/** The shop's own colour, straight from brand.primary in client.json. */
+const RED = CLIENT.brand.primary;
 
 /**
  * How much of the square the mark occupies.
@@ -124,10 +158,25 @@ async function main() {
   // ── Favicon ─────────────────────────────────────────────────────────────
   await sharp(join(OUT, "icon.png")).resize(48, 48).png().toFile(join(OUT, "favicon.png"));
 
-  for (const f of ["icon.png", "adaptive-icon.png", "adaptive-background.png", "splash-icon.png", "favicon.png"]) {
+  // ── The Expo repo's names ────────────────────────────────────────────────
+  // farm-pizza-app/tenants/<slug>.json points at android-icon-foreground /
+  // -background. Same two files, named the way the app expects, so copying a
+  // shop's icons into the app is a straight copy rather than a rename anybody
+  // has to remember.
+  copyFileSync(join(OUT, "adaptive-icon.png"), join(OUT, "android-icon-foreground.png"));
+  copyFileSync(join(OUT, "adaptive-background.png"), join(OUT, "android-icon-background.png"));
+
+  console.log(`
+${slug} — ${RED} — from ${SRC}
+`);
+  for (const f of ["icon.png", "adaptive-icon.png", "adaptive-background.png",
+                   "android-icon-foreground.png", "android-icon-background.png",
+                   "splash-icon.png", "favicon.png"]) {
     const m = await sharp(join(OUT, f)).metadata();
-    console.log(`${f.padEnd(26)} ${m.width}x${m.height}  alpha:${m.hasAlpha}  channels:${m.channels}`);
+    console.log(`${f.padEnd(30)} ${m.width}x${m.height}  alpha:${m.hasAlpha}  channels:${m.channels}`);
   }
+  console.log(`
+Written to ${OUT}`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
