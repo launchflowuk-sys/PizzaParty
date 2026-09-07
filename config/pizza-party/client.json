@@ -5,9 +5,9 @@
   "domain": "pizzapartyonline.co.uk",
   "legacyDomains": [],
   "brand": {
-    "primary": "#E4572E",
+    "primary": "#F81808",
     "secondary": "#14110F",
-    "logo": "assets/logo.svg",
+    "logo": "assets/logo.png",
     "og": "assets/og.svg",
     "hero": "assets/hero.svg",
     "tagline": "Fresh dough every day, delivered across Tilbury and Grays"
@@ -26,30 +26,62 @@
       "address": "162 Dock Road, Tilbury, Essex RM18 7BS",
       "phone": "01375 400001",
       "timezone": "Europe/London",
-      "postcodePrefixes": ["RM18", "RM17", "RM16"],
+      "postcodePrefixes": [
+        "RM18",
+        "RM17",
+        "RM16"
+      ],
       "deliveryFee": 2.5,
       "minOrder": 12,
       "prepMinutes": 15,
       "deliveryMinutes": 45,
       "hours": {
-        "mon": ["15:00", "23:00"],
-        "tue": ["15:00", "23:00"],
-        "wed": ["15:00", "23:00"],
-        "thu": ["15:00", "23:00"],
-        "fri": ["15:00", "23:00"],
-        "sat": ["15:00", "23:00"],
-        "sun": ["15:00", "22:30"]
+        "mon": [
+          "15:00",
+          "23:00"
+        ],
+        "tue": [
+          "15:00",
+          "23:00"
+        ],
+        "wed": [
+          "15:00",
+          "23:00"
+        ],
+        "thu": [
+          "15:00",
+          "23:00"
+        ],
+        "fri": [
+          "15:00",
+          "23:00"
+        ],
+        "sat": [
+          "15:00",
+          "23:00"
+        ],
+        "sun": [
+          "15:00",
+          "22:30"
+        ]
       }
     }
   ],
-  "fulfilment": ["delivery", "collection"],
+  "fulfilment": [
+    "delivery",
+    "collection"
+  ],
   "payments": {
     "stripeAccountId": "",
     "cashOnCollection": true,
     "cashOnDelivery": false
   },
   "seo": {
-    "locality": ["Tilbury", "Grays", "Chadwell St Mary"],
+    "locality": [
+      "Tilbury",
+      "Grays",
+      "Chadwell St Mary"
+    ],
     "cuisine": "Pizza",
     "primaryKeyword": "pizza delivery tilbury"
   },
