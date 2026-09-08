@@ -88,6 +88,37 @@ export async function saveRecipients(fd: FormData) {
  * having a bad night can go quiet and come back later to exactly the setup they
  * had. Turning it off does not clear a single toggle.
  */
+/**
+ * Switch one whole channel on or off.
+ *
+ * "Stop every text" is the single most useful thing a shop can do in a hurry,
+ * and until now it meant hunting through eighteen toggles and saving - by which
+ * time another few pounds of credit has gone. Email and push get the same
+ * control for symmetry, though nobody has ever needed to panic about those.
+ *
+ * This writes the rules themselves rather than a second master flag, so what
+ * the page shows afterwards is the truth. The cost is that switching a channel
+ * off forgets which events in it were on; that is deliberate - a hidden
+ * remembered state that silently comes back is worse than an honest one.
+ */
+export async function toggleChannel(fd: FormData) {
+  await requireScreen("notifications");
+  const client = await getClientRow();
+  const channel = String(fd.get("channel"));
+  const on = String(fd.get("to")) === "on";
+  if (!["email", "sms", "push"].includes(channel)) back("Unknown channel.", "e");
+
+  const result = await prisma.notificationRule.updateMany({
+    where: { clientId: client.id, channel },
+    data: { enabled: on },
+  });
+  revalidatePath("/admin/notifications");
+  const label = channel === "sms" ? "texts" : channel === "push" ? "app notifications" : "emails";
+  back(on
+    ? `All ${label} switched on (${result.count} settings).`
+    : `All ${label} switched off (${result.count} settings). Nothing else changed.`);
+}
+
 export async function toggleAll(fd: FormData) {
   await requireScreen("notifications");
   const client = await getClientRow();

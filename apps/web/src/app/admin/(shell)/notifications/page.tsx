@@ -7,7 +7,7 @@ import { requireScreen } from "@/lib/session";
 import { env } from "@/lib/env";
 import { HelpSpot } from "@/components/admin/HelpSpot";
 import { AdminNotice } from "@/components/admin/AdminNotice";
-import { saveRecipients, saveRules, toggleAll } from "./actions";
+import { saveRecipients, saveRules, toggleAll, toggleChannel } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +73,39 @@ export default async function AdminNotifications({ searchParams }: Params) {
       </header>
 
       <AdminNotice message={m} error={e} back="/admin/notifications" />
+
+      {/* One channel at a time.
+          "Stop every text" is the thing a shop reaches for in a hurry, and
+          doing it through eighteen individual toggles costs real money in the
+          minutes it takes. The count next to each is how many of that channel's
+          settings are currently on, so the button says what it will do. */}
+      <section className="fp-panel" style={{ marginBottom: 28 }}>
+        <header><h2>Whole channels</h2></header>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+          {(["email", "sms", "push"] as const).map((c) => {
+            const total = rules.filter((r) => r.channel === c).length;
+            const live = rules.filter((r) => r.channel === c && r.enabled).length;
+            const label = c === "sms" ? "texts" : c === "push" ? "app notifications" : "emails";
+            return (
+              <form key={c} action={toggleChannel} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input type="hidden" name="channel" value={c} />
+                <input type="hidden" name="to" value={live > 0 ? "off" : "on"} />
+                <button className={live > 0 ? "btn btn-secondary" : "btn btn-primary"}>
+                  {live > 0 ? `Turn all ${label} off` : `Turn all ${label} on`}
+                </button>
+                <span style={{ fontSize: 13, color: "var(--color-neutral-700)" }}>
+                  {live} of {total} on
+                </span>
+              </form>
+            );
+          })}
+        </div>
+        <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "14px 0 0", maxWidth: "78ch" }}>
+          This writes the settings below, so what you see afterwards is what will happen. Switching a
+          channel off does not remember which events inside it were on &mdash; turn it back on and every
+          event in that channel comes on with it, then trim from there.
+        </p>
+      </section>
 
       {!row?.notificationsOn ? (
         <p className="fp-notbanner danger">
