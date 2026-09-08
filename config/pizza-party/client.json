@@ -93,8 +93,9 @@
     "reviewDelayMinutes": 45
   },
   "loyalty": {
-    "enabled": false,
-    "pointsPerPound": 1
+    "enabled": true,
+    "pointsPerPound": 1,
+    "name": "Slice Hub"
   },
   "referral": {
     "enabled": true,

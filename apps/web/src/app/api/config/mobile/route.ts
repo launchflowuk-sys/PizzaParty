@@ -60,7 +60,7 @@ export async function GET() {
     loyalty: {
       enabled: cfg.loyalty.enabled,
       pointsPerPound: cfg.loyalty.pointsPerPound,
-      name: "Crust Club",
+      name: cfg.loyalty.name,
     },
     referral: cfg.referral,
     branches: locations.map((l) => {

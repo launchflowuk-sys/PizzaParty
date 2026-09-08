@@ -14,7 +14,7 @@ export function generateMetadata(): Metadata {
   const cfg = getConfig();
   if (!cfg.loyalty.enabled) return {};
   return {
-    title: { absolute: pageTitle(cfg, "Crust Club") },
+    title: { absolute: pageTitle(cfg, cfg.loyalty.name) },
     description: `Earn a point for every pound you spend at ${cfg.name}. No app, no card — your mobile number is your membership.`,
     alternates: { canonical: "/rewards" },
   };
@@ -92,7 +92,7 @@ export default async function RewardsPage({
         <section className="fp-cc-hero" style={{ "--cc-img": `url(${hero}), url(${heroFallback})` } as React.CSSProperties}>
           <div className="fp-cc-hero-scrim" />
           <div className="fp-wrap fp-cc-hero-inner">
-            <span className="fp-cc-badge">Crust Club</span>
+            <span className="fp-cc-badge">{cfg.loyalty.name}</span>
             <h1 className="fp-cc-h1">
               {cheapest
                 ? <>Every pound you spend<br />is {rate} point closer to<br /><em>{cheapest.name.toLowerCase()}</em>.</>
@@ -165,7 +165,7 @@ export default async function RewardsPage({
             <div><h4>We will not pester you</h4><p>Joining is not signing up for messages. That is a separate tick box, and you control it.</p></div>
           </div>
           <div className="fp-cc-cta" style={{ marginTop: 28 }}>
-            <Link href="/account" className="btn btn-primary fp-cta-lg">Join Crust Club</Link>
+            <Link href="/account" className="btn btn-primary fp-cta-lg">Join {cfg.loyalty.name}</Link>
             <Link href="/menu" className="btn btn-secondary fp-cta-lg">See the menu</Link>
           </div>
         </section>
@@ -192,7 +192,7 @@ export default async function RewardsPage({
       <section className="fp-cc-hero fp-cc-hero-member" style={{ "--cc-img": `url(${hero}), url(${heroFallback})` } as React.CSSProperties}>
         <div className="fp-cc-hero-scrim" />
         <div className="fp-wrap fp-cc-hero-inner">
-          <span className="fp-cc-badge">Crust Club</span>
+          <span className="fp-cc-badge">{cfg.loyalty.name}</span>
           <div className="fp-cc-balance">
             <span className="fp-cc-bignum">{points}</span>
             <span className="fp-cc-bigunit">points, {firstName}</span>

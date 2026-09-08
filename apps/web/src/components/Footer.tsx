@@ -23,6 +23,7 @@ export function Footer({
   address,
   localities,
   loyalty,
+  loyaltyName,
   logo,
   payments,
 }: {
@@ -31,6 +32,7 @@ export function Footer({
   address: string;
   localities: { name: string; path: string }[];
   loyalty: boolean;
+  loyaltyName: string;
   logo: string;
   /** Which payment marks the shop actually has files for. */
   payments: string[];
@@ -54,7 +56,7 @@ export function Footer({
           <span className="fp-footer-h">Order</span>
           <Link href="/menu">Menu</Link>
           <Link href="/deals">Deals</Link>
-          {loyalty ? <Link href="/rewards">Crust Club</Link> : null}
+          {loyalty ? <Link href="/rewards">{loyaltyName}</Link> : null}
           <Link href="/shops">Shops</Link>
           <Link href="/account">My account</Link>
         </div>

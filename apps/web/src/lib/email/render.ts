@@ -31,6 +31,8 @@ export type Brand = {
   address: string;
   phone: string;
   reviewUrl: string;
+  /** The shop own name for its points scheme - Crust Club, Slice Hub, whatever a new tenant picks. */
+  loyaltyName: string;
 };
 
 export function brand(): Brand {
@@ -44,6 +46,7 @@ export function brand(): Brand {
     address: cfg.contact.address || "",
     phone: cfg.contact.phone || "",
     reviewUrl: cfg.contact.reviewUrl || "",
+    loyaltyName: cfg.loyalty.name,
   };
 }
 

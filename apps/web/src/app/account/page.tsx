@@ -119,7 +119,7 @@ export default async function AccountPage() {
             />
           ) : null}
           <div style={{ border: "2px solid var(--color-text)", padding: 24, display: "grid", gap: 6 }}>
-            <span style={{ fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--color-neutral-700)" }}>Crust Club</span>
+            <span style={{ fontSize: 12, letterSpacing: ".08em", textTransform: "uppercase", color: "var(--color-neutral-700)" }}>{cfg.loyalty.name}</span>
             <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 56, lineHeight: 1, letterSpacing: "-.03em", color: "var(--color-accent)" }}>
               {customer.loyaltyPoints}
             </span>

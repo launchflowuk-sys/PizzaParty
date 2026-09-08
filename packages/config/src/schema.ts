@@ -121,8 +121,21 @@ export const ClientSchema = z.object({
       reviewDelayMinutes: z.number().int().positive().default(45),
     })
     .default({}),
+  /**
+   * The points scheme.
+   *
+   * `name` exists because the club is branded per shop - Crust Club for Farm
+   * Pizza, Slice Hub for Pizza Party - and the name was previously written into
+   * email templates, page titles and help content as a literal. A second shop
+   * therefore advertised the first shop's club. The name belongs here so a new
+   * tenant names its own without anybody editing code.
+   */
   loyalty: z
-    .object({ enabled: z.boolean().default(false), pointsPerPound: z.number().default(1) })
+    .object({
+      enabled: z.boolean().default(false),
+      pointsPerPound: z.number().default(1),
+      name: z.string().default("Rewards"),
+    })
     .default({}),
   /**
    * Refer a friend. Both figures are in pounds, matching every other price in

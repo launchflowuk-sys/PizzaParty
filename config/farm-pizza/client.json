@@ -221,7 +221,8 @@
   },
   "loyalty": {
     "enabled": true,
-    "pointsPerPound": 1
+    "pointsPerPound": 1,
+    "name": "Crust Club"
   },
   "referral": {
     "enabled": true,

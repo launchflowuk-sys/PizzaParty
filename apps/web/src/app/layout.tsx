@@ -58,7 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en-GB" className={`${display.variable} ${sans.variable}`} style={style} data-photo={cfg.brand.photoStyle}>
       <body style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
-        {isOps ? null : <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} fulfilment={cfg.fulfilment} loyalty={cfg.loyalty.enabled} />}
+        {isOps ? null : <Header name={cfg.name} logo={assetUrl(cfg.brand.logo)} fulfilment={cfg.fulfilment} loyalty={cfg.loyalty.enabled} loyaltyName={cfg.loyalty.name} />}
         <main style={{ flex: 1 }}>{children}</main>
         {isOps ? null : <Footer
           name={cfg.name}
@@ -66,6 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           address={cfg.contact.address}
           localities={cfg.seo.locality.map((l) => ({ name: l, path: localityPath(cfg, l) }))}
           loyalty={cfg.loyalty.enabled}
+          loyaltyName={cfg.loyalty.name}
           logo={assetUrl(cfg.brand.logo)}
           payments={paymentMarks()}
         />}

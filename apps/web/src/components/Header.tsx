@@ -47,9 +47,9 @@ function NavIcon({ d }: { d: string }) {
 
 /** Storefront nav. Ported from the `Farm Pizza.dc.html` prototype: brand flush left,
  *  links, order-mode segmented control, account, then the basket as the primary action. */
-export function Header({ name, logo, fulfilment, loyalty }: { name: string; logo: string; fulfilment: Fulfilment[]; loyalty: boolean }) {
+export function Header({ name, logo, fulfilment, loyalty, loyaltyName }: { name: string; logo: string; fulfilment: Fulfilment[]; loyalty: boolean; loyaltyName: string }) {
   const links = loyalty
-    ? [...LINKS, { href: "/rewards", label: "Crust Club", icon: "club" as const }]
+    ? [...LINKS, { href: "/rewards", label: loyaltyName, icon: "club" as const }]
     : LINKS;
   return (
     <nav

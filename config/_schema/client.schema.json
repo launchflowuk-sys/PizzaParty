@@ -369,6 +369,10 @@
             "pointsPerPound": {
               "type": "number",
               "default": 1
+            },
+            "name": {
+              "type": "string",
+              "default": "Rewards"
             }
           },
           "additionalProperties": false,

@@ -151,7 +151,7 @@ function customerMail(event: NotifyEvent, ctx: MailContext): Mail | null {
         + tracker(4, collection, b)
         + `<h2 style="margin:8px 0 0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#8a8a8a">Order #${order.number}</h2>`
         + receipt
-        + (points > 0 ? panel("Crust Club", `You've earned <strong>${points} points</strong> on this order. <a href="${esc(b.siteUrl)}/rewards" style="color:${b.primary}">See what they're worth</a>.`, "good") : "")
+        + (points > 0 ? panel(b.loyaltyName || "Rewards", `You've earned <strong>${points} points</strong> on this order. <a href="${esc(b.siteUrl)}/rewards" style="color:${b.primary}">See what they're worth</a>.`, "good") : "")
         + (b.reviewUrl
           ? `<div style="border-top:1px solid #ececec;margin-top:26px;padding-top:22px;text-align:center">
                <p style="margin:0 0 4px;font-size:17px;font-weight:700;color:#1a1a1a">How did we do?</p>
