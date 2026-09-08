@@ -2815,39 +2815,3 @@ footer::before {
 @media (min-width: 900px) {
   .fp-promo-card { flex-basis: 320px; }
 }
-
-/* == Home deals: bigger, and stepped ========================================
-   Scoped to .fp-dealsec, which only the home page uses. The /deals page is a
-   list somebody is scanning to compare offers, and an even grid is right there;
-   the home page is trying to stop somebody who was only passing through, so its
-   cards are larger and sit one up, one down.
-
-   The step is a margin on even cards rather than a transform: a transform would
-   leave the space behind it and the section would end in a gap. */
-@media (min-width: 760px) {
-  .fp-dealsec .fp-dealgrid {
-    /* Fewer, larger cards. Two across on a tablet, three or four on a desktop,
-       rather than four narrow ones everywhere. */
-    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
-    gap: 28px;
-    /* Cards must not stretch to a common height, or the step reads as one tall
-       card beside one short one instead of as a rhythm. */
-    align-items: start;
-    /* Room for the lower row to drop into without touching what follows. */
-    padding-block-end: 64px;
-  }
-  .fp-dealsec .fp-dealcard:nth-child(even) { margin-block-start: 64px; }
-
-  /* Taller than the 4:3 the deals list uses. A portrait photograph of food
-     carries further across a page somebody is skimming. */
-  .fp-dealsec .fp-dealcard-media { aspect-ratio: 4 / 5; }
-
-  .fp-dealsec .fp-dealcard { border-radius: 18px; }
-  .fp-dealsec .fp-dealcard-body { padding: 22px; }
-  .fp-dealsec .fp-dealcard-body h3 { font-size: 1.35rem; line-height: 1.15; }
-}
-
-/* One column: a step would just be an unexplained gap between two cards. */
-@media (max-width: 759px) {
-  .fp-dealsec .fp-dealcard:nth-child(even) { margin-block-start: 0; }
-}
