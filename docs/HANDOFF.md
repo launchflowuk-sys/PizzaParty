@@ -211,3 +211,67 @@ Rebuilding it is safe on the evidence - the merged code passes typecheck, lint,
 key to the `app.json` it replaced - but it had not been done at the end of this
 session because Shoji was demoing that app and an unproven rebuild during a
 demo is a bad trade. **Ask before rebuilding it.**
+
+---
+
+## The ordering flow: diagnosis, done 2026-09-08
+
+Shoji's read is right - the app's option picker feels good and the website's
+feels clunky - and the reason is four specific things, not taste. Read
+`apps/web/src/components/product/OptionPicker.tsx` beside
+`../farm-pizza-app/src/app/product/[slug].tsx` and it is obvious.
+
+**The app has these. The web does not:**
+
+1. **A sticky footer carrying the live running price.** Always on screen. On the
+   web the price sits at the bottom, after the customer has scrolled past every
+   control.
+2. **Guidance when a required group is unanswered** - *"Choose base first"* -
+   with the button disabled until the selection is valid.
+3. **A hint on each group** - *"Choose 4"*, *"Up to 8"*.
+4. **One uniform row component.** The web renders two visual systems: ruled
+   radio rows for single-choice groups, wrapping chips for multi-choice. They
+   read as different products on the same page.
+
+**There is also a semantic bug.** The web gives a *selected* topping chip
+`btn-primary`, which is the green "do the thing" colour. A selected topping is
+not an action. That is why the screen feels noisy - it shouts fifteen calls to
+action at once. Selected state belongs in the accent; green stays for the single
+primary action.
+
+### Parity is not the goal
+
+The deeper problem is the size of the set. Pizza Party's "Pizza Party Special"
+asks for **4 toppings from 26**, then offers **26 more** as extras - 63 controls
+on one page. The app handles that better than the web and still not well.
+
+**The design principle: choosing one base from three is a different task from
+choosing four toppings from twenty-six, so the picker should adapt to the size
+of the set.**
+
+- **2-6 options** - ruled rows, all visible. Already fine.
+- **10+ options** - a search field, the **popular six surfaced first** (most
+  orders end there in one tap), the remainder grouped **Meat / Vegetables /
+  Cheese & extras**, and a live counter reading *"2 of 4 chosen"*.
+- **Required groups first**, visually distinct from optional.
+- **A sticky bar at every breakpoint** - running total, validity, and what is
+  still needed.
+- Same interaction model on web and app, so they stop feeling like two products.
+
+### The decision that was open when this session ended
+
+Grouping toppings into Meat / Vegetables / Cheese needs that data to exist:
+
+- **A presentation-only map in the web and app.** No schema change, works today,
+  but every new shop needs its toppings categorised in code - which quietly
+  makes shop three a developer's problem again.
+- **A `category` field on `ModifierOptionSchema`.** Travels with the shop's own
+  config, so any future shop gets it for nothing. More work now.
+
+**Recommended: the schema field**, because this is a platform rather than one
+shop. Shoji had not chosen when the session ended.
+
+### Order of work
+
+Ordering flow first, back office second - for the reasons in the section above.
+Both shops now deploy from `main`, so one design pass covers both.
