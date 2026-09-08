@@ -2781,3 +2781,33 @@ footer::before {
   .btn:active { transform: none; }
   .btn, .fp-optionrow, .fp-ticket-print a { transition: none; }
 }
+
+/* == Offers strip ===========================================================
+   The shop's own promotional cards, directly under the hero. Scrolls sideways
+   on a phone rather than stacking, so it never pushes the menu below the fold
+   on the screen most people order from. */
+.fp-promo-strip { padding: var(--space-5) 0 0; }
+.fp-promo-strip-inner {
+  display: flex; gap: var(--space-3);
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  padding: 0 var(--space-4) var(--space-2);
+  scrollbar-width: none;
+}
+.fp-promo-strip-inner::-webkit-scrollbar { display: none; }
+.fp-promo-card {
+  flex: 0 0 clamp(240px, 74vw, 340px);
+  scroll-snap-align: start;
+  border: 1px solid var(--color-line); border-radius: var(--radius-md);
+  overflow: hidden; background: var(--color-surface);
+  text-decoration: none; color: inherit;
+  display: flex; flex-direction: column;
+}
+.fp-promo-card img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; display: block; }
+.fp-promo-card-body { padding: var(--space-3); display: grid; gap: 2px; }
+.fp-promo-card-body strong { font-size: 1rem; }
+.fp-promo-card-body span { font-size: .85rem; color: var(--color-neutral-700); }
+/* Red says things: the price is a statement, not the button. */
+.fp-promo-card-body em { font-style: normal; font-weight: 700; color: var(--accent); margin-top: 4px; }
+@media (min-width: 900px) {
+  .fp-promo-card { flex-basis: 320px; }
+}

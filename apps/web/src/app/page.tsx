@@ -13,6 +13,7 @@ import { HomeStory } from "@/components/HomeStory";
 import { publicReviews, reviewSummary } from "@/lib/google-reviews";
 import { TypewriterTitle } from "@/components/TypewriterTitle";
 import { HeroStamp } from "@/components/HeroStamp";
+import { PromoStrip } from "@/components/PromoStrip";
 
 export const dynamic = "force-dynamic";
 
@@ -123,6 +124,8 @@ export default async function Home() {
           <MenuSearchPill suggestions={heroSuggestions} items={searchItems} />
         </div>
       </section>
+
+      <PromoStrip />
 
       <div className="fp-rule" />
 
