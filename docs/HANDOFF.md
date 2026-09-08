@@ -275,3 +275,62 @@ shop. Shoji had not chosen when the session ended.
 
 Ordering flow first, back office second - for the reasons in the section above.
 Both shops now deploy from `main`, so one design pass covers both.
+
+---
+
+## The night of 2026-09-08, and what changed
+
+Long session. Everything below is committed, pushed and either deployed or
+waiting on one button.
+
+### Shipped and verified live
+
+- **21 photographs** - Pizza Party's last 18 products and 3 category headers.
+  0 of 11 categories and 0 of 87 products are now without one, on the website,
+  in the checkout grid and in both apps.
+- **Both shops on the same commit**, website and app, for the first time.
+
+### Built tonight, in the repo, waiting on a website deploy
+
+- **Food icons.** Thirteen category drawings as path data, rendered two ways
+  from one source: a colourful icon, and the same shapes flattened to a 4% tint
+  for the background pattern. `src/theme/food-shapes.ts` in the app is the
+  source of truth; `apps/web/src/theme/food-shapes.ts` is a verbatim copy and a
+  test fails if they drift.
+- **The club has a name.** `loyalty.name` in config. Farm Pizza is Crust Club,
+  Pizza Party is Slice Hub, and loyalty is now on for both. The name was
+  previously a literal in the header, footer, account page, rewards page, order
+  email and mobile config API - so Pizza Party advertised Farm Pizza's club.
+- **Shop-managed home-screen cards.** `PromoSlot`: a graphic, a price, a
+  schedule, a pause switch, editable in the back office under the existing
+  promos permission. The image is a bytea column, not a file, because
+  `config/<slug>/assets` ships inside the Docker image and an upload written
+  there disappears on the next deploy.
+- **A home screen that sells.** Search, the shop's offers, a deals row and the
+  categories, in place of one fixed picture. Already shipped over the air.
+- **Campaign cost now includes the discount.** It used to mean the text
+  messages only, so a £4 send that gave away £90 read as a £4 campaign.
+
+### Two things that cost hours, so they need not again
+
+**Coolify has no domain.** `APP_URL` is unset and it answers on a bare IP over
+HTTP, which is why no GitHub webhook has ever existed and why nothing
+auto-deploys. Fix: point a subdomain at `46.225.104.128`, set it as the
+instance domain, then add a GitHub App source and switch both applications to
+it. Until then every deploy is a button press.
+
+**The housekeeping cron was deleting the build cache every hour**
+(`--filter until=2h`), so essentially every deploy was a cold build and took
+20-27 minutes. Raised to 168h; a backup of the old script sits beside it. Disk
+was never the constraint - 70GB free at the worst point tonight.
+
+**`eas submit` needs `APP_TENANT` set**, not just `--profile`. Without it the
+CLI resolves the wrong project, picks the wrong build and the submission fails
+in a way that reads like a fluke. Cost one wasted round trip.
+
+### Still open
+
+- Deals card redesign - agreed in principle, not built
+- The topping picker - still 26 checkboxes, still the biggest money item
+- Stripe is still on test keys
+- Prices are still Just Eat's
