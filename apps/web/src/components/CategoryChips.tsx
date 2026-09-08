@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoryIcon } from "@/components/FoodIcon";
 
 export function CategoryChips({ categories, active, anchor }: { categories: { slug: string; name: string }[]; active?: string; anchor?: boolean }) {
   return (
@@ -8,8 +9,9 @@ export function CategoryChips({ categories, active, anchor }: { categories: { sl
           <li key={c.slug} className="shrink-0">
             <Link
               href={anchor ? `/menu#${c.slug}` : `/menu/${c.slug}`}
-              className={`lf-pill border ${active === c.slug ? "bg-ink text-white border-ink" : "bg-surface border-line text-ink"}`}
+              className={`lf-pill border inline-flex items-center gap-1.5 ${active === c.slug ? "bg-ink text-white border-ink" : "bg-surface border-line text-ink"}`}
             >
+              <CategoryIcon slug={c.slug} size={18} className="shrink-0" />
               {c.name}
             </Link>
           </li>
