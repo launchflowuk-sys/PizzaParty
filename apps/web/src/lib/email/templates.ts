@@ -1,7 +1,7 @@
 import "server-only";
 import type { NotifyAudience, NotifyEvent } from "@launchflow/db";
 import type { FullOrder } from "@/lib/orders";
-import { getConfig } from "@/lib/config";
+import { getConfig, assetUrl } from "@/lib/config";
 import { env } from "@/lib/env";
 import { brand, button, esc, gbp, lines, panel, say, shell, stars, totals, tracker, type Line } from "./render";
 
@@ -51,7 +51,12 @@ function toLines(order: FullOrder): Line[] {
       `${c.name}${c.sizeName ? ` (${c.sizeName})` : ""}${c.modifiers.length ? ` +${c.modifiers.map((m) => m.name).join(", ")}` : ""}`),
     notes: i.notes || undefined,
     total: i.lineTotal,
-    image: i.product?.image || undefined,
+    // Through assetUrl, not raw. The database stores "products/x.jpg" and the
+    // asset route serves it from /brand/, so the receipt was asking for
+    // https://shop/products/x.jpg and every product image in every email came
+    // out as a broken-image box. The logo never broke because it already went
+    // through assetUrl.
+    image: i.product?.image ? assetUrl(i.product.image) : undefined,
   }));
 }
 

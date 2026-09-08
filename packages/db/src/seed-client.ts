@@ -110,6 +110,35 @@ export async function seedClient(slug: string, opts: { reset?: boolean; menu?: M
   const menuSeeded = mode === "overwrite" || (mode === "auto" && !(await hasMenu(c.id)));
   if (menuSeeded) await seedMenu(c.id, menu, opts.reset ?? false);
 
+  /**
+   * Notification switches, for every shop, whether or not it has an ops file.
+   *
+   * These used to live inside seedOps, which returns early when
+   * config/<slug>/ops.json is missing. Pizza Party has no ops file, so it was
+   * seeded with zero rules - and the notifier loops over rules, so it sent
+   * nothing, logged nothing and raised no error. The shop looked healthy and
+   * silently never emailed a customer. Any tenant without an ops file would
+   * have inherited the same silence.
+   *
+   * Rules are not shop-specific data; they are the defaults every shop needs on
+   * day one. Only staff, stock and reviews belong behind the ops file.
+   *
+   * Still guarded on an empty table: which events text and which only email is
+   * a running cost the shop tunes with real orders in front of it, and a
+   * re-seed must not switch SMS back on for everything and start spending their
+   * credit again.
+   */
+  if ((await prisma.notificationRule.count({ where: { clientId: c.id } })) === 0) {
+    await prisma.notificationRule.createMany({
+      data: DEFAULT_RULES.flatMap((d) => [
+        { clientId: c.id, event: d.event, audience: d.audience, channel: "email", enabled: d.email, delayMinutes: d.delayMinutes ?? 0 },
+        { clientId: c.id, event: d.event, audience: d.audience, channel: "sms", enabled: d.sms, delayMinutes: d.delayMinutes ?? 0 },
+        // Push only where somebody could receive it - only the customer has an app.
+        ...(d.push === undefined ? [] : [{ clientId: c.id, event: d.event, audience: d.audience, channel: "push", enabled: d.push, delayMinutes: d.delayMinutes ?? 0 }]),
+      ]),
+    });
+  }
+
   const ops = await seedOps(c.id, slug);
 
   // Menu counts are what this run actually wrote. Reporting the config totals
@@ -197,22 +226,6 @@ async function seedOps(clientId: string, slug: string) {
     });
   }
 
-  // Notification switches, once, into an empty table.
-  //
-  // Same reasoning as the rewards above: which events text and which only
-  // email is a running cost the shop tunes with real orders in front of it, and
-  // a re-seed must not quietly switch SMS back on for everything and start
-  // spending their credit again.
-  if ((await prisma.notificationRule.count({ where: { clientId } })) === 0) {
-    await prisma.notificationRule.createMany({
-      data: DEFAULT_RULES.flatMap((d) => [
-        { clientId, event: d.event, audience: d.audience, channel: "email", enabled: d.email, delayMinutes: d.delayMinutes ?? 0 },
-        { clientId, event: d.event, audience: d.audience, channel: "sms", enabled: d.sms, delayMinutes: d.delayMinutes ?? 0 },
-        // Push only where somebody could receive it - only the customer has an app.
-        ...(d.push === undefined ? [] : [{ clientId, event: d.event, audience: d.audience, channel: "push", enabled: d.push, delayMinutes: d.delayMinutes ?? 0 }]),
-      ]),
-    });
-  }
 
   for (const a of ops.automations ?? []) {
     // Seeded paused on purpose: re-seeding must never switch on something that
