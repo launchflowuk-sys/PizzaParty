@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { CategoryIcon } from "@/components/FoodIcon";
 import { useBasket } from "@/components/basket/store";
 import { gbpShort } from "@/lib/money";
 import { Photo } from "@/components/Photo";
@@ -118,11 +119,14 @@ export function MenuBrowser({ categories, items, initialQuery = "" }: {
                 style={{
                   textAlign: "left", background: "none", border: 0, borderTop: "2px solid var(--color-divider)",
                   padding: "12px 0", fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 18,
-                  cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "baseline",
+                  cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center",
                   color: !q && c.slug === cat ? "var(--color-accent-700)" : "var(--color-text)",
                 }}
               >
-                <span>{c.name}</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <CategoryIcon slug={c.slug} size={22} />
+                  {c.name}
+                </span>
                 <span style={{ fontFamily: "var(--font-body)", fontWeight: 400, fontSize: 12, color: "var(--color-neutral-700)" }}>{c.count}</span>
               </button>
             ))}
