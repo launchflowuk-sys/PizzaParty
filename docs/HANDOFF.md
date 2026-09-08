@@ -60,10 +60,10 @@ Testers on both: `shujaat818@hotmail.com`, `wajih818@gmail.com`.
 
 ## Outstanding
 
-1. **18 product photos + 3 category headers.** Full brief with exact filenames
-   and dimensions in `docs/PIZZA-PARTY-PHOTOS-NEEDED.md`. These are also the
-   blank thumbnails in the checkout "Goes well with" grid, which pulls product
-   images.
+1. ~~18 product photos + 3 category headers.~~ **Delivered 2026-09-08** and in
+   `config/pizza-party/assets/`. All 87 products and 11 categories now have a
+   photograph. The hero, banner and social card are still Farm Pizza's - see
+   "Worth replacing when there is time" in `docs/PIZZA-PARTY-PHOTOS-NEEDED.md`.
 2. **Stripe is on test keys.** `stripeEnabled()` will run a live shop on sandbox
    keys and every order will look paid while no money moves. Blocker before real
    trading.

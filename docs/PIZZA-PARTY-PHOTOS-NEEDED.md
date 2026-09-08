@@ -1,5 +1,10 @@
 # Pizza Party — the photographs still missing
 
+> **Delivered 2026-09-08.** All 18 products and 3 category headers below are in
+> `config/pizza-party/assets/` and live. Kept for the style notes and for the
+> hero/banner/social card, which are still Farm Pizza's. The rest of this page
+> is the original brief.
+
 69 of 87 products already have one, borrowed from the Farm Pizza library and
 matched on what is in the picture. These 18 could not be: there is no honest
 photograph of a burger, a wrap, plain chips or a Pepsi can in that library —

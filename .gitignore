@@ -17,3 +17,6 @@ packages/db/generated
 /Farm logo.png
 /Logo.png
 docker/.env
+
+# Delivered image bundles - the files live in config/<slug>/assets/
+docs/*-Images.zip

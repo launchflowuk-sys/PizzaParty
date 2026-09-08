@@ -17,13 +17,13 @@
       "slug": "wraps",
       "name": "Wraps",
       "description": "Served with salad & sauce",
-      "image": ""
+      "image": "categories/wraps.jpg"
     },
     {
       "slug": "burgers",
       "name": "Burgers",
       "description": "Served with salad & sauce",
-      "image": ""
+      "image": "categories/burgers.jpg"
     },
     {
       "slug": "grilled-chicken",
@@ -53,7 +53,7 @@
       "slug": "kids-meals",
       "name": "Kids Meals",
       "description": "Served with chips & a can of drink",
-      "image": ""
+      "image": "categories/kids-meals.jpg"
     },
     {
       "slug": "desserts",
@@ -1923,7 +1923,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-strips-wrap.jpg"
     },
     {
       "slug": "chicken-and-crispy-bacon-wrap",
@@ -1951,7 +1951,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-and-crispy-bacon-wrap.jpg"
     },
     {
       "slug": "hotdog-and-chips-wrap",
@@ -1979,7 +1979,7 @@
         "gluten"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/hotdog-and-chips-wrap.jpg"
     },
     {
       "slug": "quarter-pounder",
@@ -2009,7 +2009,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/quarter-pounder.jpg"
     },
     {
       "slug": "half-pounder",
@@ -2039,7 +2039,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/half-pounder.jpg"
     },
     {
       "slug": "chicken-burger",
@@ -2069,7 +2069,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/chicken-burger.jpg"
     },
     {
       "slug": "grilled-chicken-leg-1",
@@ -2094,7 +2094,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/grilled-chicken-leg-1.jpg"
     },
     {
       "slug": "grilled-chicken-leg-2",
@@ -2119,7 +2119,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/grilled-chicken-leg-2.jpg"
     },
     {
       "slug": "grilled-chicken-leg-4",
@@ -2144,7 +2144,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/grilled-chicken-leg-4.jpg"
     },
     {
       "slug": "grilled-wings-4",
@@ -2274,7 +2274,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/chips-large.jpg"
     },
     {
       "slug": "cheesy-chips",
@@ -2288,7 +2288,7 @@
         "milk"
       ],
       "featured": false,
-      "image": ""
+      "image": "products/cheesy-chips.jpg"
     },
     {
       "slug": "curly-fries",
@@ -2324,7 +2324,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/salad-box.jpg"
     },
     {
       "slug": "garlic-bread",
@@ -2488,7 +2488,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/grilled-chicken-leg-side.jpg"
     },
     {
       "slug": "jacket-potato-skins",
@@ -2677,7 +2677,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/pepsi-can.jpg"
     },
     {
       "slug": "pepsi-max-can",
@@ -2689,7 +2689,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/pepsi-max-can.jpg"
     },
     {
       "slug": "pepsi-max-cherry-can",
@@ -2701,7 +2701,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/pepsi-max-cherry-can.jpg"
     },
     {
       "slug": "diet-coke-can",
@@ -2749,7 +2749,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/tango-orange-can.jpg"
     },
     {
       "slug": "pepsi-bottle",
@@ -2809,7 +2809,7 @@
       "tags": [],
       "allergens": [],
       "featured": false,
-      "image": ""
+      "image": "products/capri-sun.jpg"
     },
     {
       "slug": "still-water",
