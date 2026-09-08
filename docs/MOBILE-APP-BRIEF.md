@@ -101,7 +101,7 @@ Marketing push campaigns driven from `/admin/campaigns`, gated on the same conse
 
 #### 2.1.3 Explicitly not in phase one
 
-- **Crust Club / loyalty.** `loyalty.enabled` is false, points cannot be spent (no redemption path exists anywhere in the codebase), and the 250-point ladder is hard-coded in a web page. Shipping a points screen would advertise a scheme that permanently reads zero. Leave it out entirely — no tab, no card, no mention.
+- **Crust Club / loyalty.** ~~No redemption path exists.~~ **Out of date as of 2026-09-08 — redemption was built and is live.** `apps/web/src/lib/loyalty.ts` has `redeemReward()`, backed by `LoyaltyReward` and `LoyaltyLedger`; claiming mints a single-use promo code, so checkout, pricing and the minimum-order rule all work through machinery that already existed. Farm Pizza runs with `loyalty.enabled: true` and `/rewards` is live. Pizza Party is still `false` and has no club name yet. The reason this paragraph is being struck out rather than deleted: it was read as current months after it stopped being true, and asserted to Shoji that his own tested feature did not exist. Check `lib/loyalty.ts` before believing anything here about loyalty.
 - **Build your own pizza.** The screen does not exist on the web either; the nav link is deliberately held back.
 - **Live driver map.** There is no GPS anywhere in the system. `/admin/dispatch` draws a CSS grid with pins positioned by array index. Do not build a map the data cannot fill.
 - **Tips, saved cards, cutlery prompts, structured allergy questions.** None exist on the web. Adding them breaks parity and creates an order the kitchen screen cannot display.
@@ -749,7 +749,7 @@ Each of these would make the app and the website disagree about something that m
 6. **Do not add a marketing push channel with its own opt-in flag.** One flag, `Customer.marketingOptIn`. STOP by SMS silences push too.
 7. **Do not send marketing push to anyone `audienceFor()` would exclude,** and do not copy the review-request exception that ignores consent.
 8. **Do not add features the website lacks:** tips, saved cards, half-and-half pizzas, remove-a-topping, allergen filters, a loyalty screen, a driver map, live location, order editing, order cancellation. Every one of these needs server work and would produce an order the kitchen screen cannot render.
-9. **Do not show Crust Club, points, or a stamp card** while `loyalty.enabled` is false.
+9. **Show the club when `loyalty.enabled` is true, and hide it when false.** Earning and redemption are both built, so a shop with the flag on has a working scheme and the app should carry it. The club's *name* differs per shop - Crust Club for Farm Pizza, Slice Hub for Pizza Party - so it must come from config, never from a string in the app.
 10. **Do not build a native kitchen screen** as part of this project (section 2.2).
 11. **Do not use In-App Purchase** for food (section 7.5).
 12. **Do not use the SSE endpoint** `/api/orders/[id]/events` from the app; poll `/api/orders/[id]/status` instead (section 5.3, item 6).

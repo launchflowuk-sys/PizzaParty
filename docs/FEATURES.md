@@ -836,7 +836,7 @@ regenerated on every request. Price range is hard-coded `££` and reservations 
 `False`. CI enforces a Lighthouse SEO score of 90 on the home and menu pages only; nothing
 validates the structured data itself.
 
-## Loyalty — Crust Club — **Off**
+## Loyalty — Crust Club (Farm Pizza) / Slice Hub (Pizza Party) — **On for Farm Pizza, off for Pizza Party**
 
 Points accrual is wired end to end: when an order is marked completed, points are calculated
 from the food subtotal at a configured rate, written to a per-customer ledger with the order
