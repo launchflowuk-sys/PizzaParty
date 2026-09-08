@@ -164,7 +164,7 @@ function customerMail(event: NotifyEvent, ctx: MailContext): Mail | null {
                ${stars(b)}
              </div>`
           : "")
-        + `<div style="text-align:center;padding-top:6px">${button("Order again", `${b.siteUrl}/menu`, b)}</div>`,
+        + button("Order again", `${b.siteUrl}/menu`, b),
         `Your ${b.name} receipt — order #${order.number}`);
     }
 
@@ -196,7 +196,7 @@ function customerMail(event: NotifyEvent, ctx: MailContext): Mail | null {
         say("How did we do?",
           `Hope you enjoyed it, ${esc(name)}. If you've got twenty seconds, a review helps us more than you'd think.`)
         + stars(b)
-        + `<div style="text-align:center">${button("Leave a review", b.reviewUrl, b)}</div>`
+        + button("Leave a review", b.reviewUrl, b)
         + `<p style="margin:22px 0 0;font-size:14px;line-height:1.55;color:#777;text-align:center">If something wasn't right, please ring us first on <a href="tel:${esc(b.phone.replace(/\s+/g, ""))}" style="color:${b.primary}">${esc(b.phone)}</a> — we'd much rather fix it.</p>`,
         `How was your order from ${b.name}?`);
 

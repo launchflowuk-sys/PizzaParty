@@ -73,9 +73,27 @@ export const gbp = (pence: number) => `£${(pence / 100).toFixed(2)}`;
  * works everywhere.
  */
 export function button(label: string, href: string, b: Brand): string {
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 4px"><tr>
-    <td bgcolor="${b.primary}" style="border-radius:6px" align="center">
-      <a href="${esc(href)}" style="display:inline-block;padding:14px 30px;font-family:${FONT};font-size:16px;font-weight:700;color:${b.onPrimary};text-decoration:none;border-radius:6px">${esc(label)}</a>
+  /**
+   * Centred, and it takes two tables to do it.
+   *
+   * The button used to be a bare table with `align="center"` on its cell, which
+   * only centres the text inside the cell - the table itself still sat hard
+   * left, so every call to action in every email was left-aligned while the
+   * review stars beside them were centred. Wrapping it in a `<div>` with
+   * `text-align:center` does not fix it either: Outlook's Word renderer ignores
+   * that for a block-level table, which is why two templates already tried it
+   * and still came out left.
+   *
+   * A full-width table with `align="center"` on the cell is the one construction
+   * every client agrees on.
+   */
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 4px"><tr>
+    <td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+        <td bgcolor="${b.primary}" align="center" style="border-radius:6px">
+          <a href="${esc(href)}" style="display:inline-block;padding:14px 30px;font-family:${FONT};font-size:16px;font-weight:700;color:${b.onPrimary};text-decoration:none;border-radius:6px">${esc(label)}</a>
+        </td>
+      </tr></table>
     </td></tr></table>`;
 }
 
