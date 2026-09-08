@@ -1502,7 +1502,11 @@ html, body { max-width: 100%; overflow-x: clip; }
 }
 .fp-rv-count { margin: 6px 0 0; font-size: 14px; color: var(--color-neutral-700); }
 
-.fp-rv-rail { overflow: hidden; padding: 8px 0; }
+/* `safe center` and not plain `center`: a row long enough to scroll must stay
+   flush left so the animation begins at the first card, while a row too short
+   to fill the screen is centred instead of hugging the left with dead space
+   beside it. `safe` is exactly that rule - centre unless it would clip. */
+.fp-rv-rail { overflow: hidden; padding: 8px 0; display: flex; justify-content: safe center; }
 .fp-rv-track {
   display: flex;
   gap: 16px;

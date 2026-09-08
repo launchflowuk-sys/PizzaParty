@@ -70,6 +70,31 @@ function Card({ r }: { r: Review }) {
  * rows are never padded out to look fuller, and the section renders nothing at
  * all when there is nothing worth showing.
  */
+/**
+ * How many cards a row needs before it is wider than the screen it is on.
+ *
+ * A marquee only works when its content overflows. Eight reviews split into two
+ * rows of four is about 1400px, which on a desktop leaves the cards hugging the
+ * left with dead space to the right - and once the animation starts translating,
+ * the first card is clipped off the edge. Ten cards clears a 3440px monitor.
+ */
+const MIN_PER_ROW = 10;
+
+/**
+ * Repeat a row until it is long enough to scroll.
+ *
+ * This repeats *real* reviews rather than inventing any - the same thing the
+ * seamless duplicate already does, for the same reason. A shop with three
+ * reviews shows those three, round and round; it never shows a fourth that
+ * nobody wrote.
+ */
+function fill<T>(row: T[]): T[] {
+  if (row.length === 0 || row.length >= MIN_PER_ROW) return row;
+  const out: T[] = [];
+  while (out.length < MIN_PER_ROW) out.push(...row);
+  return out;
+}
+
 export function ReviewStrip({
   reviews,
   summary,
@@ -84,7 +109,9 @@ export function ReviewStrip({
   // Split into two rows. With an odd number the top row takes the extra, so the
   // rows never differ by more than one card.
   const half = Math.ceil(reviews.length / 2);
-  const rows = [reviews.slice(0, half), reviews.slice(half)].filter((r) => r.length > 0);
+  const rows = [reviews.slice(0, half), reviews.slice(half)]
+    .filter((r) => r.length > 0)
+    .map(fill);
 
   return (
     <section className="fp-rv">
@@ -108,11 +135,11 @@ export function ReviewStrip({
           {/* Direction alternates, and the second row runs a touch slower so the
               two never fall into step and read as one moving block. */}
           <div className="fp-rv-track" data-dir={i % 2 === 0 ? "left" : "right"} style={{ "--speed": `${46 + i * 9}s` } as React.CSSProperties}>
-            {row.map((r) => <Card key={r.id} r={r} />)}
+            {row.map((r, j) => <Card key={`${r.id}-${j}`} r={r} />)}
             {/* The seamless half. Hidden from assistive tech: it is the same
                 reviews again, not more of them. */}
             <div className="fp-rv-dupe" aria-hidden="true">
-              {row.map((r) => <Card key={`dupe-${r.id}`} r={r} />)}
+              {row.map((r, j) => <Card key={`dupe-${r.id}-${j}`} r={r} />)}
             </div>
           </div>
         </div>
