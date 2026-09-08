@@ -17,7 +17,7 @@ Two shops exist:
 |---|---|---|
 | Slug | `farm-pizza` | `pizza-party` |
 | Site | farm-pizza.shop | **pizzaparty.live** |
-| Branch | `claude/launchflow-takeaway-template-lzuzx5` / `main` | **`pizza-party-tenant`** |
+| Branch | `main` | `main` |
 | Shop | Grays + Basildon, 2 branches | 162 Dock Road, Tilbury RM18 7BS, 1 branch |
 | Menu | 7 categories, 68 products | 11 categories, 87 products, 10 deals |
 
@@ -146,12 +146,68 @@ container afterwards — Next's data cache serves the old menu otherwise.
 | `PizzaParty` | `pizza-party-tenant` | github.com/launchflowuk-sys/PizzaParty |
 | `farm-pizza-app` | `main` | github.com/launchflowuk-sys/farm-pizza-app |
 
-Both pushed. `pizza-party-tenant` has never been merged to main — Farm Pizza
-still deploys from its own branch, so merging needs thought about which branch
-each Coolify application tracks.
+Both pushed. **`pizza-party-tenant` was merged into `main` (fast-forward) on
+2026-09-08 and both Coolify applications now track `main`.** That was the point:
+a platform-level change lands on both shops from one push, rather than being
+applied twice and drifting. The tenant branch still exists but is redundant -
+work on `main`.
 
 ## Design and specs
 
 - `docs/superpowers/specs/2026-09-07-pizza-party-tenant-and-white-label-app-design.md` — the design, still accurate
 - `docs/pizza-party-menu-source.md` and `docs/pizza-party-menu-raw.md` — where the menu came from
 - `../farm-pizza-app/TENANTS.md` — how to add a third shop to the app
+
+---
+
+## Next session: the design work, and the order to do it in
+
+Agreed with Shoji on 2026-09-08. The back office is used by shop owners on big
+screens and tablets and currently reads as a page of text links; the customer
+ordering flow is good in the app and clunky on the web.
+
+**Do the ordering flow first.** The back office is used by two or three people
+who will learn any layout. A clunky topping picker costs orders every night, on
+both shops. That is where the money is.
+
+**The clunkiness has a specific cause.** The app groups and paces the modifier
+groups; the website renders each one as a single flat list. On Pizza Party's
+"any 4 toppings" that is 26 checkboxes followed by 26 more for extras. Both ends
+already read the same modifier data from the same API, so this is purely
+presentation - the web should adopt the app's model, not the reverse.
+
+**On the back office, resist the obvious version.** Shoji's instinct was to turn
+the text links into green, red and orange buttons. Colour is not the fix: if
+everything is a coloured button then nothing is primary and the screen gets
+noisier. The rule the storefront already follows should extend to the admin -
+**red says things, green does things** - with one primary action per screen and
+red reserved for destructive actions.
+
+What actually makes a back office work on a tablet:
+
+- 44px+ hit targets; it is operated with a finger, often a greasy one
+- Real hierarchy: page title, one primary action, then the table
+- Consistent row actions rather than links in assorted colours
+- A white or near-white ground. Shoji is right that cream is wrong for dense
+  tables. Add an admin surface **token** - never hardcode white, or the next
+  shop cannot retheme it
+
+**Keep Archivo.** A second typeface is a second design system to maintain, and
+an admin that looks like a different product is worse than one that looks plain.
+
+**Treat it as a design job, not a restyle.** Settle the button taxonomy, the
+admin surface tokens and the picker interaction first, then build once across
+web and app. Otherwise the drift the branch merge just removed comes back as
+visual drift instead.
+
+## One decision still open
+
+**Farm Pizza's app has not been rebuilt.** Its TestFlight build 14 and Play v6
+are both from 2026-09-06, before any of the white-label work, and it has not had
+the animated splash. Pizza Party is fully current; Farm Pizza is not.
+
+Rebuilding it is safe on the evidence - the merged code passes typecheck, lint,
+16/16 tests, and Farm Pizza's resolved app config was verified identical key by
+key to the `app.json` it replaced - but it had not been done at the end of this
+session because Shoji was demoing that app and an unproven rebuild during a
+demo is a bad trade. **Ask before rebuilding it.**
