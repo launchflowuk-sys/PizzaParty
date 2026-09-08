@@ -204,8 +204,16 @@ export default async function AdminCampaigns({
                   </HelpSpot>
                 </th>
                 <th style={{ textAlign: "right" }}>Orders</th>
-                <th style={{ textAlign: "right" }}>Cost</th>
+                <th style={{ textAlign: "right" }}>
+                  Cost
+                  <HelpSpot title="What is in this figure?" article="campaigns" anchor="what-it-costs">
+                    The texts <em>and</em> the discount. A campaign that costs four pounds to send and
+                    gives away ninety in offers is a ninety-four pound campaign, not a four pound one.
+                    The smaller line underneath splits the two.
+                  </HelpSpot>
+                </th>
                 <th style={{ textAlign: "right" }}>Earned</th>
+                <th style={{ textAlign: "right" }}>Kept</th>
               </tr>
             </thead>
             <tbody>
@@ -217,9 +225,19 @@ export default async function AdminCampaigns({
                   <td style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13 }}>{c.promoCode || "—"}</td>
                   <td style={{ textAlign: "right" }}>{stats.sent}{c.failed ? <><br /><span style={{ fontSize: 12, color: "var(--color-neutral-700)" }}>{c.failed} failed</span></> : null}</td>
                   <td style={{ textAlign: "right" }}>{stats.redeemed}</td>
-                  <td style={{ textAlign: "right" }}>{gbp(stats.spendPence)}</td>
+                  <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                    {gbp(stats.spendPence)}
+                    {stats.discountPence > 0 ? (
+                      <div style={{ fontSize: 11, color: "var(--color-neutral-700)" }}>
+                        {gbp(stats.sendPence)} sent · {gbp(stats.discountPence)} off
+                      </div>
+                    ) : null}
+                  </td>
                   <td style={{ textAlign: "right", fontWeight: 600, color: stats.revenuePence ? "var(--color-accent-700)" : undefined }}>
                     {gbp(stats.revenuePence)}
+                  </td>
+                  <td style={{ textAlign: "right", fontWeight: 700, whiteSpace: "nowrap", color: stats.netPence < 0 ? "var(--color-danger)" : "var(--color-ok)" }}>
+                    {gbp(stats.netPence)}
                   </td>
                 </tr>
               ))}

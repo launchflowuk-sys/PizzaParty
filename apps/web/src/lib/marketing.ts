@@ -365,16 +365,47 @@ export async function automationStats(automationId: string) {
 
 /** Same figures for a one-off campaign. */
 export async function campaignStats(campaignId: string) {
-  const [agg, redeemed] = await Promise.all([
+  const [agg, redeemedSends] = await Promise.all([
     prisma.marketingSend.aggregate({
       where: { campaignId, status: "sent" },
       _count: true, _sum: { costPence: true, revenuePence: true },
     }),
-    prisma.marketingSend.count({ where: { campaignId, redeemedOrderId: { not: "" } } }),
+    prisma.marketingSend.findMany({
+      where: { campaignId, redeemedOrderId: { not: "" } },
+      select: { redeemedOrderId: true },
+    }),
   ]);
-  const spend = agg._sum.costPence ?? 0;
+
+  /**
+   * What the offer itself cost.
+   *
+   * Sending was only ever half the bill. A campaign that costs four pounds in
+   * text messages and gives away ninety in discount was being reported as a
+   * four pound campaign, which is how a shop talks itself into running it
+   * again. The discount comes off the orders the campaign actually produced.
+   */
+  const orderIds = redeemedSends.map((r) => r.redeemedOrderId).filter(Boolean);
+  const discountAgg = orderIds.length
+    ? await prisma.order.aggregate({ where: { id: { in: orderIds } }, _sum: { discount: true } })
+    : null;
+
+  const sendPence = agg._sum.costPence ?? 0;
+  const discountPence = discountAgg?._sum.discount ?? 0;
   const revenue = agg._sum.revenuePence ?? 0;
-  return { sent: agg._count, redeemed, spendPence: spend, revenuePence: revenue, netPence: revenue - spend };
+  const spend = sendPence + discountPence;
+
+  return {
+    sent: agg._count,
+    redeemed: redeemedSends.length,
+    /// Messaging only, kept separate so a shop can see which half is which.
+    sendPence,
+    /// The money handed back as discount on orders this campaign produced.
+    discountPence,
+    /// Everything the campaign cost. This is the figure that matters.
+    spendPence: spend,
+    revenuePence: revenue,
+    netPence: revenue - spend,
+  };
 }
 
 /** Whole-account totals for the dashboard. */
