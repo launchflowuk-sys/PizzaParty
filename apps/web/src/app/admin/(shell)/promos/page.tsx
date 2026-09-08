@@ -1,4 +1,5 @@
 import { prisma } from "@launchflow/db";
+import { HomeCards } from "./HomeCards";
 import { getClientRow } from "@/lib/menu";
 import { gbp } from "@/lib/money";
 import { HelpSpot } from "@/components/admin/HelpSpot";
@@ -75,6 +76,7 @@ export default async function AdminPromos() {
           </tr>
         ))}</tbody>
       </table>
+      <HomeCards />
     </div>
   );
 }

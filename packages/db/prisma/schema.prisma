@@ -65,6 +65,7 @@ model Client {
   marketingSends MarketingSend[]
   smsInbound     SmsInbound[]
   loyaltyRewards LoyaltyReward[]
+  promoSlots     PromoSlot[]
 }
 
 model Location {
@@ -845,4 +846,52 @@ model PushDevice {
   createdAt  DateTime  @default(now())
 
   @@index([clientId, customerId])
+}
+
+/// A promotional card the shop puts on the app and website home screen.
+///
+/// The home screen used to open on one static image baked into the build, so
+/// the most valuable space in the product could only be changed by a developer
+/// and a deploy. A promotion that needs a deploy is a promotion that never
+/// happens, so this is shop-editable and scheduled.
+///
+/// The image lives here as bytes rather than as a file. `config/<slug>/assets`
+/// ships inside the Docker image, so anything written there is lost on the next
+/// deploy - and a per-tenant volume would make onboarding shop three a piece of
+/// infrastructure work rather than a form. A handful of banner-sized images per
+/// shop is well within what Postgres should hold.
+model PromoSlot {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  title     String
+  /// Optional supporting line. Kept short - this is a card, not a page.
+  subtitle  String   @default("")
+  /// Pence, matching every other price in the database. Null means the card
+  /// makes an offer without naming a figure ("2 for 1 on Tuesdays").
+  price     Int?
+
+  /// Where tapping it goes: a deal slug, a category slug, or empty for the menu.
+  target    String   @default("")
+
+  image     Bytes?
+  imageMime String   @default("")
+
+  /// Scheduling. Null start means "already running"; null end means "until
+  /// somebody stops it". `active` is the pause switch, kept separate so pausing
+  /// does not destroy the dates the shop chose.
+  startsAt  DateTime?
+  endsAt    DateTime?
+  active    Boolean  @default(true)
+
+  /// hero or featured. A string rather than an enum so a new placement does not
+  /// need a migration in every tenant's database.
+  placement String   @default("featured")
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId, active, placement, sortOrder])
 }
