@@ -10,6 +10,12 @@ import { findCustomer, readIdentifier } from "@/lib/identity";
 
 export const dynamic = "force-dynamic";
 
+// ponytail: App Store review can't receive a UK SMS, so this one number gets a
+// fixed code instead of a random one. Same number is in the ASC review notes.
+// Upgrade path: rotate/remove once the app is approved and out of review.
+const REVIEWER_PHONE = "+447902810090";
+const REVIEWER_CODE = "483920";
+
 /**
  * Send a one-time code, by whichever route they asked for.
  *
@@ -49,7 +55,8 @@ export async function POST(req: NextRequest) {
   });
   if (recent >= 3) return NextResponse.json({ error: "Too many codes requested. Try again in 10 minutes." }, { status: 429 });
 
-  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const isReviewer = id.kind === "phone" && id.phone === REVIEWER_PHONE;
+  const code = isReviewer ? REVIEWER_CODE : String(Math.floor(100000 + Math.random() * 900000));
   await prisma.otpCode.create({
     data: {
       // Hashed against the customer rather than the phone number, so the same
@@ -68,6 +75,8 @@ export async function POST(req: NextRequest) {
     if (!r.ok) return NextResponse.json({ error: "Could not send that email right now." }, { status: 502 });
     return NextResponse.json({ ok: true, channel: "email", ...devCode(code, r.id) });
   }
+
+  if (isReviewer) return NextResponse.json({ ok: true, channel: "sms" });
 
   const r = await sendSms(id.phone, `${shop}: your login code is ${code}. It expires in 10 minutes.`);
   if (!r.ok) return NextResponse.json({ error: "Could not send that text right now." }, { status: 502 });
