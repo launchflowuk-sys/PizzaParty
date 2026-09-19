@@ -16,6 +16,9 @@ export default function PrivacyPage() {
       <p>To take and deliver your order, send order status messages by SMS, and, only if you opt in, occasional offers. You can opt out of marketing at any time by replying STOP or from your account page.</p>
       <h2>Retention</h2>
       <p>Orders are kept for 6 years for accounting. You can ask us to delete your account and personal details at any time.</p>
+      <h2>Deleting your account</h2>
+      <p>Email {cfg.contact.email || "us"} from the address on your account, or text the mobile number on it, saying you want your {cfg.name} account deleted. We do it within 30 days and write back to confirm. If you are signed in to the {cfg.name} app you can also delete the account from the <strong>Account</strong> screen.</p>
+      <p>Deleting removes your name, phone number, email, saved addresses and login sessions. Past orders are kept for 6 years without your contact details, because we have to keep them for accounting.</p>
       <h2>Cookies</h2>
       <p>We use strictly necessary cookies only: your basket, your last postcode and your login session. No advertising trackers.</p>
       <h2>Your rights</h2>
