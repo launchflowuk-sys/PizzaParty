@@ -40,15 +40,30 @@ deploys it.
 > still holds `secrets.env` (a backup) and `compose.yml.retired`. **Do not start
 > it** — it would fight Coolify for the domain.
 
-### Apps — production builds on test channels
+### Apps — Pizza Party is in review on both stores
 
-Nothing is submitted for App Store or Play review. Deliberate: Shoji wants them
-promotable on demand, not in review.
+Updated 2026-09-21. The line that used to be here ("nothing is submitted") is no
+longer true, and believing it cost a rejection.
 
-| | iOS (TestFlight) | Android (Play internal) |
+| | iOS | Android |
 |---|---|---|
-| My Farm Pizza | build 14 | v6 |
-| My Pizza Party | build 13 | v5 |
+| **Pizza Party** | v1.0 build 14, **WAITING_FOR_REVIEW** | v6 on the production track, **in review** (app still shows Draft until Google publishes it) |
+| Farm Pizza | build 14 on TestFlight | v9, internal only — no production release, and the Play **contact email is empty** |
+
+**Apple rejected build 14 once on Guideline 2.1** and it was nothing to do with
+the binary. The reviewer sign-in bypass for `+447902810090` was committed three
+hours *after* the submission went in, and then sat undeployed for two days, so
+the server tried to send a real SMS to a phone the reviewer does not have.
+Fixed, deployed and verified on 2026-09-21; see `apps/web/src/lib/reviewer.ts`.
+
+**A store reviewer tests against the live server, not the build.** Anything that
+gates sign-in has to be deployed *before* you submit, and verified against the
+production domain — a green local test proves nothing here.
+
+**Play's API cannot tell you whether an app is published.** `play-tracks.mjs`
+reports what is staged on a track, so a first submission reads as
+`production completed` while the app is still Draft and in review. Read the
+console for publishing status.
 
 Pizza Party's App Store listing is **"My Pizza Party"** — Apple requires globally
 unique names and both "Pizza Party" and "Pizza Party Online" were taken or
