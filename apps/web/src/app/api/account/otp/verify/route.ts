@@ -5,6 +5,7 @@ import { getClientRow } from "@/lib/menu";
 import { COOKIE, cookieOptions, sha256, signToken } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { findCustomer, readIdentifier } from "@/lib/identity";
+import { REVIEWER_CODE, REVIEWER_PHONE } from "@/lib/reviewer";
 
 export const dynamic = "force-dynamic";
 
@@ -23,18 +24,25 @@ export async function POST(req: NextRequest) {
   const customer = await findCustomer(client.id, id);
   if (!customer) return wrong();
 
-  const otp = await prisma.otpCode.findFirst({
-    where: { customerId: customer.id, usedAt: null, expiresAt: { gt: new Date() } },
-    orderBy: { createdAt: "desc" },
-  });
-  if (!otp || otp.attempts >= 5) return wrong();
+  // App review is given this as a username and password, so it has to work
+  // like one: accepted on its own, with no code requested first and nothing
+  // stored to match. See lib/reviewer.ts.
+  const isReviewer = id.kind === "phone" && id.phone === REVIEWER_PHONE && code === REVIEWER_CODE;
 
-  if (otp.codeHash !== (await sha256(`${customer.id}:${code}:${env.sessionSecret}`))) {
-    await prisma.otpCode.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
-    return wrong();
+  if (!isReviewer) {
+    const otp = await prisma.otpCode.findFirst({
+      where: { customerId: customer.id, usedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!otp || otp.attempts >= 5) return wrong();
+
+    if (otp.codeHash !== (await sha256(`${customer.id}:${code}:${env.sessionSecret}`))) {
+      await prisma.otpCode.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
+      return wrong();
+    }
+
+    await prisma.otpCode.update({ where: { id: otp.id }, data: { usedAt: new Date() } });
   }
-
-  await prisma.otpCode.update({ where: { id: otp.id }, data: { usedAt: new Date() } });
 
   // Guest → verified. Orders placed as a guest on this phone are already filed
   // against this record, so their history appears the moment they are in.
