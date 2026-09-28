@@ -16,6 +16,7 @@ import { MENU_TAG } from "./menu";
 import { paidPence, remainingPence } from "./pos-money";
 import { releaseRefund } from "./refunds";
 import { releaseDriver } from "./dispatch";
+import { publishOrder } from "./realtime";
 import type { BasketLine, Fulfilment, PricedBasket } from "./basket-types";
 
 export const STATUS_LABEL: Record<OrderStatus, string> = {
@@ -97,8 +98,11 @@ export const orderInclude = {
 
 export type FullOrder = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 
+/** The audit log, and the one place every order change is announced to the live screens (lib/realtime.ts). */
 export async function addEvent(orderId: string, type: string, actor = "system", message = "", data?: Prisma.InputJsonValue) {
-  return prisma.orderEvent.create({ data: { orderId, type, actor, message, data } });
+  const event = await prisma.orderEvent.create({ data: { orderId, type, actor, message, data } });
+  await publishOrder(orderId, type);
+  return event;
 }
 
 export function orderUrl(order: { id: string }) {

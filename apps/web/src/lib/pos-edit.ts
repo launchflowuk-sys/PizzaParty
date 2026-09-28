@@ -14,6 +14,7 @@ import { goodwillPence, isSettled, orderMoney, repriceAfterEdit, type EditPromo 
 import { EDITABLE, PosError, VOID_NEEDS_PIN } from "./pos-queue";
 import { connectOpts, getStripe } from "./stripe";
 import { releaseRefund } from "./refunds";
+import { publishOrder } from "./realtime";
 import type { BasketLine, PricedLine } from "./basket-types";
 
 export const EditBody = z.object({
@@ -134,6 +135,7 @@ export async function editOrder(clientId: string, orderId: string, staff: PosSta
     return { event, data, number: o.number, status: row.status, money, replay: null };
   });
   if (out.replay) return out.replay;
+  await publishOrder(orderId, "amended");
 
   const warnings: string[] = [];
   if (before.fulfilment === "delivery") {

@@ -3,6 +3,7 @@ import { prisma, type Prisma } from "@launchflow/db";
 import type Stripe from "stripe";
 import { gbp } from "./money";
 import { goodwillPence, orderMoney } from "./pos-money";
+import { publishOrder } from "./realtime";
 
 /**
  * A card refund that did not go through (Stripe refused it now, or failed it
@@ -29,6 +30,7 @@ export async function releaseRefund(refundId: string, actor: string, why: string
     return r;
   });
   if (done) await prisma.orderEvent.create({ data: { orderId: done.orderId, type: "refund_failed", actor, message: `${gbp(done.amount)}: ${why}`, data: { refundId } } });
+  if (done) await publishOrder(done.orderId, "refund_failed");
   return !!done;
 }
 
@@ -84,4 +86,5 @@ export async function recordStripeRefunds(paymentId: string, amountRefunded: num
     await prisma.orderEvent.create({ data: { orderId: out.orderId, type: "refund", actor: "stripe", message: `${gbp(r.amount)} card · ${DASHBOARD_REASON}`, data: { refundId: r.id, paymentId, provider: r.provider, amount: r.amount, goodwill: n === 0 ? out.goodwill : 0, reason: DASHBOARD_REASON } } });
   }
   if (!out.rows.length) await prisma.orderEvent.create({ data: { orderId: out.orderId, type: "refunded", actor: "stripe", message: `Refunded ${gbp(out.refundedAmount)} in total` } });
+  await publishOrder(out.orderId, "refund");
 }

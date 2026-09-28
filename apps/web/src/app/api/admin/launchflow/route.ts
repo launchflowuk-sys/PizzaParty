@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { revalidateTag } from "next/cache";
 import { COOKIE, verifyToken } from "@/lib/auth";
 import { CLIENT_TAG, MENU_TAG } from "@/lib/menu";
+import { publishMenu } from "@/lib/realtime";
 import { getConfig, reloadConfig } from "@/lib/config";
 import { sendReviewRequests } from "@/lib/orders";
 import { postPrinter, sendEmail, sendSms } from "@/lib/notify";
@@ -15,11 +16,11 @@ export async function POST(req: NextRequest) {
         const cfg = reloadConfig();
         const { seedClient } = await import("@launchflow/db/seed");
         const r = await seedClient(cfg.slug);
-        revalidateTag(MENU_TAG); revalidateTag(CLIENT_TAG);
+        revalidateTag(MENU_TAG); revalidateTag(CLIENT_TAG); void publishMenu();
         return NextResponse.json({ ok: true, ...r });
       }
       case "revalidate":
-        reloadConfig(); revalidateTag(MENU_TAG); revalidateTag(CLIENT_TAG);
+        reloadConfig(); revalidateTag(MENU_TAG); revalidateTag(CLIENT_TAG); void publishMenu();
         return NextResponse.json({ ok: true });
       case "test-notify": {
         const cfg = getConfig();

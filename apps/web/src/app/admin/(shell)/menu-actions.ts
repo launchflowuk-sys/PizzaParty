@@ -1,10 +1,11 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@launchflow/db";
-import { currentStaff } from "@/lib/session";
+import { logPriceChanges, prisma } from "@launchflow/db";
+import { currentStaff, priceActor } from "@/lib/session";
 import { can } from "@/lib/permissions";
 import { getClientRow, MENU_TAG } from "@/lib/menu";
+import { publishMenu } from "@/lib/realtime";
 import { toPence } from "@/lib/money";
 
 /**
@@ -32,7 +33,7 @@ const num = (fd: FormData, k: string, d = 0) => {
   const v = Number(String(fd.get(k) ?? "").replace(/[£,\s]/g, ""));
   return Number.isFinite(v) ? v : d;
 };
-const bump = () => { revalidateTag(MENU_TAG); revalidatePath("/admin", "layout"); };
+const bump = () => { revalidateTag(MENU_TAG); void publishMenu(); revalidatePath("/admin", "layout"); };
 
 /**
  * Refuse the change and say why, on the screen.
@@ -273,12 +274,16 @@ export async function addSize(fd: FormData) {
 }
 
 export async function updateSize(fd: FormData) {
-  await guard();
+  const client = await guard();
   const name = str(fd, "name");
   if (!name) refuse(fd, "A size needs a name.");
+  const size = await prisma.productSize.findFirst({ where: { id: str(fd, "id"), product: { clientId: client.id } }, select: { id: true, price: true, product: { select: { name: true } } } });
+  if (!size) refuse(fd, "That size is no longer on the menu.");
+  const price = toPence(num(fd, "price"));
   // `key` is deliberately untouched - it is written onto every order line and
   // matched by deal slots, so renaming Large to X-Large must not orphan either.
-  await prisma.productSize.update({ where: { id: str(fd, "id") }, data: { name, price: toPence(num(fd, "price")) } });
+  await prisma.productSize.update({ where: { id: size.id }, data: { name, price } });
+  await logPriceChanges(prisma, client.id, await priceActor(), [{ kind: "size", refId: size.id, label: `${size.product.name} · ${name}`, oldPrice: size.price, newPrice: price }]);
   bump();
 }
 
@@ -374,10 +379,14 @@ export async function addModifier(fd: FormData) {
 }
 
 export async function updateModifier(fd: FormData) {
-  await guard();
+  const client = await guard();
   const name = str(fd, "name");
   if (!name) refuse(fd, "An option needs a name.");
-  await prisma.modifier.update({ where: { id: str(fd, "id") }, data: { name, price: toPence(num(fd, "price")) } });
+  const mod = await prisma.modifier.findFirst({ where: { id: str(fd, "id"), group: { clientId: client.id } }, select: { id: true, price: true, group: { select: { name: true } } } });
+  if (!mod) refuse(fd, "That option is no longer on the menu.");
+  const price = toPence(num(fd, "price"));
+  await prisma.modifier.update({ where: { id: mod.id }, data: { name, price } });
+  await logPriceChanges(prisma, client.id, await priceActor(), [{ kind: "modifier", refId: mod.id, label: `${mod.group.name}: ${name}`, oldPrice: mod.price, newPrice: price }]);
   bump();
 }
 

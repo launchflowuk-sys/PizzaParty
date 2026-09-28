@@ -5,6 +5,7 @@ import { prisma } from "@launchflow/db";
 import { currentStaff } from "@/lib/session";
 import { can } from "@/lib/permissions";
 import { getClientRow, MENU_TAG } from "@/lib/menu";
+import { publishMenu } from "@/lib/realtime";
 import { toPence } from "@/lib/money";
 
 /**
@@ -27,7 +28,7 @@ const num = (fd: FormData, k: string, d = 0) => {
   const v = Number(String(fd.get(k) ?? "").replace(/[£,\s%]/g, ""));
   return Number.isFinite(v) ? v : d;
 };
-const bump = () => { revalidateTag(MENU_TAG); revalidatePath("/admin", "layout"); revalidatePath("/rewards"); };
+const bump = () => { revalidateTag(MENU_TAG); void publishMenu(); revalidatePath("/admin", "layout"); revalidatePath("/rewards"); };
 
 /**
  * The answer lands on the screen the change was made from. Rewards are edited on

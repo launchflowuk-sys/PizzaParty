@@ -1,9 +1,10 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { prisma } from "@launchflow/db";
-import { currentStaff } from "@/lib/session";
+import { logPriceChanges, prisma } from "@launchflow/db";
+import { currentStaff, priceActor } from "@/lib/session";
 import { can, type Screen } from "@/lib/permissions";
 import { getClientRow, MENU_TAG, CLIENT_TAG } from "@/lib/menu";
+import { publishMenu } from "@/lib/realtime";
 import { toPence } from "@/lib/money";
 import { TRIGGERS, runAutomation } from "@/lib/marketing";
 import { assignDriver as assignDriverTo } from "@/lib/dispatch";
@@ -21,12 +22,16 @@ async function guard(screen: Screen) {
 }
 const num = (fd: FormData, k: string, d = 0) => { const v = Number(String(fd.get(k) ?? "").replace(/[£,\s]/g, "")); return Number.isFinite(v) ? v : d; };
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
-const bump = () => { revalidateTag(MENU_TAG); revalidatePath("/admin", "layout"); };
+const bump = () => { revalidateTag(MENU_TAG); void publishMenu(); revalidatePath("/admin", "layout"); };
 
 /* ---------- Menu ---------- */
 export async function updateSizePrice(fd: FormData) {
-  await guard("menu");
-  await prisma.productSize.update({ where: { id: str(fd, "id") }, data: { price: toPence(num(fd, "price")) } });
+  const client = await guard("menu");
+  const size = await prisma.productSize.findFirst({ where: { id: str(fd, "id"), product: { clientId: client.id } }, select: { id: true, name: true, price: true, product: { select: { name: true } } } });
+  if (!size) return;
+  const price = toPence(num(fd, "price"));
+  await prisma.productSize.update({ where: { id: size.id }, data: { price } });
+  await logPriceChanges(prisma, client.id, await priceActor(), [{ kind: "size", refId: size.id, label: `${size.product.name} · ${size.name}`, oldPrice: size.price, newPrice: price }]);
   bump();
 }
 export async function toggleProduct(fd: FormData) {
@@ -102,16 +107,24 @@ export async function pauseLocation(fd: FormData) {
   revalidatePath("/admin/hours");
 }
 export async function updateZone(fd: FormData) {
-  await guard("zones");
+  const client = await guard("zones");
+  const loc = await prisma.location.findFirst({ where: { id: str(fd, "locationId"), clientId: client.id }, select: { id: true, name: true, deliveryFee: true, minOrder: true } });
+  if (!loc) return;
+  const deliveryFee = toPence(num(fd, "deliveryFee"));
+  const minOrder = toPence(num(fd, "minOrder"));
   await prisma.location.update({
-    where: { id: str(fd, "locationId") },
+    where: { id: loc.id },
     data: {
       postcodePrefixes: str(fd, "prefixes").split(/[,\s]+/).map((p) => p.toUpperCase()).filter(Boolean),
-      deliveryFee: toPence(num(fd, "deliveryFee")), minOrder: toPence(num(fd, "minOrder")),
+      deliveryFee, minOrder,
       prepMinutes: num(fd, "prepMinutes", 15), deliveryMinutes: num(fd, "deliveryMinutes", 35),
       address: str(fd, "address"), phone: str(fd, "phone"),
     },
   });
+  await logPriceChanges(prisma, client.id, await priceActor(), [
+    { kind: "delivery_fee", refId: loc.id, label: `${loc.name} delivery fee`, oldPrice: loc.deliveryFee, newPrice: deliveryFee },
+    { kind: "min_order", refId: loc.id, label: `${loc.name} minimum order`, oldPrice: loc.minOrder, newPrice: minOrder },
+  ]);
   revalidateTag(CLIENT_TAG); revalidatePath("/admin/zones");
 }
 
@@ -124,7 +137,7 @@ export async function updateZone(fd: FormData) {
 export async function saveBand(fd: FormData) {
   const client = await guard("zones");
   const locationId = str(fd, "locationId");
-  const location = await prisma.location.findFirst({ where: { id: locationId, clientId: client.id }, select: { id: true } });
+  const location = await prisma.location.findFirst({ where: { id: locationId, clientId: client.id }, select: { id: true, name: true } });
   if (!location) return;
 
   const prefixes = str(fd, "prefixes")
@@ -140,6 +153,13 @@ export async function saveBand(fd: FormData) {
   };
 
   const id = str(fd, "id");
+  const old = id ? await prisma.deliveryBand.findFirst({ where: { id, locationId: location.id }, select: { fee: true, minOrder: true } }) : null;
+  if (id && !old) return;
+  const label = `${location.name} · ${data.name || prefixes.join(" ")}`;
+  await logPriceChanges(prisma, client.id, await priceActor(), [
+    { kind: "band_fee", refId: id || location.id, label: `${label} delivery fee`, oldPrice: old?.fee ?? null, newPrice: data.fee },
+    { kind: "band_min", refId: id || location.id, label: `${label} minimum order`, oldPrice: old?.minOrder ?? null, newPrice: data.minOrder },
+  ]);
   if (id) {
     await prisma.deliveryBand.updateMany({ where: { id, locationId: location.id }, data });
   } else {

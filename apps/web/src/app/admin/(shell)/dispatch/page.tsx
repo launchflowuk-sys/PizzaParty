@@ -5,6 +5,7 @@ import { assignDriver, setDriverStatus } from "../actions";
 
 import { requireScreen } from "@/lib/session";
 import { HelpSpot } from "@/components/admin/HelpSpot";
+import { LiveRefresh } from "@/components/admin/LiveRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export default async function DispatchPage() {
 
   return (
     <>
+      <LiveRefresh />
       <header className="fp-adminhead">
         <div>
           <span className="fp-kicker" style={{ marginBottom: 6 }}>Back office</span>

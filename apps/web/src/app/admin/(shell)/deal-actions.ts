@@ -1,10 +1,11 @@
 "use server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@launchflow/db";
-import { currentStaff } from "@/lib/session";
+import { logPriceChanges, prisma } from "@launchflow/db";
+import { currentStaff, priceActor } from "@/lib/session";
 import { can } from "@/lib/permissions";
 import { getClientRow, MENU_TAG } from "@/lib/menu";
+import { publishMenu } from "@/lib/realtime";
 import { toPence } from "@/lib/money";
 
 /**
@@ -33,7 +34,7 @@ const num = (fd: FormData, k: string, d = 0) => {
 };
 /** Every ticked box of one name, e.g. all the sections a slot accepts. */
 const many = (fd: FormData, k: string) => fd.getAll(k).map((v) => String(v).trim()).filter(Boolean);
-const bump = () => { revalidateTag(MENU_TAG); revalidatePath("/admin", "layout"); };
+const bump = () => { revalidateTag(MENU_TAG); void publishMenu(); revalidatePath("/admin", "layout"); };
 
 /** As on the menu screen: the answer lands where the change was made. */
 function target(fd: FormData, param: "m" | "e", message: string): never {
@@ -89,28 +90,32 @@ export async function createDeal(fd: FormData) {
 }
 
 export async function updateDeal(fd: FormData) {
-  await guard();
+  const client = await guard();
   const name = str(fd, "name");
   if (!name) refuse(fd, "A deal needs a name.");
+  const deal = await prisma.deal.findFirst({ where: { id: str(fd, "id"), clientId: client.id }, select: { id: true, price: true } });
+  if (!deal) refuse(fd, "That deal no longer exists.");
+  const price = toPence(num(fd, "price"));
 
-  const slots = await prisma.dealSlot.count({ where: { dealId: str(fd, "id") } });
+  const slots = await prisma.dealSlot.count({ where: { dealId: deal.id } });
   const wantsActive = fd.get("active") === "on";
   if (wantsActive && slots === 0) {
     refuse(fd, "This deal has nothing in it yet. Add at least one thing before switching it on.");
   }
 
   await prisma.deal.update({
-    where: { id: str(fd, "id") },
+    where: { id: deal.id },
     data: {
       name,
       description: str(fd, "description"),
-      price: toPence(num(fd, "price")),
+      price,
       active: wantsActive,
       featured: fd.get("featured") === "on",
       daysOfWeek: many(fd, "days").map(Number).filter((n) => Number.isInteger(n) && n >= 0 && n <= 6),
       fulfilment: many(fd, "fulfilment"),
     },
   });
+  await logPriceChanges(prisma, client.id, await priceActor(), [{ kind: "deal", refId: deal.id, label: name, oldPrice: deal.price, newPrice: price }]);
   bump();
 }
 
@@ -204,9 +209,9 @@ export async function deleteSlot(fd: FormData) {
  * and a supplement of zero is simply not stored.
  */
 export async function saveSupplements(fd: FormData) {
-  await guard();
+  const client = await guard();
   const slotId = str(fd, "slotId");
-  const slot = await prisma.dealSlot.findUnique({ where: { id: slotId }, select: { id: true, name: true } });
+  const slot = await prisma.dealSlot.findFirst({ where: { id: slotId, deal: { clientId: client.id } }, select: { id: true, name: true, deal: { select: { name: true } }, supplements: { select: { productSlug: true, extra: true } } } });
   if (!slot) refuse(fd, "That line is no longer part of the deal.");
 
   const slugs = fd.getAll("slug").map((v) => String(v));
@@ -223,6 +228,13 @@ export async function saveSupplements(fd: FormData) {
     prisma.dealSlotSupplement.deleteMany({ where: { slotId: slot.id } }),
     ...(rows.length ? [prisma.dealSlotSupplement.createMany({ data: rows })] : []),
   ]);
+  // A supplement is a price the customer pays; a removed one is logged as 0.
+  const touched = new Set([...slot.supplements.map((x) => x.productSlug), ...rows.map((r) => r.productSlug)]);
+  await logPriceChanges(prisma, client.id, await priceActor(), [...touched].map((slug) => ({
+    kind: "supplement", refId: slot.id, label: `${slot.deal.name} · ${slot.name} · ${slug} supplement`,
+    oldPrice: slot.supplements.find((x) => x.productSlug === slug)?.extra ?? null,
+    newPrice: rows.find((r) => r.productSlug === slug)?.extra ?? 0,
+  })).filter((r) => !(r.oldPrice === null && r.newPrice === 0)));
   bump();
   done(fd, rows.length
     ? `${rows.length} item${rows.length === 1 ? "" : "s"} now carry a supplement on ${slot.name}.`

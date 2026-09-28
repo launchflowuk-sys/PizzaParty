@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { gbp } from "@/lib/money";
 import { HelpSpot } from "@/components/admin/HelpSpot";
+import { useLiveEvents } from "@/lib/use-live-events";
 
 type Item = { qty: number; name: string; size: string; modifiers: string[]; components: string[]; notes: string };
 type O = { id: string; number: number; status: string; fulfilment: string; paymentMethod: string; paid: boolean; customerName: string; customerPhone: string; address: string; notes: string; scheduledFor: string | null; etaAt: string | null; etaMinutes: number | null; total: number; createdAt: string; placedAt: string | null; locationKey: string; locationName: string; rejectReason: string; items: Item[]; text: string };
@@ -116,7 +117,17 @@ export function KitchenScreen() {
     first.current = false;
   }, [drainPrints]);
 
-  useEffect(() => { void load(); const t = setInterval(load, 5000); return () => clearInterval(t); }, [load]);
+  // One fetch at a time: a burst of events (created, placed, print_sent) becomes at most one more load.
+  const busy = useRef(false);
+  const again = useRef(false);
+  const refresh = useCallback(async () => {
+    if (busy.current) { again.current = true; return; }
+    busy.current = true;
+    try { do { again.current = false; await load(); } while (again.current); } finally { busy.current = false; }
+  }, [load]);
+  // Orders arrive over the live stream; the poll is only a safety net, back to 5s while the stream is down.
+  const { connected } = useLiveEvents("/api/kitchen/stream", { order: refresh, resync: refresh });
+  useEffect(() => { void refresh(); const t = setInterval(refresh, connected ? 30000 : 5000); return () => clearInterval(t); }, [refresh, connected]);
   useEffect(() => { autoPrintRef.current = autoPrint; }, [autoPrint]);
   useEffect(() => {
     try { setAutoPrint(localStorage.getItem("fp-autoprint") === "1"); } catch { /* private browsing */ }
