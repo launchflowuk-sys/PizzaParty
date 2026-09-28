@@ -40,11 +40,15 @@ const NOT_NEW = new Set(["in-progress", "answered", "completed", "busy", "failed
  *
  *   POST /api/pos/callerid?token=<CALLERID_TOKEN>
  *
- * Two shapes:
+ * Shapes accepted, so a shop can use whichever VoIP provider it likes:
  * - Twilio (form: From, To, CallSid, CallStatus). If TWILIO_AUTH_TOKEN is set
  *   the X-Twilio-Signature must be valid (signed over NEXT_PUBLIC_SITE_URL +
  *   this path + ?token=...).
- * - Any other VoIP/SIP box: JSON { phone, line? }.
+ * - Other providers' form posts (sipgate push API: from/to/direction; many hosted
+ *   PBXs: caller/callerid/cli/number) and JSON with any of the same keys, or { phone, line? }.
+ * - GET with the number in the query (?number= / ?from= / ?caller=), for PBXs such as
+ *   3CX or Yeastar whose "call a URL on incoming call" feature can only do a GET.
+ * Outgoing calls (direction=out) are ignored.
  *
  * Routing is never changed by accident. Twilio treats the reply to its
  * "A call comes in" webhook as the call's instructions, so:
@@ -56,7 +60,25 @@ const NOT_NEW = new Set(["in-progress", "answered", "completed", "busy", "failed
  *   "A call comes in" webhook itself, and the reply <Dial>s that number, so
  *   one URL both pops the till and puts the call through.
  */
+/** The caller's number under whichever name the provider uses. */
+const NUMBER_KEYS = ["From", "from", "phone", "caller", "callerid", "callerId", "caller_id", "cli", "number"];
+const LINE_KEYS = ["line", "To", "to", "called", "did"];
+const pick = (o: Record<string, unknown>, keys: string[]) => {
+  for (const k of keys) { const v = o[k]; if (typeof v === "string" && v.trim()) return v.trim(); }
+  return "";
+};
+const outgoing = (o: Record<string, unknown>) => /^out/i.test(String(o.direction ?? ""));
+
+export async function GET(req: NextRequest) {
+  return handle(req, "query");
+}
+
 export async function POST(req: NextRequest) {
+  const isForm = (req.headers.get("content-type") ?? "").includes("application/x-www-form-urlencoded");
+  return handle(req, isForm ? "form" : "json");
+}
+
+async function handle(req: NextRequest, shape: "query" | "form" | "json") {
   const want = env.callerIdToken;
   if (!want) return new NextResponse("Not found", { status: 404 });
   const url = new URL(req.url);
@@ -70,31 +92,31 @@ export async function POST(req: NextRequest) {
   }
   if (limited(want)) return NextResponse.json({ error: "Too many calls" }, { status: 429 });
 
-  const isForm = (req.headers.get("content-type") ?? "").includes("application/x-www-form-urlencoded");
-  let raw = "";
-  let line: string | undefined;
-  let fresh = true;
-  if (isForm) {
+  let params: Record<string, unknown> = {};
+  if (shape === "form") {
     const form = await req.formData().catch(() => null);
     if (!form) return NextResponse.json({ error: "Bad request" }, { status: 400 });
-    const params: Record<string, string> = {};
     for (const [k, v] of form.entries()) if (typeof v === "string") params[k] = v;
-    if (env.twilioToken) {
-      const sig = req.headers.get("x-twilio-signature") ?? "";
-      // Twilio signed the URL it was configured with: the public address, query string included.
-      if (!sig || !twilioSignatureValid(`${env.siteUrl}${url.pathname}${url.search}`, params, sig, env.twilioToken)) {
-        return NextResponse.json({ error: "Bad signature" }, { status: 403 });
-      }
-    }
-    raw = params.From ?? "";
-    line = params.To ? prettyPhone(params.To) : undefined;
-    fresh = !NOT_NEW.has((params.CallStatus ?? "").toLowerCase());
+  } else if (shape === "json") {
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Send { phone, line? }." }, { status: 400 });
+    params = body as Record<string, unknown>;
   } else {
-    const body = (await req.json().catch(() => null)) as { phone?: unknown; line?: unknown } | null;
-    if (!body || typeof body.phone !== "string") return NextResponse.json({ error: "Send { phone, line? }." }, { status: 400 });
-    raw = body.phone;
-    line = typeof body.line === "string" && body.line.trim() ? body.line.trim().slice(0, 40) : undefined;
+    for (const [k, v] of url.searchParams.entries()) if (k !== "token") params[k] = v;
   }
+  const isTwilio = shape === "form" && typeof params.CallSid === "string";
+  if (isTwilio && env.twilioToken) {
+    const sig = req.headers.get("x-twilio-signature") ?? "";
+    // Twilio signed the URL it was configured with: the public address, query string included.
+    if (!sig || !twilioSignatureValid(`${env.siteUrl}${url.pathname}${url.search}`, params as Record<string, string>, sig, env.twilioToken)) {
+      return NextResponse.json({ error: "Bad signature" }, { status: 403 });
+    }
+  }
+  const raw = pick(params, NUMBER_KEYS).slice(0, 40);
+  if (!raw && shape === "json") return NextResponse.json({ error: "Send { phone, line? }." }, { status: 400 });
+  const lineRaw = pick(params, LINE_KEYS);
+  const line = lineRaw ? (isTwilio ? prettyPhone(lineRaw) : lineRaw.slice(0, 40)) : undefined;
+  const fresh = !outgoing(params) && !NOT_NEW.has(String(params.CallStatus ?? "").toLowerCase());
 
   if (fresh && raw) {
     const client = await getClientRow();
@@ -110,7 +132,7 @@ export async function POST(req: NextRequest) {
     await publishCall(client.id, call);
   }
 
-  if (!isForm) return NextResponse.json({ ok: true });
+  if (!isTwilio) return NextResponse.json({ ok: true });
   const forward = env.callerIdForwardTo.replace(/[^\d+]/g, "");
   const twiml = forward
     ? `<?xml version="1.0" encoding="UTF-8"?><Response><Dial>${forward}</Dial></Response>`
