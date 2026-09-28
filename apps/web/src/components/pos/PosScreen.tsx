@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import "./pos.css";
 import type { PosBootstrap } from "@/lib/pos-types";
 import type { Fulfilment } from "@/lib/basket-types";
-import { TopBar } from "./TopBar";
+import { TopBar, type PosView } from "./TopBar";
 import { CategoryRail, DEALS_KEY, POPULAR_KEY } from "./CategoryRail";
 import { ItemGrid } from "./ItemGrid";
 import { ProductBuilder } from "./ProductBuilder";
@@ -12,10 +13,20 @@ import { Basket } from "./Basket";
 import { CustomerPanel } from "./CustomerPanel";
 import { PayPanel } from "./PayPanel";
 import { usePosOrder } from "./usePosOrder";
+import { useQueue } from "./useQueue";
+import { useMenuVersion } from "./useMenuVersion";
+import { QueueBoard } from "./QueueBoard";
 import { isSimpleProduct, type MiddleView, type OrderTypeTab, type PosCategory, type PosDeal, type PosProduct } from "./pos-client-types";
 
 export function PosScreen({ staffName, categories, deals }: { staffName: string; categories: PosCategory[]; deals: PosDeal[] }) {
   const order = usePosOrder();
+  // Runs for the life of the till, not just while the Orders view is open, so
+  // the badge count and the new-order chime stay live while someone is ringing
+  // up a counter sale - and so switching to Orders never loses this basket.
+  const queue = useQueue();
+  const menu = useMenuVersion();
+  const router = useRouter();
+  const [view, setView] = useState<PosView>("till");
   const [boot, setBoot] = useState<PosBootstrap | null>(null);
   const [orderType, setOrderType] = useState<OrderTypeTab>("collection");
   const [phoneReady, setPhoneReady] = useState(false);
@@ -104,24 +115,62 @@ export function PosScreen({ staffName, categories, deals }: { staffName: string;
   }
 
   const showCustomerStage = orderType === "phone" && !phoneReady;
+  /** Basket state, not view - a menu change must not wipe an order mid-ring-up
+   *  just because the till happens to be showing the Orders board. */
+  const orderInProgress = order.lines.length > 0 || middleView.kind !== "grid" || showCustomerStage;
+
+  // A price/menu change lands, but never mid-order: refresh the moment the
+  // basket is clear (immediately if it already was, otherwise as soon as this
+  // order finishes or is abandoned). /pos is force-dynamic, so router.refresh()
+  // re-reads categories/deals from the server - this component itself is not
+  // remounted, so the basket in usePosOrder survives untouched.
+  useEffect(() => {
+    if (!menu.changed || orderInProgress) return;
+    router.refresh();
+    menu.ack();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [menu.changed, orderInProgress]);
 
   return (
     <div className="pos-root">
-      <TopBar
-        staffName={staffName}
-        orderType={orderType}
-        onOrderType={selectOrderType}
-        search={search}
-        onSearch={setSearch}
-        searchRef={searchRef}
-        boot={boot}
-        locationKey={order.locationKey}
-        onLocationKey={order.setLocationKey}
-        customerLabel={customerLabel}
-        onChangeCustomer={() => setPhoneReady(false)}
-      />
+      <div className="pos-topwrap">
+        <TopBar
+          staffName={staffName}
+          view={view}
+          onView={setView}
+          badgeCount={queue.badgeCount}
+          soundOn={queue.soundOn}
+          onEnableSound={queue.enableSound}
+          orderType={orderType}
+          onOrderType={selectOrderType}
+          search={search}
+          onSearch={setSearch}
+          searchRef={searchRef}
+          boot={boot}
+          locationKey={order.locationKey}
+          onLocationKey={order.setLocationKey}
+          customerLabel={customerLabel}
+          onChangeCustomer={() => setPhoneReady(false)}
+        />
+        {menu.changed && orderInProgress ? (
+          <div className="pos-menubanner">Menu updated by the office — refreshing after this order.</div>
+        ) : null}
+      </div>
 
-      {showCustomerStage ? (
+      {view === "queue" ? (
+        <QueueBoard
+          orders={queue.orders}
+          drivers={queue.drivers}
+          now={queue.now}
+          connected={queue.connected}
+          justArrived={queue.justArrived}
+          readers={boot?.readers ?? []}
+          categories={categories}
+          deals={deals}
+          updateOrder={queue.updateOrder}
+          setDrivers={queue.setDrivers}
+        />
+      ) : showCustomerStage ? (
         <div className="pos-main">
           <CustomerPanel order={order} onContinue={(f) => { order.setFulfilment(f); setPhoneReady(true); }} />
         </div>

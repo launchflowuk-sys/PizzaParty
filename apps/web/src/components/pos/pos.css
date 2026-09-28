@@ -15,6 +15,13 @@
   overflow: hidden;
 }
 
+.pos-topwrap { display: flex; flex-direction: column; }
+
+.pos-menubanner {
+  padding: 6px 16px; text-align: center; font-size: 13px; font-weight: 700;
+  background: var(--warn-bg); color: var(--warn); border-bottom: 2px solid var(--warn-line);
+}
+
 .pos-topbar {
   display: flex;
   align-items: center;
@@ -252,3 +259,75 @@
 .pos-cash { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 24px; align-items: start; }
 .pos-cash-result { position: sticky; top: 0; padding-top: 96px; }
 @media (max-width: 1100px) { .pos-cash { grid-template-columns: minmax(0, 1fr); } .pos-cash-result { padding-top: 0; position: static; order: -1; } }
+
+/* ══ Phase 2 — one queue for everything (docs/POS-PLAN.md items 16-22) ══ */
+
+.pos-q-badge {
+  position: absolute; top: 6px; right: 6px; min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: 999px; background: var(--danger); color: #fff; font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.pos-q-board-wrap { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 12px 16px; gap: 10px; overflow: hidden; }
+.pos-q-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pos-q-columns { display: flex; gap: 12px; flex: 1; min-height: 0; overflow-x: auto; }
+.pos-q-col { flex: 1 1 260px; min-width: 240px; display: flex; flex-direction: column; min-height: 0; border: 1px solid var(--color-divider); border-radius: var(--radius-md); background: var(--color-surface); }
+.pos-q-col-head { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 12px; border-bottom: 2px solid var(--color-divider); font-family: var(--font-heading); font-weight: 800; font-size: 14px; }
+.pos-q-col-count { font-size: 16px; color: var(--color-accent-700); }
+.pos-q-col-body { flex: 1; overflow-y: auto; padding: 8px; display: grid; gap: 8px; align-content: start; }
+.pos-q-empty { padding: 16px 8px; font-size: 13px; color: var(--color-neutral-700); }
+.pos-q-more { padding: 4px 8px; font-size: 12px; color: var(--color-neutral-700); }
+
+.pos-q-card {
+  display: flex; flex-direction: column; gap: 6px; text-align: left; font: inherit;
+  padding: 10px 12px; border: 1px solid var(--color-divider); border-left: 5px solid var(--color-divider);
+  border-radius: var(--radius-md); background: var(--color-bg); cursor: pointer;
+}
+.pos-q-card[data-tone="amber"] { border-left-color: var(--warn); }
+.pos-q-card[data-tone="red"] { border-left-color: var(--danger); }
+.pos-q-card-top { display: flex; justify-content: space-between; align-items: center; }
+.pos-q-card-no { font-family: var(--font-heading); font-weight: 800; font-size: 20px; }
+.pos-q-card-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.pos-q-card-name { font-weight: 700; font-size: 14px; }
+.pos-q-card-addr { font-size: 12px; color: var(--color-neutral-700); }
+.pos-q-card-summary { font-size: 12px; color: var(--color-neutral-700); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pos-q-card-driver { font-size: 12px; color: var(--color-neutral-700); }
+.pos-q-card-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-top: 4px; }
+.pos-q-card-age[data-tone="amber"] { color: var(--warn); font-weight: 700; }
+.pos-q-card-age[data-tone="red"] { color: var(--danger); font-weight: 700; }
+.pos-q-card-total { font-weight: 800; }
+
+@keyframes pos-q-flash { 0%, 100% { background: var(--color-bg); } 40% { background: var(--color-accent-300); } }
+.pos-q-card[data-flash="1"] { animation: pos-q-flash 900ms ease-in-out 2; }
+
+/* Order panel: a full-height slide-over from the right, same idea as .dialog-backdrop but anchored, not centred. */
+.pos-slideover-backdrop { position: fixed; inset: 0; z-index: 70; background: color-mix(in srgb, var(--color-neutral-900) 45%, transparent); display: flex; justify-content: flex-end; }
+.pos-slideover { width: min(520px, 100%); height: 100%; background: var(--color-bg); box-shadow: var(--shadow-lg); display: flex; flex-direction: column; }
+.pos-slideover-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 2px solid var(--color-divider); flex: 0 0 auto; }
+.pos-slideover-body { flex: 1 1 auto; overflow-y: auto; padding: 12px 16px 32px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.pos-osection { border-top: 1px solid var(--color-divider); padding-top: 12px; display: grid; gap: 8px; }
+.pos-osection:first-child { border-top: 0; padding-top: 0; }
+.pos-osection-label { font-family: var(--font-heading); font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-neutral-700); }
+
+.pos-oline { border-bottom: 1px solid var(--color-divider); padding: 8px 0; display: grid; gap: 4px; }
+.pos-oline-top { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; }
+.pos-oline-sub { font-size: 12px; color: var(--color-neutral-700); }
+.pos-oline-note { font-size: 12px; font-style: italic; }
+.pos-oline-void { border: 1px solid var(--color-divider); border-radius: var(--radius-md); padding: 8px; margin-top: 6px; background: var(--color-surface); }
+
+.pos-pinpad { display: grid; gap: 6px; max-width: 320px; }
+.pos-pinpad-label { font-weight: 700; }
+
+/* Add-items: the till's own rail/grid, laid out inside the slide-over instead of the till body. */
+.pos-additems { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.pos-additems-body { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 10px; flex: 1 1 auto; min-height: 0; overflow: hidden; padding: 12px 16px 0; }
+.pos-additems-body .pos-rail { border: 1px solid var(--color-divider); border-radius: var(--radius-md); }
+.pos-additems-body .pos-main { overflow-y: auto; padding: 0; }
+.pos-additems-lines { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px 0; }
+.pos-additems-lines .pos-chip { flex-direction: row; gap: 8px; min-height: 40px; padding: 4px 10px; cursor: default; }
+.pos-additems-footer { flex: 0 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 2px solid var(--color-divider); padding: 12px 16px; font-weight: 700; }
+
+@media (max-width: 800px) {
+  .pos-slideover { width: 100%; }
+  .pos-q-columns { gap: 8px; }
+}
