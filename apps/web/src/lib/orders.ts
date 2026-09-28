@@ -14,7 +14,7 @@ import { deliveryTermsFor } from "./postcode";
 import { revalidateTag } from "next/cache";
 import { MENU_TAG } from "./menu";
 import { paidPence, remainingPence } from "./pos-money";
-import { releaseRefund } from "./refunds";
+import { askStripeRefund, releaseRefund } from "./refunds";
 import { releaseDriver } from "./dispatch";
 import { publishOrder } from "./realtime";
 import type { BasketLine, Fulfilment, PricedBasket } from "./basket-types";
@@ -376,8 +376,6 @@ async function awardLoyalty(order: FullOrder) {
  * refunded, or null if Stripe refused any of them.
  */
 async function refundOrder(order: FullOrder, reason: string): Promise<number | null> {
-  const { getStripe, connectOpts } = await import("./stripe");
-  const cfg = getConfig();
   let refunded = 0;
   for (const p of order.payments.filter((p) => p.stripePaymentIntentId && p.status === "succeeded")) {
     // Reserved under the order lock first, like a till refund, so a till refund
@@ -391,23 +389,20 @@ async function refundOrder(order: FullOrder, reason: string): Promise<number | n
       return tx.refund.create({ data: { orderId: order.id, paymentId: p.id, provider: p.provider, amount: left, reason, status: "pending" } });
     });
     if (!row) continue;
-    try {
-      const refund = await getStripe().refunds.create(
-        { payment_intent: p.stripePaymentIntentId, amount: row.amount, metadata: { orderId: order.id, refundId: row.id } },
-        { idempotencyKey: `refund_${row.id}`, ...(connectOpts(cfg.payments.stripeAccountId) ?? {}) },
-      );
-      if (refund.status === "failed" || refund.status === "canceled") {
-        await releaseRefund(row.id, "system", refund.failure_reason ?? refund.status, 0);
-        return null;
-      }
-      await prisma.refund.updateMany({ where: { id: row.id, stripeRefundId: "" }, data: { stripeRefundId: refund.id } });
-      if (refund.status === "succeeded") await prisma.refund.updateMany({ where: { id: row.id, status: "pending" }, data: { status: "succeeded" } });
-      await addEvent(order.id, "refunded", "system", `Refunded ${gbp(refund.amount)} (${reason})`, { refundId: row.id });
-      refunded += refund.amount;
-    } catch (e) {
-      await releaseRefund(row.id, "system", (e as Error).message, 0);
+    const asked = await askStripeRefund(row.id, p.stripePaymentIntentId, row.amount, order.id);
+    if ("refused" in asked) {
+      await releaseRefund(row.id, "system", asked.refused, 0);
       return null;
     }
+    if ("unknown" in asked) {
+      // Stripe may have made it: the row stays pending for charge.refunded or a reconcile, and nobody is told yet.
+      await addEvent(order.id, "refund_pending", "system", `${gbp(row.amount)}: no clear answer from Stripe (${asked.unknown}); waiting for Stripe to confirm`, { refundId: row.id });
+      return null;
+    }
+    await prisma.refund.updateMany({ where: { id: row.id, stripeRefundId: "" }, data: { stripeRefundId: asked.refund.id } });
+    if (asked.refund.status === "succeeded") await prisma.refund.updateMany({ where: { id: row.id, status: "pending" }, data: { status: "succeeded" } });
+    await addEvent(order.id, "refunded", "system", `Refunded ${gbp(asked.refund.amount)} (${reason})`, { refundId: row.id });
+    refunded += asked.refund.amount;
   }
   return refunded;
 }

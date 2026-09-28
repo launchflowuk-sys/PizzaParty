@@ -13,6 +13,7 @@ import {
 } from "./pos-report-math";
 import type { PosDayClose, PosDayReport, PosPriceChanges, PosStripeReport, PosVoidLine, PriceChangeKind } from "./pos-reports-types";
 import { connectOpts, getStripe, stripeEnabled } from "./stripe";
+import { reconcileStripeRefunds } from "./refunds";
 
 const STRIPE_TXN_CAP = 2000;
 const PRICE_LOG_CAP = 500;
@@ -188,6 +189,18 @@ export async function stripeReport(clientId: string, date: string): Promise<PosS
   // Without Stripe's side there is nothing to match against: show our figures, flag nothing.
   if (!configured || error) return { date, from: from.toISOString(), to: to.toISOString(), configured, error, ...m, mismatches: 0, rows: [] };
   return { date, from: from.toISOString(), to: to.toISOString(), configured, error, ...m };
+}
+
+/**
+ * The manager's "fix it" for the Stripe match: every PaymentIntent on a row
+ * that is not ok has its refunds made to agree with Stripe (see
+ * recordStripeRefunds), then the day is matched again.
+ */
+export async function reconcileStripeDay(clientId: string, date: string): Promise<PosStripeReport & { checked: number }> {
+  const before = await stripeReport(clientId, date);
+  if (!before.configured || before.error) return { ...before, checked: 0 };
+  const checked = await reconcileStripeRefunds(clientId, before.rows.filter((r) => r.flag !== "ok").map((r) => r.paymentIntent));
+  return { ...(await stripeReport(clientId, date)), checked };
 }
 
 /* ---------- Price log ---------- */

@@ -12,8 +12,7 @@ import { addEvent, markPlaced, writeItems } from "./orders";
 import { managerForPin, type PosStaff } from "./pos";
 import { goodwillPence, isSettled, orderMoney, repriceAfterEdit, type EditPromo } from "./pos-money";
 import { EDITABLE, PosError, VOID_NEEDS_PIN } from "./pos-queue";
-import { connectOpts, getStripe } from "./stripe";
-import { releaseRefund } from "./refunds";
+import { askStripeRefund, releaseRefund } from "./refunds";
 import { publishOrder } from "./realtime";
 import type { BasketLine, PricedLine } from "./basket-types";
 
@@ -171,7 +170,8 @@ const DOUBLE_TAP_MS = 10_000;
  * Send money back against one payment. The order row is locked while the
  * refund is reserved (refundedAmount goes up before Stripe is asked), so a
  * double tap or a second till sees the smaller refundable figure. A Stripe
- * failure puts the reservation back.
+ * refusal puts the reservation back; no clear answer keeps it pending, since
+ * Stripe may have sent the money.
  */
 export async function refundPayment(clientId: string, orderId: string, staff: PosStaff, body: RefundBodyT) {
   const exists = await prisma.order.findFirst({ where: { id: orderId, clientId }, select: { id: true } });
@@ -202,37 +202,29 @@ export async function refundPayment(clientId: string, orderId: string, staff: Po
     const full = p.refundedAmount + body.amount >= p.amount;
     await tx.payment.update({ where: { id: p.id }, data: { refundedAmount: { increment: body.amount }, ...(full ? { status: "refunded" } : {}) } });
     if (goodwill) await tx.order.update({ where: { id: orderId }, data: { writtenOff: { increment: goodwill } } });
+    // Written with the reservation, so a release or revive from any path reads the right goodwill.
+    const kind = p.provider === "cash" ? "cash" : p.provider === "stripe_terminal" ? "card (reader)" : "card (online)";
+    await tx.orderEvent.create({ data: { orderId, type: "refund", actor: staff.name, message: `${gbp(body.amount)} ${kind} · ${body.reason} · approved by ${approvedBy}`,
+      data: { refundId: refund.id, paymentId: p.id, provider: p.provider, amount: body.amount, goodwill, reason: body.reason, approvedBy } } });
     return { refund, payment: p, goodwill };
   });
+  await publishOrder(orderId, "refund");
 
   const { refund, payment, goodwill } = r;
-  const undo = (why: string) => releaseRefund(refund.id, staff.name, why, goodwill);
+  if (payment.provider === "cash") return refund;
 
-  let final = refund;
-  if (payment.provider !== "cash") {
-    try {
-      const s = await getStripe().refunds.create(
-        { payment_intent: payment.stripePaymentIntentId, amount: body.amount, metadata: { orderId, refundId: refund.id } },
-        { idempotencyKey: `refund_${refund.id}`, ...(connectOpts(getConfig().payments.stripeAccountId) ?? {}) },
-      );
-      if (s.status === "failed" || s.status === "canceled") {
-        await undo(s.failure_reason ?? s.status);
-        throw new PosError(`Stripe refused the refund (${s.failure_reason ?? s.status}).`, 502);
-      }
-      // Conditional: a refund.* webhook may already have settled or failed this row.
-      await prisma.refund.updateMany({ where: { id: refund.id, stripeRefundId: "" }, data: { stripeRefundId: s.id } });
-      if (s.status === "succeeded") await prisma.refund.updateMany({ where: { id: refund.id, status: "pending" }, data: { status: "succeeded" } });
-      final = await prisma.refund.findUniqueOrThrow({ where: { id: refund.id } });
-    } catch (e) {
-      if (e instanceof PosError) throw e;
-      const why = (e as Error).message;
-      await undo(why);
-      throw new PosError(`Stripe refused the refund: ${why}`, 502);
-    }
+  const asked = await askStripeRefund(refund.id, payment.stripePaymentIntentId, body.amount, orderId);
+  if ("refused" in asked) {
+    await releaseRefund(refund.id, staff.name, asked.refused, goodwill);
+    throw new PosError(`Stripe refused the refund: ${asked.refused}`, 502);
   }
-  const kind = payment.provider === "cash" ? "cash" : payment.provider === "stripe_terminal" ? "card (reader)" : "card (online)";
-  await addEvent(orderId, "refund", staff.name, `${gbp(body.amount)} ${kind} · ${body.reason} · approved by ${approvedBy}`, {
-    refundId: final.id, paymentId: payment.id, provider: payment.provider, amount: body.amount, goodwill, reason: body.reason, approvedBy,
-  });
-  return final;
+  if ("unknown" in asked) {
+    // Stripe may have made it: keep the reservation. charge.refunded, refund.updated or a reconcile settles the row.
+    await addEvent(orderId, "refund_pending", "system", `${gbp(body.amount)}: no clear answer from Stripe (${asked.unknown}); waiting for Stripe to confirm`, { refundId: refund.id });
+    return refund;
+  }
+  // Conditional: a refund.* webhook may already have settled or failed this row.
+  await prisma.refund.updateMany({ where: { id: refund.id, stripeRefundId: "" }, data: { stripeRefundId: asked.refund.id } });
+  if (asked.refund.status === "succeeded") await prisma.refund.updateMany({ where: { id: refund.id, status: "pending" }, data: { status: "succeeded" } });
+  return prisma.refund.findUniqueOrThrow({ where: { id: refund.id } });
 }
