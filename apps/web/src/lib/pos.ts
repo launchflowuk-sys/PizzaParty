@@ -12,6 +12,7 @@ import { addEvent, settlePayment } from "./orders";
 import { connectOpts, getStripe, stripeEnabled } from "./stripe";
 import { isSettled, manualDiscountPence, paidPence } from "./pos-money";
 import type { BasketLine } from "./basket-types";
+import { pricedAs } from "./fulfilment";
 import type { PosCustomer, PosOrderRef, PosPayment, PosReader } from "./pos-types";
 
 export type PosStaff = { id: string; name: string; role: StaffRole };
@@ -71,7 +72,8 @@ export const Discount = z.object({
   managerPin: z.string().min(1).max(64),
 }).refine((d) => d.kind === "amount" ? Number.isInteger(d.value) : d.value <= 100, { message: "Percent is at most 100; an amount is whole pence." });
 
-export const PosBasketBody = BasketBody.omit({ promoCode: true }).extend({ discount: Discount.optional() });
+/** The website's basket, plus eat-in (till only) and a manager discount. */
+export const PosBasketBody = BasketBody.omit({ promoCode: true }).extend({ fulfilment: z.enum(["delivery", "collection", "eat_in"]).default("delivery"), discount: Discount.optional() });
 export type PosBasketBodyT = z.infer<typeof PosBasketBody>;
 
 /**
@@ -79,7 +81,7 @@ export type PosBasketBodyT = z.infer<typeof PosBasketBody>;
  * discount on top. `approvedBy` is null when no discount was asked for.
  */
 export async function pricePos(body: PosBasketBodyT, clientId: string, staffId: string, customerPhone?: string) {
-  const res = await priceRequest({ ...body, promoCode: "" }, { customerPhone });
+  const res = await priceRequest({ ...body, fulfilment: pricedAs(body.fulfilment), promoCode: "" }, { customerPhone });
   let approvedBy: string | null = null;
   if (body.discount) {
     approvedBy = await managerForPin(clientId, body.discount.managerPin, staffId);

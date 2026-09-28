@@ -1,5 +1,20 @@
 import "server-only";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { env } from "./env";
+
+/**
+ * Twilio's webhook signature: HMAC-SHA1 over the full URL Twilio was given
+ * (query string included) with every POST field appended in key order, keyed by
+ * the account's auth token, base64.
+ * https://www.twilio.com/docs/usage/security#validating-requests
+ */
+export function twilioSignatureValid(url: string, params: Record<string, string>, header: string, token: string): boolean {
+  const payload = Object.keys(params).sort().reduce((acc, k) => acc + k + params[k], url);
+  const expected = createHmac("sha1", token).update(Buffer.from(payload, "utf-8")).digest("base64");
+  const a = Buffer.from(expected);
+  const b = Buffer.from(header);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 /* ---------- SMS (Twilio) ---------- */
 export async function sendSms(to: string, body: string): Promise<{ ok: boolean; id?: string; error?: string }> {

@@ -143,6 +143,15 @@ export const ClientSchema = z.object({
    * the friend's first order is paid for - never on sign-up, or the shop pays
    * for introductions that never buy anything.
    */
+  /**
+   * The till. `eatIn` offers "Eat in" with a table number on the till only -
+   * the website and app never offer it, whatever this says.
+   */
+  pos: z
+    .object({
+      eatIn: z.boolean().default(false),
+    })
+    .default({}),
   referral: z
     .object({
       enabled: z.boolean().default(false),

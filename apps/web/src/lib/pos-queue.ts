@@ -4,7 +4,7 @@ import { prisma, type OrderStatus, type Prisma } from "@launchflow/db";
 import { TRANSITIONS } from "./orders";
 import { isSettled, orderMoney, startOfDayIn } from "./pos-money";
 import type { BasketLine } from "./basket-types";
-import type { OrderSource } from "./pos-types";
+import type { AnyOrderSource } from "./pos-phase4-types";
 import type {
   PaymentKind, PosOrderDetail, PosOrderPayment, PosRefund, QueueDriver, QueueOrder, QueueResponse,
 } from "./pos-queue-types";
@@ -31,21 +31,25 @@ const queueSelect = {
   customerName: true, customerPhone: true, deliveryLine1: true, deliveryPostcode: true,
   placedAt: true, createdAt: true, scheduledFor: true, etaAt: true, etaMinutes: true,
   total: true, writtenOff: true, notes: true, rejectReason: true, amendedAt: true, updatedAt: true,
+  tableNumber: true, externalDisplayId: true, courier: true, needsAttention: true, createdOfflineAt: true,
   items: { where: { parentId: null }, orderBy: { id: "asc" }, select: { qty: true, name: true, sizeName: true } },
   payments: { select: { provider: true, status: true, amount: true, refundedAmount: true } },
 } satisfies Prisma.OrderSelect;
 type QueueRow = Prisma.OrderGetPayload<{ select: typeof queueSelect }>;
 
+/** Money the aggregator took; the till never refunds or counts it as its own. */
+const MARKETPLACE = "marketplace";
 const KIND: Record<string, PaymentKind> = { stripe: "card", stripe_terminal: "reader", cash: "cash" };
 type DriverRow = { id: string; name: string; status: string; activeOrderId: string; backAt: Date | null };
 
 export function queueOrder(o: QueueRow, drivers: DriverRow[]): QueueOrder {
   // A rejected or cancelled order owes nothing; anything still held is due back.
   const void_ = o.status === "rejected" || o.status === "cancelled";
-  const money = orderMoney(void_ ? 0 : o.total, o.writtenOff, o.payments);
+  // The marketplace refunds its own customer when an order is refused: nothing is "due back" from the till.
+  const money = orderMoney(void_ ? 0 : o.total, o.writtenOff, void_ ? o.payments.filter((p) => p.provider !== MARKETPLACE) : o.payments);
   const d = drivers.find((x) => x.activeOrderId === o.id);
   return {
-    id: o.id, number: o.number, source: o.source as OrderSource, fulfilment: o.fulfilment, status: o.status,
+    id: o.id, number: o.number, source: o.source as AnyOrderSource, fulfilment: o.fulfilment, status: o.status,
     next: TRANSITIONS[o.status].filter((s) => s !== "placed"),
     takenBy: o.takenBy, customerName: o.customerName, customerPhone: o.customerPhone,
     address: o.fulfilment === "delivery" ? [o.deliveryLine1, o.deliveryPostcode].filter(Boolean).join(", ") : "",
@@ -53,7 +57,7 @@ export function queueOrder(o: QueueRow, drivers: DriverRow[]): QueueOrder {
     dueAt: (o.scheduledFor ?? o.etaAt)?.toISOString() ?? null, scheduled: !!o.scheduledFor, etaMinutes: o.etaMinutes,
     total: o.total, paid: money.paid, balance: money.balance, refundDue: money.refundDue,
     refunded: o.payments.reduce((s, p) => s + p.refundedAmount, 0), paidState: money.state,
-    paymentKinds: [...new Set(o.payments.filter((p) => isSettled(p.status) || p.status === "refunded").map((p) => KIND[p.provider] ?? "card"))],
+    paymentKinds: [...new Set(o.payments.filter((p) => p.provider !== MARKETPLACE && (isSettled(p.status) || p.status === "refunded")).map((p) => KIND[p.provider] ?? "card"))],
     payLater: o.payments.some((p) => p.status === "cash_pending"),
     driver: d ? { id: d.id, name: d.name } : null,
     itemCount: o.items.reduce((n, i) => n + i.qty, 0),
@@ -61,6 +65,8 @@ export function queueOrder(o: QueueRow, drivers: DriverRow[]): QueueOrder {
     notes: o.notes, rejectReason: o.rejectReason, amendedAt: o.amendedAt?.toISOString() ?? null,
     editable: EDITABLE.includes(o.status), voidNeedsPin: VOID_NEEDS_PIN.includes(o.status),
     updatedAt: o.updatedAt.toISOString(),
+    tableNumber: o.tableNumber, marketplaceRef: o.externalDisplayId, courier: o.courier === "marketplace" ? "marketplace" : null,
+    needsAttention: o.needsAttention, createdOfflineAt: o.createdOfflineAt?.toISOString() ?? null,
   };
 }
 
@@ -166,7 +172,7 @@ export async function orderDetail(clientId: string, id: string): Promise<PosOrde
     })),
     payments: o.payments.map((p) => ({
       id: p.id, kind: p.status === "cash_pending" ? "later" : KIND[p.provider] ?? "card", status: paymentStatus(p.status),
-      amount: p.amount, refunded: p.refundedAmount, refundable: isSettled(p.status) ? p.amount - p.refundedAmount : 0,
+      amount: p.amount, refunded: p.refundedAmount, refundable: isSettled(p.status) && p.provider !== MARKETPLACE ? p.amount - p.refundedAmount : 0,
       createdAt: p.createdAt.toISOString(),
     })),
     refunds: o.refunds.map(refundView),

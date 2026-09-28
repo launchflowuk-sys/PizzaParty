@@ -3,6 +3,7 @@ import type { NotifyAudience, NotifyEvent } from "@launchflow/db";
 import type { FullOrder } from "@/lib/orders";
 import { getConfig, assetUrl } from "@/lib/config";
 import { env } from "@/lib/env";
+import { fulfilmentLabel } from "@/lib/fulfilment";
 import { brand, button, esc, gbp, lines, panel, say, shell, stars, totals, tracker, type Line } from "./render";
 
 /**
@@ -229,7 +230,7 @@ function kitchenMail(event: NotifyEvent, ctx: MailContext): Mail | null {
       <td align="right" style="font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:24px;font-weight:800;color:${b.primary};line-height:1">${gbp(order.total)}</td>
     </tr></table>
     <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:16px;font-weight:700;color:#1a1a1a;padding:10px 0 2px">
-      ${order.fulfilment.toUpperCase().replace("_", " ")} · ${order.paymentMethod === "cash" ? "CASH — COLLECT PAYMENT" : "PAID"} · ${order.scheduledFor ? esc(when(order)) : "ASAP"}
+      ${esc(fulfilmentLabel(order))} · ${order.paymentMethod === "cash" ? "CASH — COLLECT PAYMENT" : "PAID"} · ${order.scheduledFor ? esc(when(order)) : "ASAP"}
     </div>
     <div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:15px;color:#444;line-height:1.55">
       ${esc(order.customerName)} · <a href="tel:${esc(order.customerPhone.replace(/\s+/g, ""))}" style="color:${b.primary}">${esc(order.customerPhone)}</a>
@@ -271,7 +272,7 @@ function adminMail(event: NotifyEvent, ctx: MailContext): Mail | null {
     order_accepted: ["Order accepted", `#${order.number} has been accepted by the kitchen.`],
     order_ready: ["Order ready", `#${order.number} is ready.`],
     order_out_for_delivery: ["Out for delivery", `#${order.number} has left with a driver.`],
-    order_completed: ["Order completed", `#${order.number} has been ${order.fulfilment === "collection" ? "collected" : "delivered"}.`],
+    order_completed: ["Order completed", `#${order.number} has been ${order.fulfilment === "delivery" ? "delivered" : order.fulfilment === "eat_in" ? "served" : "collected"}.`],
     order_rejected: ["Order refused", `#${order.number} was refused${ctx.reason ? `: ${esc(ctx.reason)}` : ""}.`],
     order_refunded: ["Refund issued", `${gbp(ctx.refund ?? order.total)} has been refunded on #${order.number}.`],
   };
@@ -365,7 +366,7 @@ export function smsFor(event: NotifyEvent, audience: NotifyAudience, ctx: MailCo
 
   if (audience === "kitchen" && event === "order_placed") {
     const addr = order.fulfilment === "delivery" ? ` ${order.deliveryPostcode}` : "";
-    return `NEW ORDER #${order.number} ${order.fulfilment.toUpperCase()}${addr} ${gbp(order.total)} ${order.paymentMethod === "cash" ? "CASH" : "PAID"} — ${env.siteUrl}/kitchen`;
+    return `NEW ORDER #${order.number} ${fulfilmentLabel(order)}${addr} ${gbp(order.total)} ${order.paymentMethod === "cash" ? "CASH" : "PAID"} — ${env.siteUrl}/kitchen`;
   }
 
   if (audience === "admin") {

@@ -6,6 +6,7 @@ import { availability } from "@/lib/availability";
 import { isFullyPaid } from "@/lib/pos-money";
 import { kitchenOrAdmin } from "@/lib/kitchen-auth";
 import { getConfig } from "@/lib/config";
+import { fulfilmentLabel } from "@/lib/fulfilment";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,8 @@ export async function GET(req: NextRequest) {
     alerts: { sms: !!n.kitchenSms, email: !!n.kitchenEmail, printer: !!n.printerWebhook },
     orders: orders.map((o) => ({
       id: o.id, number: o.number, status: o.status, fulfilment: o.fulfilment, paymentMethod: o.paymentMethod, paid: isFullyPaid(o.total - o.writtenOff, o.payments), source: o.source,
+      // Phase 4: "EAT IN · Table 4", "DELIVEROO · RIDER COLLECTS"; the marketplace's own number; unmatched items.
+      label: fulfilmentLabel(o), tableNumber: o.tableNumber, marketplaceRef: o.externalDisplayId, courier: o.courier, needsAttention: o.needsAttention,
       // Items added or voided after it was sent: highlight it and reprint the change ticket.
       amendedAt: o.amendedAt,
       customerName: o.customerName, customerPhone: o.customerPhone, address: [o.deliveryLine1, o.deliveryLine2, o.deliveryCity, o.deliveryPostcode].filter(Boolean).join(", "),

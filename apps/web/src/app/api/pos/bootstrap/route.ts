@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
     locations: locations.map((l) => ({ key: l.key, name: l.name })),
     readers,
     cashOnDelivery: cfg.payments.cashOnDelivery,
+    eatIn: cfg.pos.eatIn,
     onlineStatus: {
       open: !!a?.open,
       paused: !!a?.paused,

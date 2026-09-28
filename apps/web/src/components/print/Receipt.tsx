@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { FullOrder } from "@/lib/orders";
 import { gbp } from "@/lib/money";
 import { orderMoney } from "@/lib/pos-money";
+import { fulfilmentLabel } from "@/lib/fulfilment";
 
 /**
  * The paper.
@@ -78,16 +79,18 @@ export function Receipt({
 
       <div className="rc-number">
         <span className="n">#{order.number}</span>
-        <span className="t">{delivery ? "DELIVERY" : "COLLECTION"}</span>
+        <span className="t">{fulfilmentLabel(order)}</span>
       </div>
+      {order.externalDisplayId ? <div className="rc-title">Order ref {order.externalDisplayId}</div> : null}
+      {order.needsAttention ? <div className="rc-pay cash">CHECK: not all items matched the menu</div> : null}
 
       <div className="rc-when">
         {order.scheduledFor
           ? `Wanted ${timeOf(order.scheduledFor, tz)}`
           : order.etaAt
-            ? `${delivery ? "Out by" : "Ready"} ${timeOf(order.etaAt, tz)}`
+            ? `${delivery ? "Out by" : order.fulfilment === "eat_in" ? "Serve" : "Ready"} ${timeOf(order.etaAt, tz)}`
             : "ASAP"}
-        <span>Placed {timeOf(order.placedAt ?? order.createdAt, tz)}</span>
+        <span>Placed {timeOf(order.createdOfflineAt ?? order.placedAt ?? order.createdAt, tz)}{order.createdOfflineAt ? " (offline)" : ""}</span>
       </div>
 
       {/* Whether there is money to collect is the single most important line on

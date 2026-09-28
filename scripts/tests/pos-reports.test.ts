@@ -59,23 +59,25 @@ test("Z report: sales split, discounts, channels, staff, outstanding and top sel
       order({ id: "b", number: 2, source: "pos", takenBy: "Amy", subtotal: 1500, discount: 500, managerDiscount: 300, total: 1000, items: [{ name: "Margherita", qty: 1, lineTotal: 1000 }, { name: "Coke", qty: 3, lineTotal: 500 }] }),
       order({ id: "c", number: 3, source: "phone", takenBy: "Ben", subtotal: 1800, total: 1800, items: [{ name: "Garlic bread", qty: 1, lineTotal: 1800 }], payments: [{ status: "cash_pending", amount: 1800 }] }),
       order({ id: "d", number: 4, status: "cancelled", total: 900 }),
+      order({ id: "e", number: 5, source: "deliveroo", takenBy: null, subtotal: 1200, total: 1200, items: [{ name: "Garlic bread", qty: 1, lineTotal: 1200 }], payments: [{ status: "succeeded", amount: 1200 }] }),
     ],
-    payments: [{ provider: "stripe", amount: 2050 }, { provider: "cash", amount: 1000 }, { provider: "stripe_terminal", amount: 700 }],
+    payments: [{ provider: "stripe", amount: 2050 }, { provider: "cash", amount: 1000 }, { provider: "stripe_terminal", amount: 700 }, { provider: "marketplace", amount: 1200 }],
     refunds: [
       { id: "r1", orderId: "a", orderNumber: 1, orderPlacedAt: new Date("2026-09-28T12:00:00Z"), provider: "stripe", amount: 300, reason: "cold", goodwill: 300, at: new Date("2026-09-28T13:00:00Z") },
       { id: "r2", orderId: "z", orderNumber: 99, orderPlacedAt: new Date("2026-09-27T19:00:00Z"), provider: "cash", amount: 400, reason: "late", goodwill: 0, at: new Date("2026-09-28T13:00:00Z") },
     ],
     voids: [{ orderId: "b", orderNumber: 2, qty: 2, name: "Chips", value: 600, reason: "changed mind", by: "Amy", approvedBy: "", at: "2026-09-28T12:10:00.000Z" }],
   }));
-  assert.equal(r.sales.orders, 3, "cancelled is not a sale");
-  assert.equal(r.sales.total, 2050 + 1000 + 1800);
+  assert.equal(r.sales.orders, 4, "cancelled is not a sale");
+  assert.equal(r.sales.total, 2050 + 1000 + 1800 + 1200);
   assert.equal(r.sales.subtotal + r.sales.deliveryFees - r.sales.promoDiscounts - r.sales.managerDiscounts, r.sales.total);
   assert.equal(r.sales.managerDiscounts, 300);
   assert.equal(r.sales.promoDiscounts, 400);
-  assert.equal(r.sales.averageOrder, Math.round(4850 / 3));
-  assert.deepEqual(r.byChannel.map((c) => [c.channel, c.count, c.amount]), [["web", 1, 2050], ["app", 0, 0], ["pos", 1, 1000], ["phone", 1, 1800]]);
+  assert.equal(r.sales.averageOrder, Math.round(6050 / 4));
+  assert.deepEqual(r.byChannel.map((c) => [c.channel, c.count, c.amount]), [["web", 1, 2050], ["app", 0, 0], ["pos", 1, 1000], ["phone", 1, 1800], ["justeat", 0, 0], ["deliveroo", 1, 1200], ["ubereats", 0, 0]]);
   assert.deepEqual(r.byStaff.map((s) => s.name), ["Online", "Ben", "Amy"]);
-  assert.deepEqual(r.takings.map((t) => t.amount), [2050, 700, 1000]);
+  assert.deepEqual(r.takings.map((t) => t.amount), [2050, 700, 1000], "marketplace money is not till takings");
+  assert.deepEqual(r.marketplaceTakings, { count: 1, amount: 1200 });
   assert.deepEqual(r.refunds.map((t) => t.amount), [300, 0, 400]);
   assert.equal(r.netTakings, 3750 - 700);
   assert.equal(r.goodwill, 300);

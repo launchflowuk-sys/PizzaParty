@@ -10,7 +10,7 @@ import type { PosDayReport } from "@/lib/pos-reports-types";
 
 export const dynamic = "force-dynamic";
 
-const LABEL: Record<string, string> = { web: "Website", app: "App", pos: "Counter", phone: "Phone", card: "Card online", reader: "Card reader", cash: "Cash" };
+const LABEL: Record<string, string> = { web: "Website", app: "App", pos: "Counter", phone: "Phone", justeat: "Just Eat", deliveroo: "Deliveroo", ubereats: "Uber Eats", card: "Card online", reader: "Card reader", cash: "Cash" };
 
 /**
  * The Z report on 80 mm paper, same paper and classes as the kitchen dockets.
@@ -54,6 +54,7 @@ export default async function ZReportPrint({ searchParams }: { searchParams: Pro
         <Section title="By staff" rows={r.byStaff.map((s) => [`${s.name} (${s.count})`, gbp(s.amount)])} />
         <Section title="Money in" rows={r.takings.map((t) => [`${LABEL[t.kind]} (${t.count})`, gbp(t.amount)])} />
         <Section title="Refunds" rows={r.refunds.map((t) => [`${LABEL[t.kind]} (${t.count})`, `-${gbp(t.amount)}`])} total={["Net takings", gbp(r.netTakings)]} />
+        {r.marketplaceTakings?.count ? <Section title="Marketplaces (paid out by the platform)" rows={[[`Orders (${r.marketplaceTakings.count})`, gbp(r.marketplaceTakings.amount)]]} /> : null}
         <Totals rows={[["of which goodwill", gbp(r.goodwill)], ["Tips", gbp(r.tips)]]} />
 
         <Section title="Voids & cancellations" rows={[

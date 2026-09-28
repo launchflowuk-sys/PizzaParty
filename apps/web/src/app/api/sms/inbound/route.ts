@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { getClientRow } from "@/lib/menu";
 import { handleInbound } from "@/lib/opt-out";
 import { env } from "@/lib/env";
+import { twilioSignatureValid } from "@/lib/notify";
 
 export const dynamic = "force-dynamic";
 
@@ -16,19 +16,6 @@ export const dynamic = "force-dynamic";
  * thing standing between a stranger and the ability to opt customers in and
  * out at will. It is not optional and there is no bypass.
  */
-
-/**
- * Twilio's scheme: HMAC-SHA1 over the full URL with every POST field appended
- * in key order, keyed by the account's auth token.
- * https://www.twilio.com/docs/usage/security#validating-requests
- */
-function signatureValid(url: string, params: Record<string, string>, header: string, token: string): boolean {
-  const payload = Object.keys(params).sort().reduce((acc, k) => acc + k + params[k], url);
-  const expected = createHmac("sha1", token).update(Buffer.from(payload, "utf-8")).digest("base64");
-  const a = Buffer.from(expected);
-  const b = Buffer.from(header);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
 
 /**
  * The URL Twilio signed is the one it was configured with, which is not always
@@ -65,7 +52,7 @@ export async function POST(req: NextRequest) {
   const params: Record<string, string> = {};
   for (const [k, v] of form.entries()) if (typeof v === "string") params[k] = v;
 
-  if (!header || !signatureValid(signedUrl(req), params, header, token)) {
+  if (!header || !twilioSignatureValid(signedUrl(req), params, header, token)) {
     console.warn("[sms:inbound] bad signature from", params.From ?? "unknown");
     return NextResponse.json({ error: "Bad signature" }, { status: 403 });
   }

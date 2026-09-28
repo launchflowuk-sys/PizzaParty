@@ -378,6 +378,17 @@
           "additionalProperties": false,
           "default": {}
         },
+        "pos": {
+          "type": "object",
+          "properties": {
+            "eatIn": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          "additionalProperties": false,
+          "default": {}
+        },
         "referral": {
           "type": "object",
           "properties": {

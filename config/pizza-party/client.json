@@ -97,6 +97,9 @@
     "pointsPerPound": 1,
     "name": "Slice Hub"
   },
+  "pos": {
+    "eatIn": true
+  },
   "referral": {
     "enabled": true,
     "refereeDiscount": 5,

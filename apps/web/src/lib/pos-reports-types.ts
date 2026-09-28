@@ -18,7 +18,7 @@
  * 404 not this shop's · 409 the state forbids it (message says why) ·
  * 502 Stripe refused.
  */
-import type { OrderSource } from "./pos-types";
+import type { AnyOrderSource } from "./pos-phase4-types";
 import type { PaymentKind } from "./pos-queue-types";
 
 /* ---------- Cash drawer ---------- */
@@ -128,7 +128,7 @@ export type PosAmountRow = { count: number; amount: number };
 
 export type PosVoidLine = { orderId: string; orderNumber: number; qty: number; name: string; value: number; reason: string; by: string; approvedBy: string; at: string };
 
-export type PosOutstanding = { orderId: string; number: number; customerName: string; source: OrderSource; total: number; balance: number };
+export type PosOutstanding = { orderId: string; number: number; customerName: string; source: AnyOrderSource; total: number; balance: number };
 
 export type PosAdjustment = {
   refundId: string;
@@ -177,8 +177,8 @@ export type PosDayReport = {
     /** total / orders, rounded; 0 with no orders. */
     averageOrder: number;
   };
-  /** Always all four channels, in the order web, app, pos, phone. */
-  byChannel: ({ channel: OrderSource } & PosAmountRow)[];
+  /** Always all seven channels, in the order web, app, pos, phone, justeat, deliveroo, ubereats. */
+  byChannel: ({ channel: AnyOrderSource } & PosAmountRow)[];
   /** By who took it; "Online" for website/app orders. Biggest first. */
   byStaff: ({ name: string } & PosAmountRow)[];
   /** Money in by method (gross, before refunds). Always card, reader, cash. */
@@ -186,6 +186,11 @@ export type PosDayReport = {
   /** Money back by method. Always card, reader, cash. Failed card refunds are left out. */
   refunds: ({ kind: PaymentKind } & PosAmountRow)[];
   netTakings: number;
+  /**
+   * Phase 4. Marketplace orders' money (paid to the platform, which pays the shop
+   * out later). Kept out of `takings` and `netTakings`: it is in neither the drawer nor Stripe.
+   */
+  marketplaceTakings: PosAmountRow;
   /** The part of this period's refunds that was goodwill on goods the customer kept. */
   goodwill: number;
   /** Tips are not taken; always 0, here so the report says so. */

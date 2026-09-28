@@ -398,6 +398,8 @@ enum OrderStatus {
 enum Fulfilment {
   delivery
   collection
+  /// Till only: sat in the shop at `Order.tableNumber`. Priced like collection.
+  eat_in
 }
 
 enum PaymentMethod {
@@ -452,6 +454,22 @@ model Order {
   /// Pence refunded as goodwill on goods the customer kept (beyond any overpayment).
   /// What is owed = total - writtenOff - net paid, so such a refund never shows as a balance due.
   writtenOff          Int           @default(0)
+  /// Eat-in only: the table the food goes to ("4", "Window").
+  tableNumber         String?
+  /// The till's own id for this sale, so a retry (the offline queue syncing,
+  /// a double tap) returns the first order instead of making a second.
+  clientRequestId     String?
+  /// When the till actually took it, for an order rung up offline and synced later.
+  createdOfflineAt    DateTime?
+  /// The aggregator's id for a marketplace order (Deliverect's order _id): the
+  /// idempotency key for its webhook and the id status updates are sent against.
+  externalRef         String?
+  /// The number the marketplace shows the customer and its rider ("#1a2b3").
+  externalDisplayId   String?
+  /// "marketplace" when the platform's own rider collects it; null = our driver or the customer.
+  courier             String?
+  /// Something could not be matched (a marketplace item not on our menu): a person should look.
+  needsAttention      Boolean       @default(false)
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
@@ -463,6 +481,8 @@ model Order {
   promo   Promo?       @relation(fields: [promoId], references: [id])
   promoId String?
 
+  @@unique([clientId, clientRequestId])
+  @@unique([clientId, externalRef])
   @@index([clientId, status, createdAt])
   @@index([locationId, status])
   @@index([customerId, createdAt])
@@ -515,7 +535,7 @@ model Payment {
   id                    String        @id @default(cuid())
   orderId               String
   order                 Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  /// stripe (online card) | stripe_terminal (card reader) | cash
+  /// stripe (online card) | stripe_terminal (card reader) | cash | marketplace (the aggregator took it)
   provider              String        @default("stripe")
   stripePaymentIntentId String        @default("")
   status                PaymentStatus @default(requires_payment)
@@ -528,6 +548,8 @@ model Payment {
   /// Cash taken on the doorstep by this driver (taken after the order went out
   /// for delivery). It is the driver's to hand in, not counter cash in the drawer.
   collectedByDriverId   String?
+  /// The till's id for this cash payment, so a retried pay returns the first one.
+  clientRequestId       String?       @unique
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
   refunds               Refund[]

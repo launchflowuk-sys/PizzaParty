@@ -4,7 +4,7 @@
  * "YYYY-MM-DD" in the shop's timezone.
  */
 import { orderMoney, type PayRow } from "./pos-money";
-import type { OrderSource } from "./pos-types";
+import type { AnyOrderSource } from "./pos-phase4-types";
 import type { PaymentKind } from "./pos-queue-types";
 import type {
   PosAdjustment, PosDayReport, PosDrawer, PosOutstanding, PosVoidLine, StripeMatchRow,
@@ -13,7 +13,9 @@ import type {
 const KIND: Record<string, PaymentKind> = { stripe: "card", stripe_terminal: "reader", cash: "cash" };
 export const kindOf = (provider: string): PaymentKind => KIND[provider] ?? "card";
 const KINDS: PaymentKind[] = ["card", "reader", "cash"];
-const CHANNELS: OrderSource[] = ["web", "app", "pos", "phone"];
+const CHANNELS: AnyOrderSource[] = ["web", "app", "pos", "phone", "justeat", "deliveroo", "ubereats"];
+/** The aggregator's money: reported on its own line, never as till takings. */
+const MARKETPLACE = "marketplace";
 /** Money that actually came in: a later full refund does not un-take it (the refund is counted on its own). */
 export const TAKEN = ["succeeded", "cash_collected", "refunded"] as const;
 const TOP_N = 10;
@@ -126,7 +128,7 @@ export function buildDayReport(i: ReportInput): PosDayReport {
   const outstanding: PosOutstanding[] = live
     .map((o) => ({ o, balance: orderMoney(o.total, o.writtenOff, o.payments).balance }))
     .filter((x) => x.balance > 0)
-    .map(({ o, balance }) => ({ orderId: o.id, number: o.number, customerName: o.customerName, source: o.source as OrderSource, total: o.total, balance }));
+    .map(({ o, balance }) => ({ orderId: o.id, number: o.number, customerName: o.customerName, source: o.source as AnyOrderSource, total: o.total, balance }));
 
   const products = new Map<string, { qty: number; revenue: number }>();
   for (const it of live.flatMap((o) => o.items)) {
@@ -138,8 +140,9 @@ export function buildDayReport(i: ReportInput): PosDayReport {
     .filter((r) => r.orderPlacedAt && r.orderPlacedAt < i.from)
     .map((r) => ({ refundId: r.id, orderId: r.orderId, orderNumber: r.orderNumber, orderDate: dateIn(i.timezone, r.orderPlacedAt!), kind: kindOf(r.provider), amount: r.amount, reason: r.reason, at: r.at.toISOString() }));
 
+  const market = i.payments.filter((p) => p.provider === MARKETPLACE);
   const takings = KINDS.map((kind) => {
-    const rows = i.payments.filter((p) => kindOf(p.provider) === kind);
+    const rows = i.payments.filter((p) => p.provider !== MARKETPLACE && kindOf(p.provider) === kind);
     return { kind, count: rows.length, amount: sum(rows, (p) => p.amount) };
   });
   const refunds = KINDS.map((kind) => {
@@ -168,6 +171,7 @@ export function buildDayReport(i: ReportInput): PosDayReport {
     takings,
     refunds,
     netTakings: sum(takings, (t) => t.amount) - sum(refunds, (r) => r.amount),
+    marketplaceTakings: { count: market.length, amount: sum(market, (p) => p.amount) },
     goodwill: sum(i.refunds, (r) => r.goodwill),
     tips: 0,
     voids: { count: sum(i.voids, (v) => v.qty), amount: sum(i.voids, (v) => v.value), lines: i.voids },
@@ -207,6 +211,7 @@ export function dayReportCsv(r: PosDayReport): string {
   for (const t of r.takings) add("takings", t.kind, t.count, t.amount);
   for (const t of r.refunds) add("refunds", t.kind, t.count, t.amount);
   add("takings", "net", "", r.netTakings);
+  if (r.marketplaceTakings) add("takings", "marketplace (paid out by the platform)", r.marketplaceTakings.count, r.marketplaceTakings.amount);
   add("refunds", "goodwill written off", "", r.goodwill);
   add("tips", "tips", "", r.tips);
   add("voids", "items voided", r.voids.count, r.voids.amount);

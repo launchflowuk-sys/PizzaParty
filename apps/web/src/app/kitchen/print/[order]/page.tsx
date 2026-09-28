@@ -66,7 +66,7 @@ export default async function PrintOrder({ params, searchParams }: Params) {
   // "all" prints the set in one go: what to cook, what goes in the bag, and
   // what the driver carries. Each starts on its own sheet.
   const wanted: Copy[] = rawCopy === "all"
-    ? (order.fulfilment === "delivery" ? ["kitchen", "customer", "driver"] : ["kitchen", "customer"])
+    ? (order.fulfilment === "delivery" && order.courier !== "marketplace" ? ["kitchen", "customer", "driver"] : ["kitchen", "customer"])
     : COPIES.includes(rawCopy as Copy) ? [rawCopy as Copy] : ["kitchen"];
 
   return (

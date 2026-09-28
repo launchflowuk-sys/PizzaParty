@@ -15,6 +15,8 @@ import { EDITABLE, PosError, VOID_NEEDS_PIN } from "./pos-queue";
 import { askStripeRefund, releaseRefund } from "./refunds";
 import { publishOrder } from "./realtime";
 import type { BasketLine, PricedLine } from "./basket-types";
+import { pricedAs } from "./fulfilment";
+import { isMarketplaceSource } from "./pos-phase4-types";
 
 export const EditBody = z.object({
   add: z.array(LineSchema).max(50).default([]),
@@ -68,6 +70,8 @@ export async function editOrder(clientId: string, orderId: string, staff: PosSta
   if (replay) return replay;
   if (!EDITABLE.includes(before.status)) throw new PosError(`This order is ${before.status.replace(/_/g, " ")}; it cannot be changed.`, 409);
   // An unpaid website/app checkout has a card payment out for its old total; changing it would let that pay the wrong amount.
+  // The platform charged its customer for exactly what it sent; changing it here would put the two out of step.
+  if (isMarketplaceSource(before.source)) throw new PosError("Marketplace orders cannot be changed on the till. Change it on the marketplace's tablet.", 409);
   if (before.status === "pending_payment" && before.source !== "pos" && before.source !== "phone") throw new PosError("This online order has not been paid yet; it cannot be changed.", 409);
 
   let approvedBy: string | null = null;
@@ -77,7 +81,7 @@ export async function editOrder(clientId: string, orderId: string, staff: PosSta
     if (!approvedBy) throw new PosError("That manager PIN was not recognised.", 403, { needsPin: true });
   }
 
-  const priced = priceBasket(await getMenu(), body.add as BasketLine[], { fulfilment: before.fulfilment, deliveryFee: 0, minOrder: 0, promo: null });
+  const priced = priceBasket(await getMenu(), body.add as BasketLine[], { fulfilment: pricedAs(before.fulfilment), deliveryFee: 0, minOrder: 0, promo: null });
   if (priced.errors.length) throw new PosError(priced.errors[0]!, 409, { errors: priced.errors, removedKeys: priced.removedKeys });
   const promoRow = before.promoId ? await prisma.promo.findUnique({ where: { id: before.promoId }, select: { type: true, value: true } }) : null;
   const promo: EditPromo = promoRow ? { type: promoRow.type as NonNullable<EditPromo>["type"], value: promoRow.value } : null;
@@ -191,6 +195,7 @@ export async function refundPayment(clientId: string, orderId: string, staff: Po
       throw new PosError(payments.some((x) => refundable(x) > 0) ? "No single payment covers that amount. Pick a payment and refund in parts." : "Nothing on this order can be refunded.", 409);
     }
     if (refundable(p) < body.amount) throw new PosError(refundable(p) ? `Only ${gbp(refundable(p))} can go back on that payment.` : "That payment has nothing left to refund.", 409);
+    if (p.provider === "marketplace") throw new PosError("The marketplace refunds its own customers. Refund it on their tablet or portal.", 409);
     if (p.provider !== "cash" && !p.stripePaymentIntentId) throw new PosError("That card payment has no Stripe record to refund against.", 409);
     const dup = await tx.refund.findFirst({ where: { paymentId: p.id, amount: body.amount, status: { not: "failed" }, createdAt: { gt: new Date(Date.now() - DOUBLE_TAP_MS) } }, select: { id: true } });
     if (dup) throw new PosError("That refund was just made.", 409, { refundId: dup.id });

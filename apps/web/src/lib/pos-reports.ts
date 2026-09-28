@@ -5,6 +5,7 @@ import { getConfig } from "./config";
 import { can } from "./permissions";
 import { managerForPin, posGuard, type PosStaff } from "./pos";
 import { drawerView, driversCash } from "./pos-cash";
+import { isUniqueViolation } from "./orders";
 import type { ChangeData } from "./pos-edit";
 import { PosError, shopTimezone } from "./pos-queue";
 import {
@@ -128,7 +129,7 @@ export async function closeDay(clientId: string, staff: PosStaff, body: PosDayCl
   try {
     await prisma.dayClose.create({ data: { clientId, date, closedAt, closedBy: staff.name, approvedBy, counted, report: snap as unknown as Prisma.InputJsonValue } });
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") throw new PosError(`${date} is already closed.`, 409);
+    if (isUniqueViolation(e)) throw new PosError(`${date} is already closed.`, 409);
     throw e;
   }
   return snap;

@@ -3,6 +3,7 @@ import { EventEmitter } from "node:events";
 import { Client } from "pg";
 import { prisma } from "@launchflow/db";
 import { env } from "./env";
+import type { PosCall } from "./pos-phase4-types";
 
 /**
  * Live updates for the ops screens: Postgres LISTEN/NOTIFY fanned out over SSE.
@@ -11,6 +12,9 @@ import { env } from "./env";
  * webhook, cron) and needs no broker. Listen is ONE dedicated pg connection
  * per server process, however many screens are open; an idle stream holds no
  * database connection. Payloads carry ids only - screens refetch what they show.
+ * The one exception is `call` (caller ID): it carries the number and name, so it
+ * is only ever written to the till's own stream (shopStream with `calls`), never
+ * to the kitchen or to a customer's order stream.
  */
 const CHANNEL = "lf_orders";
 const MAX_STREAMS = 500; // open streams per process before a staff screen is told to poll instead
@@ -20,6 +24,7 @@ const MAX_BACKOFF_MS = 30_000;
 export type LiveEvent =
   | { clientId: string; kind: "order"; orderId: string; type: string }
   | { clientId: string; kind: "menu" }
+  | { clientId: string; kind: "call"; call: PosCall }
   | { kind: "resync" };
 
 /** Never throws: a missed notification is covered by the screens' slow poll. */
@@ -35,6 +40,12 @@ export function publishOrder(orderId: string, type: string) {
 /** The menu changed (price, sold out, deal...). Fire and forget from the admin bump() helpers. */
 export function publishMenu() {
   return notify(prisma.$executeRaw`SELECT pg_notify(${CHANNEL}, json_build_object('kind', 'menu', 'clientId', id)::text) FROM "Client" WHERE slug = ${env.clientSlug}`);
+}
+
+/** The phone is ringing: pop the caller up on this shop's tills. */
+export function publishCall(clientId: string, call: PosCall) {
+  const payload = JSON.stringify({ kind: "call", clientId, call } satisfies LiveEvent);
+  return notify(prisma.$executeRaw`SELECT pg_notify(${CHANNEL}, ${payload})`);
 }
 
 type Hub = { bus: EventEmitter; pg: Client | null; connecting: boolean; everUp: boolean; fails: number; streams: number };
@@ -132,8 +143,11 @@ export function sseResponse(signal: AbortSignal, start: (w: { send: (data: unkno
   return new Response(stream, { headers: HEADERS });
 }
 
-/** The staff stream: every order and menu change for this shop. Clients refetch on each event. */
-export function shopStream(signal: AbortSignal, clientId: string): Response {
+/**
+ * The staff stream: every order and menu change for this shop. Clients refetch on each event.
+ * `calls` adds caller-ID pops (`event: call`, data PosCall) - the till only.
+ */
+export function shopStream(signal: AbortSignal, clientId: string, opts: { calls?: boolean } = {}): Response {
   // Staff screens only: they fall back to polling. A customer's page has no fallback, so is never turned away.
   if (hub().streams >= MAX_STREAMS) return new Response("Too many live screens", { status: 503, headers: { "retry-after": "30" } });
   return sseResponse(signal, ({ send }) =>
@@ -141,6 +155,7 @@ export function shopStream(signal: AbortSignal, clientId: string): Response {
       if (e.kind === "resync") send({}, "resync");
       else if (e.clientId !== clientId) return;
       else if (e.kind === "order") send({ orderId: e.orderId, kind: e.type }, "order");
+      else if (e.kind === "call") { if (opts.calls) send(e.call, "call"); }
       else send({}, "menu");
     }),
   );

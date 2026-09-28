@@ -6,9 +6,9 @@ import { shopStream } from "@/lib/realtime";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-/** Live order + menu events for the till. Events: order {orderId, kind}, menu {}, resync {}. */
+/** Live order + menu events for the till. Events: order {orderId, kind}, menu {}, resync {}, call PosCall (caller ID). */
 export async function GET(req: NextRequest) {
   const staff = await posGuard(req);
   if (staff instanceof NextResponse) return staff;
-  return shopStream(req.signal, (await getClientRow()).id);
+  return shopStream(req.signal, (await getClientRow()).id, { calls: true });
 }

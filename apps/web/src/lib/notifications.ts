@@ -3,6 +3,7 @@ import { prisma, type NotifyAudience, type NotifyChannel, type NotifyEvent } fro
 import type { FullOrder } from "@/lib/orders";
 import { sendEmail, sendPush, sendSms } from "@/lib/notify";
 import { emailFor, pushFor, smsFor, type MailContext } from "@/lib/email/templates";
+import { isMarketplaceSource } from "@/lib/pos-phase4-types";
 
 /**
  * One way in for every notification.
@@ -46,8 +47,11 @@ async function recipients(order: FullOrder): Promise<Record<NotifyAudience, Reci
     select: { token: true },
   });
 
+  // Nobody to tell: an eat-in customer is sitting at a table (a "ready for collection"
+  // text would be nonsense), and a marketplace customer is the platform's to update.
+  const quiet = order.fulfilment === "eat_in" || isMarketplaceSource(order.source);
   return {
-    customer: { email: order.customerEmail, sms: order.customerPhone, devices: devices.map((d) => d.token) },
+    customer: quiet ? { email: "", sms: "", devices: [] } : { email: order.customerEmail, sms: order.customerPhone, devices: devices.map((d) => d.token) },
     kitchen: { email: client?.kitchenEmail ?? "", sms: client?.kitchenSms ?? "", devices: [] },
     admin: { email: client?.ownerEmail ?? "", sms: client?.ownerSms ?? "", devices: [] },
     driver: { email: driver?.email ?? "", sms: driver?.phone ?? "", devices: [] },

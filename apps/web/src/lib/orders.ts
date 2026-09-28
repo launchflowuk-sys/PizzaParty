@@ -17,7 +17,10 @@ import { paidPence, remainingPence } from "./pos-money";
 import { askStripeRefund, releaseRefund } from "./refunds";
 import { releaseDriver } from "./dispatch";
 import { publishOrder } from "./realtime";
-import type { BasketLine, Fulfilment, PricedBasket } from "./basket-types";
+import type { BasketLine, PricedBasket } from "./basket-types";
+import type { AnyOrderSource, PosFulfilment } from "./pos-phase4-types";
+import { isMarketplaceSource } from "./pos-phase4-types";
+import { fulfilmentLabel } from "./fulfilment";
 
 export const STATUS_LABEL: Record<OrderStatus, string> = {
   pending_payment: "Awaiting payment",
@@ -105,6 +108,13 @@ export async function addEvent(orderId: string, type: string, actor = "system", 
   return event;
 }
 
+/**
+ * A unique index refused the write (Prisma P2002). Checked by code, not
+ * `instanceof`: the dev bundle can hold two copies of the Prisma runtime, and
+ * then the class check silently fails.
+ */
+export const isUniqueViolation = (e: unknown): boolean => typeof e === "object" && e !== null && (e as { code?: unknown }).code === "P2002";
+
 export function orderUrl(order: { id: string }) {
   return `${env.siteUrl}/order/${order.id}`;
 }
@@ -117,7 +127,8 @@ export function orderText(order: FullOrder): string {
   });
   const addr = order.fulfilment === "delivery" ? `\n${[order.deliveryLine1, order.deliveryLine2, order.deliveryCity, order.deliveryPostcode].filter(Boolean).join(", ")}` : "";
   return [
-    `#${order.number} ${order.fulfilment.toUpperCase()} ${order.paymentMethod === "cash" ? "CASH" : "PAID"}`,
+    `#${order.number} ${fulfilmentLabel(order)} ${order.paymentMethod === "cash" ? "CASH" : "PAID"}${order.externalDisplayId ? ` (${order.externalDisplayId})` : ""}`,
+    order.needsAttention ? "!! CHECK THIS ORDER: something did not match the menu" : "",
     `${order.customerName} ${order.customerPhone}${addr}`,
     order.scheduledFor ? `Scheduled: ${formatTime(order.scheduledFor, order.location.timezone)}` : "ASAP",
     ...lines,
@@ -136,7 +147,7 @@ export type CreateOrderInput = {
   clientId: string;
   locationId: string;
   customerId: string;
-  fulfilment: Fulfilment;
+  fulfilment: PosFulfilment;
   paymentMethod: "card" | "cash";
   customerName: string;
   customerPhone: string;
@@ -149,10 +160,12 @@ export type CreateOrderInput = {
   priced: PricedBasket;
   /** The raw basket lines, index-aligned with priced.lines, kept for one-tap reorder. */
   lines: BasketLine[];
-  source: "web" | "app" | "pos" | "phone";
+  source: AnyOrderSource;
   takenBy?: string | null;
-  /** The first payment row; omitted when the till records payments separately. */
-  payment?: { provider: string; status: "requires_payment" | "cash_pending"; amount: number };
+  /** The first payment row; omitted when the till records payments separately. "succeeded" = already paid elsewhere (a marketplace). */
+  payment?: { provider: string; status: "requires_payment" | "cash_pending" | "succeeded"; amount: number };
+  /** Phase 4 columns: table, idempotency keys, offline time, marketplace refs. */
+  extra?: Pick<Prisma.OrderUncheckedCreateInput, "tableNumber" | "clientRequestId" | "createdOfflineAt" | "externalRef" | "externalDisplayId" | "courier" | "needsAttention">;
   actor: string;
   eventMessage: string;
 };
@@ -182,6 +195,7 @@ export async function createOrder(i: CreateOrderInput) {
       subtotal: priced.subtotal, deliveryFee: priced.deliveryFee, discount: priced.discount, promoCode: priced.promoCode, total: priced.total,
       promoId: promoRow?.id,
       source: i.source, takenBy: i.takenBy ?? null,
+      ...i.extra,
       ...(i.payment ? { payments: { create: i.payment } } : {}),
     },
   });
@@ -276,7 +290,7 @@ export class NeedsManagerError extends Error {
  * cancelling one leaves the money owed back, so both need a manager - the shop owner
  * decided every refund goes through a manager (2026-09-28).
  */
-export async function transitionOrder(orderId: string, to: OrderStatus, actor: string, opts: { etaMinutes?: number; reason?: string; approvedBy?: string } = {}) {
+export async function transitionOrder(orderId: string, to: OrderStatus, actor: string, opts: { etaMinutes?: number; reason?: string; approvedBy?: string; fromMarketplace?: boolean } = {}) {
   const current = await prisma.order.findUnique({
     where: { id: orderId },
     select: {
@@ -311,6 +325,8 @@ export async function transitionOrder(orderId: string, to: OrderStatus, actor: s
   const note = opts.reason ?? (opts.etaMinutes ? `ETA ${opts.etaMinutes} min` : "");
   await addEvent(orderId, to, actor, opts.approvedBy ? `${note}${note ? " · " : ""}approved by ${opts.approvedBy}` : note);
   if (to === "completed") await awardLoyalty(order);
+  // The marketplace hears about every move, so its app tells the customer and its rider. Fire and forget: it retries on its own.
+  if (isMarketplaceSource(order.source) && !opts.fromMarketplace) void import("./deliverect").then((m) => m.pushStatus(order.id, to)).catch((e) => console.error("[deliverect] status push", (e as Error).message));
 
   const event = STATUS_EVENT[to];
   if (event) await notify(event, order, { reason: opts.reason });
@@ -426,7 +442,8 @@ async function notifyPrinter(order: FullOrder) {
 }
 export function printPayload(order: FullOrder) {
   return {
-    number: order.number, fulfilment: order.fulfilment, paymentMethod: order.paymentMethod, status: order.status,
+    number: order.number, fulfilment: order.fulfilment, label: fulfilmentLabel(order), tableNumber: order.tableNumber, source: order.source,
+    marketplaceRef: order.externalDisplayId, needsAttention: order.needsAttention, paymentMethod: order.paymentMethod, status: order.status,
     customer: { name: order.customerName, phone: order.customerPhone },
     address: order.fulfilment === "delivery" ? { line1: order.deliveryLine1, line2: order.deliveryLine2, city: order.deliveryCity, postcode: order.deliveryPostcode } : null,
     scheduledFor: order.scheduledFor, notes: order.notes,

@@ -1,5 +1,6 @@
 import type { FullOrder } from "@/lib/orders";
 import type { ChangeData, ChangeLine } from "@/lib/pos-edit";
+import { fulfilmentLabel } from "@/lib/fulfilment";
 
 /**
  * The kitchen's copy of an edit: only what was added and what was voided, so
@@ -13,7 +14,7 @@ export function ChangeTicket({ order, changes, at, by }: { order: FullOrder; cha
       <div className="rc-title">ORDER CHANGED</div>
       <div className="rc-number">
         <span className="n">#{order.number}</span>
-        <span className="t">{order.fulfilment === "delivery" ? "DELIVERY" : "COLLECTION"}</span>
+        <span className="t">{fulfilmentLabel(order)}</span>
       </div>
       <div className="rc-when">{time}<span>by {by}</span></div>
       <hr className="rc-rule" />

@@ -8,8 +8,8 @@
  * till, or a manager PIN was wrong / locked out · 404 not this shop's order ·
  * 409 the order's state forbids it (message says why) · 502 Stripe refused.
  */
-import type { BasketLine, Fulfilment } from "./basket-types";
-import type { OrderSource } from "./pos-types";
+import type { BasketLine } from "./basket-types";
+import type { AnyOrderSource, PosFulfilment } from "./pos-phase4-types";
 
 export type OrderStatus =
   | "pending_payment" | "placed" | "accepted" | "preparing" | "ready"
@@ -39,8 +39,10 @@ export type QueueDriver = {
 export type QueueOrder = {
   id: string;
   number: number;
-  source: OrderSource;
-  fulfilment: Fulfilment;
+  /** Phase 4: marketplace orders (justeat/deliveroo/ubereats) come through Deliverect. */
+  source: AnyOrderSource;
+  /** Phase 4: may be "eat_in" (see tableNumber). */
+  fulfilment: PosFulfilment;
   status: OrderStatus;
   /** Statuses this order may move to from here (same rules as the kitchen). */
   next: OrderStatus[];
@@ -85,6 +87,16 @@ export type QueueOrder = {
   /** Voiding items now needs a manager PIN (the kitchen has started: preparing, ready, out_for_delivery). */
   voidNeedsPin: boolean;
   updatedAt: string;
+  /** Phase 4. Eat-in: the table; null otherwise. */
+  tableNumber: string | null;
+  /** Phase 4. The marketplace's own order number, to match a rider to the bag. */
+  marketplaceRef: string | null;
+  /** Phase 4. "marketplace" when the platform's rider collects it (show no driver button). */
+  courier: "marketplace" | null;
+  /** Phase 4. Something on it could not be matched to the menu: someone should read it before cooking. */
+  needsAttention: boolean;
+  /** Phase 4. When the offline till actually took it, if it synced later; else null. */
+  createdOfflineAt: string | null;
 };
 
 /**

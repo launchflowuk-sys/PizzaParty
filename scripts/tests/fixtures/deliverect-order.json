@@ -1,0 +1,36 @@
+{
+  "_id": "66f7a1b2c3d4e5f600000001",
+  "account": "5f1a0000000000000000acc1",
+  "location": "5f1a0000000000000000loc1",
+  "channelLink": "5f1a0000000000000000lnk1",
+  "channel": 2,
+  "channelOrderId": "gb:deliveroo:1234567890",
+  "channelOrderDisplayId": "DR-4821",
+  "status": 10,
+  "orderType": 2,
+  "deliveryIsAsap": true,
+  "pickupTime": "2026-09-28T18:30:00Z",
+  "customer": { "name": "Priya S.", "phoneNumber": "+442038087620", "phoneAccessCode": "123 456 789", "email": "", "note": "" },
+  "deliveryAddress": { "street": "High Street", "streetNumber": "12", "postalCode": "RM17 6AB", "city": "Grays", "extraAddressInfo": "" },
+  "orderIsAlreadyPaid": true,
+  "payment": { "amount": 2549, "type": 0 },
+  "note": "No cutlery please",
+  "decimalDigits": 2,
+  "deliveryCost": 0,
+  "serviceCharge": 99,
+  "bagFee": 0,
+  "tip": 0,
+  "discountTotal": -150,
+  "testOrder": false,
+  "items": [
+    {
+      "plu": "margherita@twelve", "name": "Margherita 12\"", "price": 1200, "quantity": 1, "remark": "well done",
+      "subItems": [
+        { "plu": "mod:crust:sausage", "name": "Sausage crust", "price": 250, "quantity": 1, "subItems": [] },
+        { "plu": "mod:extra-toppings:bacon", "name": "Bacon", "price": 100, "quantity": 2, "subItems": [] }
+      ]
+    },
+    { "plu": "garlic-bread", "name": "Garlic Bread", "price": 400, "quantity": 2, "remark": "", "subItems": [] },
+    { "plu": "RANDOM-DRINK-99", "name": "Coca-Cola 330ml", "price": 150, "quantity": 1, "remark": "", "subItems": [] }
+  ]
+}

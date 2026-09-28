@@ -1,5 +1,6 @@
 /** The contract between the POS screen and /api/pos/*. No server imports here. All money in pence. */
-import type { BasketLine, Fulfilment, PricedBasket } from "./basket-types";
+import type { BasketLine, PricedBasket } from "./basket-types";
+import type { PosFulfilment } from "./pos-phase4-types";
 
 export type OrderSource = "web" | "app" | "pos" | "phone";
 export type PosPaymentKind = "cash" | "reader" | "later";
@@ -19,12 +20,15 @@ export type PosBootstrap = {
   cashOnDelivery: boolean;
   /** Shop status the website sees; the till may still take orders. */
   onlineStatus: { open: boolean; paused: boolean; message: string };
+  /** Phase 4. Offer "Eat in" (with a table number) on the till. */
+  eatIn: boolean;
 };
 
 /** Body for POST /api/pos/price and the basket part of POST /api/pos/orders. */
 export type PosBasket = {
   lines: BasketLine[];
-  fulfilment: Fulfilment;
+  /** "eat_in" only when bootstrap says `eatIn`; needs PosCreateOrderExtras.tableNumber. */
+  fulfilment: PosFulfilment;
   postcode?: string;
   locationKey?: string;
   discount?: PosDiscount;

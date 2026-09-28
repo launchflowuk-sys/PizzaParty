@@ -32,6 +32,20 @@ export const env = {
   sessionSecret: trim(process.env.SESSION_SECRET),
   cronSecret: trim(process.env.CRON_SECRET),
   googlePlacesKey: trim(process.env.GOOGLE_PLACES_API_KEY),
+  // Caller ID (POS item 28). Empty token = the webhook 404s.
+  callerIdToken: trim(process.env.CALLERID_TOKEN),
+  callerIdForwardTo: trim(process.env.CALLERID_FORWARD_TO),
+  // Deliverect (POS item 31). Empty secret = the webhook and menu export 404.
+  deliverectSecret: trim(process.env.DELIVERECT_SECRET),
+  deliverectApiBase: trim(process.env.DELIVERECT_API_BASE).replace(/\/+$/, ""),
+  deliverectClientId: trim(process.env.DELIVERECT_CLIENT_ID),
+  deliverectClientSecret: trim(process.env.DELIVERECT_CLIENT_SECRET),
+  deliverectAudience: trim(process.env.DELIVERECT_AUDIENCE),
+  deliverectChannels: trim(process.env.DELIVERECT_CHANNELS),
+  deliverectLocations: trim(process.env.DELIVERECT_LOCATIONS),
+  deliverectDefaultSource: trim(process.env.DELIVERECT_DEFAULT_SOURCE),
+  deliverectAccountId: trim(process.env.DELIVERECT_ACCOUNT_ID),
+  deliverectLocationId: trim(process.env.DELIVERECT_LOCATION_ID),
   isProd: process.env.NODE_ENV === "production",
   // Push never leaves a development machine unless asked: its database is often
   // a copy of production, real phones included. PUSH_DRY_RUN=1 forces a dry run
