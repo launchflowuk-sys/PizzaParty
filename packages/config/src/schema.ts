@@ -61,6 +61,9 @@ export const ClientSchema = z.object({
     logo: z.string().default("assets/logo.svg"),
     og: z.string().default("assets/og.jpg"),
     hero: z.string().default("assets/hero.jpg"),
+    /** The round stamp over the homepage hero. Only for a claim that is true of this
+     *  shop (Farm Pizza's 20-inch pizza); left out, no stamp is drawn. */
+    heroStamp: z.object({ ring: z.string().max(40), centre: z.string().max(8), under: z.string().max(30) }).optional(),
     /**
      * The wide image behind the deals strip in the app. Optional: the app
      * already falls back to a flat panel when it is empty, which is a better

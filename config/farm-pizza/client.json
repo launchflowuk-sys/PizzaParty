@@ -16,7 +16,12 @@
     "hero": "assets/hero.webp",
     "tagline": "Home of the 20 inch pizza. Fresh, handmade, delivered.",
     "photoStyle": "colour",
-    "banner": "assets/banner.jpg"
+    "banner": "assets/banner.jpg",
+    "heroStamp": {
+      "ring": "Home of the 20 inch",
+      "centre": "20\"",
+      "under": "Fresh · Handmade"
+    }
   },
   "contact": {
     "phone": "01375 383877",

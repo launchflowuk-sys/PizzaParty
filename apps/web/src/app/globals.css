@@ -447,8 +447,12 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
      panel - a box nobody asked for, sitting over the photograph that is meant
      to be selling the food. Legibility comes from the type now: the headline
      and the lines under it carry their own shadow, so the picture stays a
-     picture. */
-  background: linear-gradient(to top, rgba(0,0,0,.60) 0%, rgba(0,0,0,.26) 24%, rgba(0,0,0,0) 56%);
+     picture. A busy photo (food edge to edge, no dark side) still needs help,
+     so a feathered pool of shade sits under the text column only: it has no
+     edge to read as a box, and fades out well before the right-hand food. */
+  background:
+    radial-gradient(ellipse 48% 70% at 28% 52%, rgba(0,0,0,.58) 0%, rgba(0,0,0,.34) 45%, rgba(0,0,0,0) 100%),
+    linear-gradient(to top, rgba(0,0,0,.60) 0%, rgba(0,0,0,.26) 24%, rgba(0,0,0,0) 56%);
 }
 
 .fp-hero-inner {

@@ -46,6 +46,29 @@
               "type": "string",
               "default": "assets/hero.jpg"
             },
+            "heroStamp": {
+              "type": "object",
+              "properties": {
+                "ring": {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                "centre": {
+                  "type": "string",
+                  "maxLength": 8
+                },
+                "under": {
+                  "type": "string",
+                  "maxLength": 30
+                }
+              },
+              "required": [
+                "ring",
+                "centre",
+                "under"
+              ],
+              "additionalProperties": false
+            },
             "banner": {
               "type": "string",
               "default": ""

@@ -105,7 +105,7 @@ export default async function Home() {
         <div className="fp-hero-scrim" />
 
         <div className="fp-wrap fp-hero-inner">
-          <HeroStamp />
+          {cfg.brand.heroStamp ? <HeroStamp {...cfg.brand.heroStamp} /> : null}
 
           <span className="fp-hero-kicker">
             {towns}
