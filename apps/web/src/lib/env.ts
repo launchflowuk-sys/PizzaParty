@@ -37,6 +37,7 @@ export const env = {
   callerIdForwardTo: trim(process.env.CALLERID_FORWARD_TO),
   // Deliverect (POS item 31). Empty secret = the webhook and menu export 404.
   deliverectSecret: trim(process.env.DELIVERECT_SECRET),
+  deliverectMenuToken: trim(process.env.DELIVERECT_MENU_TOKEN),
   deliverectApiBase: trim(process.env.DELIVERECT_API_BASE).replace(/\/+$/, ""),
   deliverectClientId: trim(process.env.DELIVERECT_CLIENT_ID),
   deliverectClientSecret: trim(process.env.DELIVERECT_CLIENT_SECRET),

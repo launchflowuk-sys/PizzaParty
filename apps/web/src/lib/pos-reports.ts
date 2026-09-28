@@ -73,7 +73,8 @@ async function liveReport(clientId: string, date: string, now = new Date()): Pro
         events: { where: { type: { in: ["discount", "amended"] } }, orderBy: { createdAt: "asc" }, select: { type: true, data: true } },
       },
     }),
-    prisma.payment.findMany({ where: { order: { clientId }, status: { in: [...TAKEN] }, createdAt: period }, select: { provider: true, amount: true } }),
+    // A marketplace order the platform cancelled never pays out (it refunds its own customer, with no refund row here).
+    prisma.payment.findMany({ where: { order: { clientId }, status: { in: [...TAKEN] }, createdAt: period, NOT: { provider: "marketplace", order: { status: { in: ["rejected", "cancelled"] } } } }, select: { provider: true, amount: true } }),
     prisma.refund.findMany({ where: { order: { clientId }, status: { not: "failed" }, createdAt: period }, orderBy: { createdAt: "asc" }, select: { id: true, orderId: true, provider: true, amount: true, reason: true, createdAt: true, order: { select: { number: true, placedAt: true } } } }),
     prisma.orderEvent.findMany({ where: { type: "amended", createdAt: period, order: { clientId } }, orderBy: { createdAt: "asc" }, select: { orderId: true, actor: true, data: true, createdAt: true, order: { select: { number: true } } } }),
     prisma.drawerSession.findMany({ where: { clientId, openedAt: period }, orderBy: { openedAt: "asc" }, include: { movements: true } }),

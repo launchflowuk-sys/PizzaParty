@@ -15,9 +15,16 @@ const RATE_WINDOW_MS = 60_000;
 const RATE_MAX = 30; // calls a minute per token: far above any shop's phone, far below a flood
 // ponytail: per-process memory, resets on restart; fine for one small instance.
 const hits = new Map<string, number[]>();
+/** Every bad guess adds a key; spoofed addresses must not grow the map without end. */
+const MAX_KEYS = 5_000;
 
 function limited(key: string): boolean {
   const now = Date.now();
+  if (hits.size >= MAX_KEYS && !hits.has(key)) {
+    for (const [k, ts] of hits) if (!ts.some((t) => t > now - RATE_WINDOW_MS)) hits.delete(k);
+    // ponytail: still full = a flood of fresh addresses; forgetting them all is cheaper than tracking them.
+    if (hits.size >= MAX_KEYS) hits.clear();
+  }
   const recent = (hits.get(key) ?? []).filter((t) => t > now - RATE_WINDOW_MS);
   recent.push(now);
   hits.set(key, recent);
@@ -55,7 +62,7 @@ export async function POST(req: NextRequest) {
   const url = new URL(req.url);
   const got = url.searchParams.get("token") ?? req.headers.get("x-callerid-token") ?? "";
   // Wrong guesses are limited per address before the token is even compared.
-  const badKey = `bad:${req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"}`;
+  const badKey = `bad:${(req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown").slice(0, 64)}`;
   if ((hits.get(badKey) ?? []).filter((t) => t > Date.now() - RATE_WINDOW_MS).length >= RATE_MAX) return NextResponse.json({ error: "Too many attempts" }, { status: 429 });
   if (!got || !safeEqual(got, want)) {
     limited(badKey);
