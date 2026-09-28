@@ -1,0 +1,254 @@
+/* Till screen. Landscape tablet first (1280x800, 1024x768), still usable at 768
+   wide. Touch targets >=60px, nothing below 14px. Reuses the Modernist tokens
+   from app/modernist.css - no colours or fonts declared here that aren't a
+   var(--...) from that system. */
+
+.pos-root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 15px;
+  overflow: hidden;
+}
+
+.pos-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  border-bottom: 2px solid var(--color-divider);
+  background: var(--color-bg);
+  flex-wrap: wrap;
+}
+
+.pos-body {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) 380px;
+  min-height: 0;
+}
+
+@media (max-width: 1024px) {
+  .pos-body { grid-template-columns: 170px minmax(0, 1fr) 340px; }
+}
+@media (max-width: 800px) {
+  .pos-body { grid-template-columns: 130px minmax(0, 1fr) 300px; }
+}
+
+.pos-rail {
+  overflow-y: auto;
+  border-right: 2px solid var(--color-divider);
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  gap: 6px;
+}
+
+.pos-rail-btn {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.pos-rail-btn[data-active="1"] { background: var(--color-accent-700); color: var(--color-bg); border-color: var(--color-accent-700); }
+
+.pos-main {
+  overflow-y: auto;
+  padding: 16px;
+  min-height: 0;
+}
+
+.pos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.pos-tile {
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.pos-tile:active { background: var(--color-accent-100); }
+.pos-tile[data-soldout="1"] { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+.pos-tile-name { font-family: var(--font-heading); font-weight: 800; font-size: 16px; letter-spacing: -0.01em; }
+.pos-tile-price { font-weight: 700; color: var(--color-accent-700); font-size: 15px; }
+
+.pos-tile { position: relative; }
+.pos-tile-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-action);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@keyframes pos-tile-flash { 0% { background: var(--color-accent-300); } 100% { background: var(--color-surface); } }
+.pos-tile[data-flash="1"] { animation: pos-tile-flash 450ms ease-out; }
+
+.pos-chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+.pos-chip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; margin: 6px 0 10px; }
+.pos-chip {
+  position: relative;
+  min-height: 56px;
+  min-width: 76px;
+  padding: 8px 16px;
+  border: 2px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.pos-chip[data-state="whole"] { border-color: var(--color-accent-700); background: var(--color-accent-100); }
+.pos-chip[data-state="left"] { border-color: var(--color-accent-700); background: linear-gradient(90deg, var(--color-accent-200) 0 50%, var(--color-surface) 50% 100%); }
+.pos-chip[data-state="right"] { border-color: var(--color-accent-700); background: linear-gradient(90deg, var(--color-surface) 0 50%, var(--color-accent-200) 50% 100%); }
+.pos-chip-sub { font-size: 11px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--color-neutral-700); }
+.pos-chip-half {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--color-accent-700);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pos-builder { display: flex; flex-direction: column; height: 100%; }
+.pos-builder-scroll { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+.pos-builder-footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-top: 2px solid var(--color-divider);
+  background: var(--color-bg);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.pos-basket {
+  border-left: 2px solid var(--color-divider);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.pos-basket-lines { flex: 1; overflow-y: auto; padding: 8px 12px; }
+.pos-basket-line { border-bottom: 1px solid var(--color-divider); padding: 8px 0; display: grid; gap: 4px; }
+.pos-basket-footer { border-top: 2px solid var(--color-divider); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+
+.pos-when-wrap { position: relative; }
+.pos-when-btn { min-height: 44px; width: 100%; justify-content: flex-start; }
+.pos-when-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--color-surface);
+  border: 2px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.pos-note-btn {
+  flex: 1;
+  min-height: 44px;
+  justify-content: flex-start;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-neutral-700);
+}
+
+.pos-qtybtn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-divider);
+  background: var(--color-surface);
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pos-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 320px;
+}
+.pos-key {
+  min-height: 60px;
+  font-size: 20px;
+  font-weight: 700;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.pos-cash-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  padding: 8px 16px;
+  border: 2px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 24px;
+}
+
+.pos-bignum { font-family: var(--font-heading); font-weight: 800; font-size: 56px; letter-spacing: -0.02em; line-height: 1; }
+
+.pos-fullpanel { display: grid; place-items: start; }
+
+/* Cash: keypad on the left, change due and confirm on the right, so confirm never falls below the fold. */
+.pos-cash { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.pos-cash-result { position: sticky; top: 0; padding-top: 96px; }
+@media (max-width: 1100px) { .pos-cash { grid-template-columns: minmax(0, 1fr); } .pos-cash-result { padding-top: 0; position: static; order: -1; } }
