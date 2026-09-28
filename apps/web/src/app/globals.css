@@ -2792,32 +2792,75 @@ footer::before {
   .btn, .fp-optionrow, .fp-ticket-print a { transition: none; }
 }
 
-/* == Offers strip ===========================================================
-   The shop's own promotional cards, directly under the hero. Scrolls sideways
-   on a phone rather than stacking, so it never pushes the menu below the fold
-   on the screen most people order from. */
-.fp-promo-strip { padding: var(--space-5) 0 0; }
-.fp-promo-strip-inner {
-  display: flex; gap: var(--space-3);
-  overflow-x: auto; scroll-snap-type: x mandatory;
-  padding: 0 var(--space-4) var(--space-2);
-  scrollbar-width: none;
+/* == Offers banner ==========================================================
+   The shop's own offers as full-width banners under the hero, in the same dress
+   as the till's customer display and the kiosk: a deep brand panel with a script
+   headline, the price in a red pill, and the photo bleeding in from the right.
+   One offer is one banner; several scroll sideways one per screen, so the menu
+   is never pushed a long way down. */
+.fp-offers { padding-block: clamp(20px, 3vw, 40px); }
+/* The site underlines links (a:not(.btn)...); the banner is a card, not a text link. */
+a.fp-offer:not(._):not(._):not(._) { text-decoration: none; }
+.fp-offers-track {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 100%; gap: var(--space-3);
+  overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
 }
-.fp-promo-strip-inner::-webkit-scrollbar { display: none; }
-.fp-promo-card {
-  flex: 0 0 clamp(240px, 74vw, 340px);
+.fp-offers-track::-webkit-scrollbar { display: none; }
+.fp-offers-track[data-count]:not([data-count="1"]) { grid-auto-columns: 92%; }
+.fp-offer {
+  --offer-panel: color-mix(in srgb, #16a34a 30%, var(--brand-secondary, #14110f));
+  position: relative; display: block; overflow: hidden; isolation: isolate;
   scroll-snap-align: start;
-  border: 1px solid var(--color-line); border-radius: var(--radius-md);
-  overflow: hidden; background: var(--color-surface);
-  text-decoration: none; color: inherit;
-  display: flex; flex-direction: column;
+  min-height: clamp(220px, 26vw, 320px);
+  border-radius: 20px; background: var(--offer-panel);
+  color: #fff; text-decoration: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,.12);
 }
-.fp-promo-card img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; display: block; }
-.fp-promo-card-body { padding: var(--space-3); display: grid; gap: 2px; }
-.fp-promo-card-body strong { font-size: 1rem; }
-.fp-promo-card-body span { font-size: .85rem; color: var(--color-neutral-700); }
-/* Red says things: the price is a statement, not the button. */
-.fp-promo-card-body em { font-style: normal; font-weight: 700; color: var(--accent); margin-top: 4px; }
-@media (min-width: 900px) {
-  .fp-promo-card { flex-basis: 320px; }
+.fp-offer-photo {
+  position: absolute; inset: 0 0 0 auto; width: 62%; height: 100%;
+  object-fit: cover; z-index: -2;
+  transition: transform .6s ease;
+}
+/* The panel runs into the photo instead of stopping at an edge. */
+.fp-offer::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(90deg, var(--offer-panel) 0%, var(--offer-panel) 40%, color-mix(in srgb, var(--offer-panel) 55%, transparent) 55%, transparent 75%);
+}
+.fp-offer:hover .fp-offer-photo { transform: scale(1.04); }
+.fp-offer-text {
+  position: relative; max-width: min(520px, 58%);
+  padding: clamp(22px, 3vw, 40px) clamp(22px, 3.4vw, 48px);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+}
+.fp-offer-eyebrow { font-size: .74rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #bbf7d0; }
+.fp-offer-title {
+  font-family: var(--font-promo-script), "Brush Script MT", cursive; font-weight: 400;
+  font-size: clamp(34px, 4.6vw, 64px); line-height: 1.02;
+  transform: rotate(-3deg); transform-origin: left; margin: 2px 0 4px;
+  text-shadow: 0 3px 14px rgba(0,0,0,.3); text-wrap: balance;
+}
+.fp-offer-title em { font-style: normal; color: var(--brand-primary, #e11d1d); }
+.fp-offer-sub { font-size: clamp(15px, 1.25vw, 19px); font-weight: 500; color: rgba(255,255,255,.9); max-width: 30ch; }
+.fp-offer-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+.fp-offer-price {
+  background: var(--brand-primary, #e11d1d); color: var(--brand-primary-ink, #fff);
+  font-weight: 800; font-size: clamp(22px, 2.2vw, 34px); line-height: 1;
+  padding: 10px 20px; border-radius: 999px; box-shadow: 0 8px 22px rgba(0,0,0,.25);
+}
+.fp-offer-cta {
+  background: #fff; color: #14532d; font-weight: 700; font-size: .95rem;
+  padding: 11px 20px; border-radius: 999px;
+}
+.fp-offer:hover .fp-offer-cta, .fp-offer:focus-visible .fp-offer-cta { background: #dcfce7; }
+.fp-offer:focus-visible { outline: 3px solid var(--brand-primary, #e11d1d); outline-offset: 3px; }
+/* Phone: photo on top, text underneath, nothing laid over the food. */
+@media (max-width: 640px) {
+  .fp-offer { min-height: 0; display: flex; flex-direction: column; }
+  .fp-offer-photo { position: relative; inset: auto; width: 100%; height: 170px; }
+  .fp-offer::before { background: linear-gradient(180deg, transparent 0, transparent 120px, var(--offer-panel) 170px); }
+  .fp-offer-text { max-width: none; margin-top: -34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fp-offer-photo { transition: none; }
+  .fp-offer:hover .fp-offer-photo { transform: none; }
 }
