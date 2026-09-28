@@ -56,10 +56,14 @@ export type PosCall = {
  * tills seen recently (PosDisplayTill[]) so a display that just connected can pair.
  */
 export const POS_DISPLAY_CHANNEL = "lf-pos-display";
-export type PosDisplayLine = { name: string; detail: string; qty: number; lineTotal: number; image?: string; slug?: string };
+/** `unitPrice` includes the modifiers' prices; `size` only when the product has more than one. */
+export type PosDisplayLine = {
+  name: string; detail: string; qty: number; lineTotal: number; image?: string; slug?: string;
+  size?: string; unitPrice?: number; modifiers?: { name: string; price: number }[];
+};
 export type PosDisplayMessage =
   /** `truncated`: the relay dropped trailing lines to fit a notification; the totals are still whole. */
-  | { type: "basket"; shopName: string; lines: PosDisplayLine[]; subtotal: number; discount: number; deliveryFee: number; total: number; truncated?: boolean }
+  | { type: "basket"; shopName: string; lines: PosDisplayLine[]; subtotal: number; discount: number; deliveryFee: number; total: number; truncated?: boolean; fulfilment?: "delivery" | "collection" | "eat_in" }
   | { type: "paying"; total: number; method: "cash" | "reader"; tendered?: number; change?: number }
   | { type: "paid"; orderNumber: number; change?: number }
   | { type: "idle"; shopName: string };

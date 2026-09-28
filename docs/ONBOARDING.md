@@ -564,9 +564,18 @@ same browser) and to `POST /api/pos/display`, which relays it through the
 live-updates channel to `GET /api/pos/display/stream` on every device. A
 display that has just connected asks `GET /api/pos/display` for each till's
 latest state. Nothing is sent while the till is offline; it catches up when
-the internet is back. Branding, photos, the "You might also like" cards (top
-sellers with photos, never what is already in the basket), today's deal and
-the loyalty line (only when `loyalty.enabled`) come from config/menu.
+the internet is back.
+
+What the customer sees while an order is rung up (all from config/menu, nothing
+per-shop in code): logo, name and tagline; the order types the shop offers
+(Dine In only if `pos.eatIn`, Takeaway/Delivery from `fulfilment`) with the
+current one lit; each line with photo, size, description and paid extras;
+"Add a side?" suggestions while the order is short; the rewards banner (only
+when `loyalty.enabled`, naming `loyalty.name`); the total with a status bar and
+the payment methods taken (card, Apple Pay and Google Pay only when Stripe is
+set up; cash always); and a promo panel - the shop's live promo slot, else
+today's deal - above "Popular extras" (best sellers with photos from outside
+the mains, never what is already in the basket).
 
 ### 5.3 Kitchen screen — `/kitchen`
 

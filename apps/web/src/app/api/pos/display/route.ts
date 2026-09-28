@@ -13,9 +13,11 @@ const pence = z.number().int().min(0).max(10_000_000);
 const Line = z.object({
   name: z.string().max(120), detail: z.string().max(400), qty: z.number().int().min(1).max(999), lineTotal: pence,
   image: z.string().max(500).optional(), slug: z.string().max(120).optional(),
+  size: z.string().max(60).optional(), unitPrice: pence.optional(),
+  modifiers: z.array(z.object({ name: z.string().max(80), price: z.number().int().min(-1_000_000).max(1_000_000) })).max(30).optional(),
 });
 const Msg = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("basket"), shopName: z.string().max(120), lines: z.array(Line).max(150), subtotal: pence, discount: pence, deliveryFee: pence, total: pence }),
+  z.object({ type: z.literal("basket"), shopName: z.string().max(120), lines: z.array(Line).max(150), subtotal: pence, discount: pence, deliveryFee: pence, total: pence, fulfilment: z.enum(["delivery", "collection", "eat_in"]).optional() }),
   z.object({ type: z.literal("paying"), total: pence, method: z.enum(["cash", "reader"]), tendered: pence.optional(), change: pence.optional() }),
   z.object({ type: z.literal("paid"), orderNumber: z.number().int().min(0), change: pence.optional() }),
   z.object({ type: z.literal("idle"), shopName: z.string().max(120) }),

@@ -230,10 +230,11 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
   // price (offlinePriced) since the server's own priced basket goes stale.
   useEffect(() => {
     const shopName = boot?.shopName ?? "";
+    const fulfilment = orderType === "eat_in" ? "eat_in" : order.fulfilment;
     if (!order.lines.length) { display({ type: "idle", shopName }); return; }
     if (offline) {
       display({
-        type: "basket", shopName,
+        type: "basket", shopName, fulfilment,
         lines: (offlinePriced?.lines ?? []).map((l) => ({ name: l.name, detail: l.detail, qty: l.qty, lineTotal: l.lineTotal, ...lineMeta[l.key] })),
         subtotal: offlinePriced?.subtotal ?? 0, discount: 0, deliveryFee: 0, total: offlinePriced?.total ?? 0,
       });
@@ -241,13 +242,23 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
     }
     const p = order.priced;
     display({
-      type: "basket", shopName,
-      // The server's line price, as the till's own basket shows it: the client cache is the unit price until re-priced.
-      lines: order.lines.map((l) => ({ name: l.name ?? "", detail: l.detail ?? "", qty: l.qty, lineTotal: p?.lines.find((x) => x.key === l.key)?.lineTotal ?? l.lineTotal ?? 0, ...lineMeta[l.key] })),
+      type: "basket", shopName, fulfilment,
+      // The server's priced line, as the till's own basket shows it: the client cache is the unit price until re-priced.
+      lines: order.lines.map((l) => {
+        const pl = p?.lines.find((x) => x.key === l.key);
+        return {
+          name: l.name ?? "", detail: l.detail ?? "", qty: l.qty, lineTotal: pl?.lineTotal ?? l.lineTotal ?? 0, ...lineMeta[l.key],
+          ...(pl ? {
+            unitPrice: pl.unitPrice,
+            size: pl.sizeName && pl.detail.startsWith(pl.sizeName) ? pl.sizeName : undefined,
+            modifiers: pl.modifiers.map((m) => ({ name: m.name, price: m.price })),
+          } : {}),
+        };
+      }),
       subtotal: p?.subtotal ?? 0, discount: p?.discount ?? 0, deliveryFee: p?.deliveryFee ?? 0, total: p?.total ?? 0,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order.lines, order.priced, offline, offlinePriced, boot?.shopName, lineMeta]);
+  }, [order.lines, order.priced, offline, offlinePriced, boot?.shopName, lineMeta, orderType, order.fulfilment]);
 
   // A price/menu change lands, but never mid-order: refresh the moment the
   // basket is clear (immediately if it already was, otherwise as soon as this

@@ -140,9 +140,9 @@ Every item below is in scope. Phases are only the build order.
     The till sends over BroadcastChannel (same browser) and `POST /api/pos/display`
     (server relay via LISTEN/NOTIFY to `/api/pos/display/stream`); a display
     follows the only till sending, or asks which till when several are (named in
-    Cash & reports → Settings), and remembers it. Basket/paying fill the screen:
-    big photo lines, a "You might also like" upsell of top sellers + today's deal
-    in the space the lines leave, logo, loyalty line and brand total. See
+    Cash & reports → Settings), and remembers it. Basket/paying follow the
+    owner's reference design: header with order types, photo line cards with extras,
+    summary + status bar + payment methods, promo slot/today's deal + popular extras. See
     ONBOARDING.md §5.2.
 30. **Offline mode**: keep taking cash orders when the internet drops, sync after.
 31. **Just Eat / Deliveroo / Uber Eats into the same queue** via Deliverect or the
