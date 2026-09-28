@@ -175,14 +175,18 @@ export async function createProduct(fd: FormData) {
   const existing = await prisma.product.findMany({ where: { clientId: client.id }, select: { slug: true } });
   const slug = uniqueKey(slugify(name), new Set(existing.map((p) => p.slug)));
 
-  await prisma.product.create({
+  const product = await prisma.product.create({
     data: {
       clientId: client.id, categoryId, slug, name,
       description: str(fd, "description"),
       sortOrder: await nextSort({ categoryId }),
       sizes: { create: [{ key: slugify(sizeName) || "regular", name: sizeName, price, sortOrder: 0 }] },
     },
+    select: { sizes: { select: { id: true } } },
   });
+  // No old price: a new item's starting price is logged too, so the history is complete.
+  const [size] = product.sizes;
+  if (size) await logPriceChanges(prisma, client.id, await priceActor(), [{ kind: "size", refId: size.id, label: `${name} · ${sizeName}`, oldPrice: null, newPrice: price }]);
   bump();
   done(fd, `Added ${name}.`);
 }
@@ -255,21 +259,25 @@ export async function moveProductToCategory(fd: FormData) {
 /* ---------- Sizes ---------- */
 
 export async function addSize(fd: FormData) {
-  await guard();
+  const client = await guard();
   const productId = str(fd, "productId");
   const name = str(fd, "name");
   if (!name) refuse(fd, "Give the size a name, like Large or 12 inch.");
+  const product = await prisma.product.findFirst({ where: { id: productId, clientId: client.id }, select: { name: true } });
+  if (!product) refuse(fd, "That item is not on this menu.");
 
+  const price = toPence(num(fd, "price"));
   const taken = await prisma.productSize.findMany({ where: { productId }, select: { key: true, sortOrder: true } });
-  await prisma.productSize.create({
+  const size = await prisma.productSize.create({
     data: {
       productId,
       key: uniqueKey(slugify(name), new Set(taken.map((s) => s.key))),
       name,
-      price: toPence(num(fd, "price")),
+      price,
       sortOrder: taken.reduce((m, s) => Math.max(m, s.sortOrder), -1) + 1,
     },
   });
+  await logPriceChanges(prisma, client.id, await priceActor(), [{ kind: "size", refId: size.id, label: `${product!.name} · ${name}`, oldPrice: null, newPrice: price }]);
   bump();
 }
 
@@ -361,20 +369,24 @@ export async function deleteModifierGroup(fd: FormData) {
 }
 
 export async function addModifier(fd: FormData) {
-  await guard();
+  const client = await guard();
   const groupId = str(fd, "groupId");
   const name = str(fd, "name");
   if (!name) refuse(fd, "Give the option a name.");
+  const group = await prisma.modifierGroup.findFirst({ where: { id: groupId, clientId: client.id }, select: { name: true } });
+  if (!group) refuse(fd, "That option group is not on this menu.");
+  const price = toPence(num(fd, "price"));
   const taken = await prisma.modifier.findMany({ where: { groupId }, select: { key: true, sortOrder: true } });
-  await prisma.modifier.create({
+  const mod = await prisma.modifier.create({
     data: {
       groupId,
       key: uniqueKey(slugify(name), new Set(taken.map((m) => m.key))),
       name,
-      price: toPence(num(fd, "price")),
+      price,
       sortOrder: taken.reduce((m, x) => Math.max(m, x.sortOrder), -1) + 1,
     },
   });
+  await logPriceChanges(prisma, client.id, await priceActor(), [{ kind: "modifier", refId: mod.id, label: `${group!.name}: ${name}`, oldPrice: null, newPrice: price }]);
   bump();
 }
 

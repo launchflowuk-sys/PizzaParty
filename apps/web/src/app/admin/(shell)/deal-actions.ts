@@ -85,6 +85,7 @@ export async function createDeal(fd: FormData) {
       sortOrder: rows.reduce((mx, r) => Math.max(mx, r.sortOrder), -1) + 1,
     },
   });
+  await logPriceChanges(prisma, client.id, await priceActor(), [{ kind: "deal", refId: deal.id, label: name, oldPrice: null, newPrice: deal.price }]);
   bump();
   redirect(`/admin/deals/${deal.id}?m=${encodeURIComponent("Deal created. Add what is in it, then switch it on.")}`);
 }
