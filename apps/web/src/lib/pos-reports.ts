@@ -13,7 +13,7 @@ import {
   type StripeTxn, type TillCard, type TillRefund,
 } from "./pos-report-math";
 import type { PosDayClose, PosDayReport, PosPriceChanges, PosStripeReport, PosVoidLine, PriceChangeKind } from "./pos-reports-types";
-import { connectOpts, getStripe, stripeEnabled } from "./stripe";
+import { connectOpts, getStripe, stripeServerEnabled } from "./stripe";
 import { reconcileStripeRefunds } from "./refunds";
 
 const STRIPE_TXN_CAP = 2000;
@@ -155,7 +155,7 @@ export async function stripeReport(clientId: string, date: string): Promise<PosS
 
   let txns: StripeTxn[] = [];
   let error: string | null = null;
-  const configured = stripeEnabled();
+  const configured = stripeServerEnabled();
   if (configured) {
     try {
       const list = getStripe().balanceTransactions.list(

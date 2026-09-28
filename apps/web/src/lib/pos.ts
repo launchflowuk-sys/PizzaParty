@@ -9,7 +9,7 @@ import { getConfig } from "./config";
 import { env } from "./env";
 import { gbp } from "./money";
 import { addEvent, settlePayment } from "./orders";
-import { connectOpts, getStripe, stripeEnabled } from "./stripe";
+import { connectOpts, getStripe, stripeServerEnabled } from "./stripe";
 import { isSettled, manualDiscountPence, paidPence } from "./pos-money";
 import type { BasketLine } from "./basket-types";
 import { pricedAs } from "./fulfilment";
@@ -133,7 +133,7 @@ export async function orderRef(orderId: string): Promise<PosOrderRef> {
 }
 
 export async function listReaders(): Promise<PosReader[]> {
-  if (!stripeEnabled()) return [];
+  if (!stripeServerEnabled()) return [];
   try {
     const list = await getStripe().terminal.readers.list({ limit: 100 }, connectOpts(getConfig().payments.stripeAccountId));
     return list.data.map((r) => ({ id: r.id, label: r.label || r.serial_number, status: r.status === "online" ? "online" : "offline", simulated: r.device_type.startsWith("simulated") }));

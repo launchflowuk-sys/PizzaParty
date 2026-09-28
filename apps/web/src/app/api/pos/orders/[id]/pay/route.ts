@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
 import { isUniqueViolation, settlePayment } from "@/lib/orders";
-import { stripeEnabled } from "@/lib/stripe";
+import { stripeServerEnabled } from "@/lib/stripe";
 import { gbp } from "@/lib/money";
 import { changeDue, outstandingPence } from "@/lib/pos-money";
 import { OPEN_FOR_PAYMENT, paymentView, posGuard, readJson, ReaderError, startReaderPayment } from "@/lib/pos";
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
   const change = body.kind === "cash" ? changeDue(body.amount, body.tendered) : 0;
   if (change === null) return NextResponse.json({ error: "Less cash was handed over than the amount." }, { status: 400 });
-  if (body.kind === "reader" && !stripeEnabled()) return NextResponse.json({ error: "Card payments are not set up." }, { status: 503 });
+  if (body.kind === "reader" && !stripeServerEnabled()) return NextResponse.json({ error: "Card payments are not set up." }, { status: 503 });
   // Doorstep cash is the driver's to hand in, not counter cash in the drawer.
   const collectedByDriverId = body.kind === "cash" ? await driverForCash(client.id, order.id) : null;
 
