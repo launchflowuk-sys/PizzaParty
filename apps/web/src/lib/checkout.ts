@@ -18,7 +18,8 @@ export const LineSchema = z.object({
   deal: z.string().optional(),
   components: z.array(z.object({ slot: z.number().int().min(0), product: z.string(), size: z.string(), modifiers: z.array(Modifier).max(30) })).max(20).optional(),
   qty: z.number().int().min(1).max(20),
-  notes: z.string().max(200).optional(),
+  // Room for the till's half-and-half topping notes on top of what staff type.
+  notes: z.string().max(500).optional(),
 }).passthrough();
 
 export const BasketBody = z.object({

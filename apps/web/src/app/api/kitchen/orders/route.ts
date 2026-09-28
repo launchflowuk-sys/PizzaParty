@@ -3,6 +3,7 @@ import { prisma } from "@launchflow/db";
 import { getClientRow, getLocations } from "@/lib/menu";
 import { orderInclude, orderText } from "@/lib/orders";
 import { availability } from "@/lib/availability";
+import { isFullyPaid } from "@/lib/pos-money";
 import { kitchenOrAdmin } from "@/lib/kitchen-auth";
 import { getConfig } from "@/lib/config";
 
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
     now: new Date().toISOString(),
     alerts: { sms: !!n.kitchenSms, email: !!n.kitchenEmail, printer: !!n.printerWebhook },
     orders: orders.map((o) => ({
-      id: o.id, number: o.number, status: o.status, fulfilment: o.fulfilment, paymentMethod: o.paymentMethod, paid: o.payment?.status === "succeeded",
+      id: o.id, number: o.number, status: o.status, fulfilment: o.fulfilment, paymentMethod: o.paymentMethod, paid: isFullyPaid(o.total, o.payments), source: o.source,
       customerName: o.customerName, customerPhone: o.customerPhone, address: [o.deliveryLine1, o.deliveryLine2, o.deliveryCity, o.deliveryPostcode].filter(Boolean).join(", "),
       notes: o.notes, scheduledFor: o.scheduledFor, etaAt: o.etaAt, etaMinutes: o.etaMinutes, total: o.total, createdAt: o.createdAt, placedAt: o.placedAt, locationKey: o.location.key, locationName: o.location.name, rejectReason: o.rejectReason,
       items: o.items.map((i) => ({ qty: i.qty, name: i.name, size: i.sizeName, modifiers: i.modifiers.map((m) => m.name), components: i.components.map((c) => `${c.name}${c.sizeName ? ` (${c.sizeName})` : ""}${c.modifiers.length ? ` +${c.modifiers.map((m) => m.name).join(", ")}` : ""}`), notes: i.notes })),

@@ -12,6 +12,7 @@ import { redirect } from "next/navigation";
 const NAV: { href: string; label: string; screen: Screen }[] = [
   { screen: "dashboard", href: "/admin", label: "Dashboard" },
   { screen: "kitchen", href: "/kitchen", label: "Kitchen queue" },
+  { screen: "pos", href: "/pos", label: "Till" },
   { screen: "orders", href: "/admin/orders", label: "Orders" },
   { screen: "dispatch", href: "/admin/dispatch", label: "Dispatch" },
   { screen: "menu", href: "/admin/menu", label: "Menu & pricing" },

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getFullOrder, STATUS_LABEL } from "@/lib/orders";
+import { isFullyPaid } from "@/lib/pos-money";
 import { currentCustomer } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +49,7 @@ function serialiseOrder(order: NonNullable<Awaited<ReturnType<typeof getFullOrde
     scheduledFor: order.scheduledFor?.toISOString() ?? null,
     fulfilment: order.fulfilment,
     paymentMethod: order.paymentMethod,
-    paid: order.payment?.status === "succeeded",
+    paid: isFullyPaid(order.total, order.payments),
     rejectReason: order.rejectReason || "",
     branch: { name: order.location.name, phone: order.location.phone ?? "", timezone: order.location.timezone },
     address: order.fulfilment === "delivery"

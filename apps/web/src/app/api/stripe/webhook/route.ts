@@ -4,7 +4,8 @@ import { prisma } from "@launchflow/db";
 import { connectOpts, getStripe } from "@/lib/stripe";
 import { env } from "@/lib/env";
 import { getConfig } from "@/lib/config";
-import { addEvent, markPlaced } from "@/lib/orders";
+import { addEvent, settlePayment } from "@/lib/orders";
+import { getClientRow } from "@/lib/menu";
 
 
 /** Resolve a PaymentIntent's receipt URL, tolerating an unexpanded latest_charge. */
@@ -36,16 +37,26 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case "payment_intent.succeeded": {
       const pi = event.data.object;
-      const payment = await prisma.payment.findFirst({ where: { stripePaymentIntentId: pi.id } });
-      const orderId = payment?.orderId ?? (pi.metadata?.orderId as string | undefined);
-      if (!orderId) break;
+      // By PI id first; then the payment row the till stamped into metadata;
+      // then, for an online order whose PI id was never saved, its card row.
+      // Every lookup is held to this shop's orders, and a metadata hit must not
+      // already belong to a different PI or be for more than was taken.
+      const orderId = pi.metadata?.orderId as string | undefined;
+      const mine = { order: { clientId: (await getClientRow()).id } };
+      const payment = (await prisma.payment.findFirst({ where: { stripePaymentIntentId: pi.id, ...mine } }))
+        ?? (pi.metadata?.paymentId ? await prisma.payment.findFirst({ where: { id: pi.metadata.paymentId, stripePaymentIntentId: { in: ["", pi.id] }, ...mine } }) : null)
+        ?? (orderId ? await prisma.payment.findFirst({ where: { orderId, provider: "stripe", stripePaymentIntentId: { in: ["", pi.id] }, ...mine }, orderBy: { createdAt: "asc" } }) : null);
+      if (!payment) break;
+      if (pi.amount_received < payment.amount) {
+        await addEvent(payment.orderId, "payment_mismatch", "stripe", `PaymentIntent ${pi.id} took ${pi.amount_received}p against ${payment.amount}p`);
+        break;
+      }
       // Webhook payloads never expand nested objects, so latest_charge arrives as
       // a bare id. Fetch the charge to get its receipt URL; best-effort only, a
       // failure here must not stop the order being marked paid.
       const receiptUrl = await chargeReceiptUrl(pi.latest_charge);
-      await prisma.payment.update({ where: { orderId }, data: { status: "succeeded", stripePaymentIntentId: pi.id, receiptUrl } }).catch(() => null);
-      await addEvent(orderId, "paid", "stripe", `PaymentIntent ${pi.id}`);
-      await markPlaced(orderId, "stripe");
+      // Places the order only once every part of a split is in.
+      await settlePayment(payment.id, "stripe", { status: "succeeded", stripePaymentIntentId: pi.id, receiptUrl });
       break;
     }
     case "payment_intent.payment_failed": {

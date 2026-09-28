@@ -315,6 +315,10 @@ model Customer {
   deletedAt          DateTime?
   referredById       String?
   referralRewardedAt DateTime?
+  /// Allergies, "ring the bell twice", "always wants extra napkins". Staff-only, never shown to the customer.
+  staffNotes         String?
+  /// Set by staff after hoax or unpaid orders. The till warns; nothing refuses automatically.
+  blocked            Boolean   @default(false)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
@@ -439,11 +443,16 @@ model Order {
   placedAt            DateTime?
   acceptedAt          DateTime?
   completedAt         DateTime?
+  /// web | app | pos | phone - where the order came in, for the end-of-day split by channel.
+  source              String        @default("web")
+  /// Staff name for counter and phone orders; null for customer self-service.
+  takenBy             String?
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
-  items   OrderItem[]
-  payment Payment?
+  items    OrderItem[]
+  /// More than one when a till order is split, e.g. part cash and part card reader.
+  payments Payment[]
   events  OrderEvent[]
   promo   Promo?       @relation(fields: [promoId], references: [id])
   promoId String?
@@ -498,8 +507,9 @@ enum PaymentStatus {
 
 model Payment {
   id                    String        @id @default(cuid())
-  orderId               String        @unique
+  orderId               String
   order                 Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// stripe (online card) | stripe_terminal (card reader) | cash
   provider              String        @default("stripe")
   stripePaymentIntentId String        @default("")
   status                PaymentStatus @default(requires_payment)
@@ -507,9 +517,12 @@ model Payment {
   currency              String        @default("gbp")
   receiptUrl            String        @default("")
   refundedAmount        Int           @default(0)
+  /// Cash handed over, so change can be shown and the drawer reconciled.
+  tendered              Int?
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
+  @@index([orderId])
   @@index([stripePaymentIntentId])
 }
 

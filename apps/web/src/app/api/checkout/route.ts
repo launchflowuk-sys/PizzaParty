@@ -1,12 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { prisma, type Prisma } from "@launchflow/db";
+import { prisma } from "@launchflow/db";
 import { BasketBody, priceRequest } from "@/lib/checkout";
 import { getConfig } from "@/lib/config";
 import { getClientRow } from "@/lib/menu";
 import { toE164 } from "@/lib/phone";
 import { normalisePostcode } from "@/lib/postcode";
-import { addEvent, markPlaced } from "@/lib/orders";
+import { addEvent, createOrder, markPlaced } from "@/lib/orders";
+import type { BasketLine } from "@/lib/basket-types";
 import { connectOpts, getStripe, stripeEnabled } from "@/lib/stripe";
 import { currentCustomer } from "@/lib/session";
 import { env } from "@/lib/env";
@@ -69,37 +70,17 @@ export async function POST(req: NextRequest) {
     await prisma.customer.update({ where: { id: customer.id }, data: { referredById: referrerId } });
   }
 
-  let addressId: string | null = null;
-  if (body.fulfilment === "delivery" && body.address) {
-    const existing = await prisma.address.findFirst({ where: { customerId: customer.id, line1: body.address.line1, postcode: body.postcode } });
-    const addr = existing ?? (await prisma.address.create({ data: { customerId: customer.id, line1: body.address.line1, line2: body.address.line2, city: body.address.city, postcode: body.postcode, isDefault: true } }));
-    addressId = addr.id;
-  }
-
-  const promoRow = priced.promoCode ? await prisma.promo.findUnique({ where: { clientId_code: { clientId: client.id, code: priced.promoCode } }, select: { id: true } }) : null;
-  const order = await prisma.order.create({
-    data: {
-      clientId: client.id, locationId: location.id, customerId: customer.id, addressId,
-      status: "pending_payment", fulfilment: body.fulfilment, paymentMethod: body.paymentMethod,
-      customerName: body.name, customerPhone: phone, customerEmail: body.email,
-      deliveryLine1: body.address?.line1 ?? "", deliveryLine2: body.address?.line2 ?? "", deliveryCity: body.address?.city ?? "", deliveryPostcode: body.fulfilment === "delivery" ? body.postcode : "",
-      notes: body.notes, scheduledFor,
-      subtotal: priced.subtotal, deliveryFee: priced.deliveryFee, discount: priced.discount, promoCode: priced.promoCode, total: priced.total,
-      promoId: promoRow?.id,
-      payment: { create: { provider: body.paymentMethod === "cash" ? "cash" : "stripe", status: body.paymentMethod === "cash" ? "cash_pending" : "requires_payment", amount: priced.total } },
-    },
+  const order = await createOrder({
+    clientId: client.id, locationId: location.id, customerId: customer.id,
+    fulfilment: body.fulfilment, paymentMethod: body.paymentMethod,
+    customerName: body.name, customerPhone: phone, customerEmail: body.email,
+    address: body.address, postcode: body.postcode, notes: body.notes, scheduledFor,
+    priced, lines: body.lines as BasketLine[],
+    // The app says so on every request; anything else is the website.
+    source: req.headers.get("x-lf-client") === "mobile" ? "app" : "web",
+    payment: { provider: body.paymentMethod === "cash" ? "cash" : "stripe", status: body.paymentMethod === "cash" ? "cash_pending" : "requires_payment", amount: priced.total },
+    actor: "customer", eventMessage: `${body.fulfilment} · ${body.paymentMethod}`,
   });
-  for (const [i, l] of priced.lines.entries()) {
-    const data: Prisma.OrderItemUncheckedCreateInput = {
-      orderId: order.id, productId: l.productId ?? null, dealId: l.dealId ?? null,
-      name: l.name, sizeKey: l.sizeKey, sizeName: l.sizeName, qty: l.qty, unitPrice: l.unitPrice, lineTotal: l.lineTotal, notes: l.notes,
-      line: body.lines[i] as Prisma.InputJsonValue,
-      modifiers: { create: l.modifiers.map((m) => ({ groupName: m.groupName, name: m.name, price: m.price })) },
-      components: { create: l.components.map((c) => ({ orderId: order.id, productId: c.productId, name: c.name, sizeKey: c.sizeKey, sizeName: c.sizeName, qty: 1, unitPrice: 0, lineTotal: 0, modifiers: { create: c.modifiers.map((m) => ({ groupName: m.groupName, name: m.name, price: m.price })) } })) },
-    };
-    await prisma.orderItem.create({ data });
-  }
-  await addEvent(order.id, "created", "customer", `${body.fulfilment} · ${body.paymentMethod}`);
 
   if (body.paymentMethod === "cash") {
     await markPlaced(order.id, "customer");
@@ -117,7 +98,7 @@ export async function POST(req: NextRequest) {
       },
       { idempotencyKey: `pi_${order.id}`, ...(connectOpts(cfg.payments.stripeAccountId) ?? {}) },
     );
-    await prisma.payment.update({ where: { orderId: order.id }, data: { stripePaymentIntentId: intent.id } });
+    await prisma.payment.updateMany({ where: { orderId: order.id, provider: "stripe" }, data: { stripePaymentIntentId: intent.id } });
     return NextResponse.json({ orderId: order.id, clientSecret: intent.client_secret, total: priced.total });
   } catch (e) {
     await prisma.order.update({ where: { id: order.id }, data: { status: "cancelled" } });

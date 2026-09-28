@@ -13,6 +13,8 @@ import { formatTime } from "./availability";
 import { deliveryTermsFor } from "./postcode";
 import { revalidateTag } from "next/cache";
 import { MENU_TAG } from "./menu";
+import { remainingPence } from "./pos-money";
+import type { BasketLine, Fulfilment, PricedBasket } from "./basket-types";
 
 export const STATUS_LABEL: Record<OrderStatus, string> = {
   pending_payment: "Awaiting payment",
@@ -88,7 +90,7 @@ export const orderInclude = {
   },
   location: true,
   customer: true,
-  payment: true,
+  payments: { orderBy: { createdAt: "asc" } },
 } satisfies Prisma.OrderInclude;
 
 export type FullOrder = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
@@ -124,12 +126,109 @@ export async function getFullOrder(id: string): Promise<FullOrder | null> {
   return prisma.order.findUnique({ where: { id }, include: orderInclude });
 }
 
+export type CreateOrderInput = {
+  clientId: string;
+  locationId: string;
+  customerId: string;
+  fulfilment: Fulfilment;
+  paymentMethod: "card" | "cash";
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  /** Required for delivery; saved to the customer's address book if new. */
+  address?: { line1: string; line2: string; city: string };
+  postcode: string;
+  notes: string;
+  scheduledFor: Date | null;
+  priced: PricedBasket;
+  /** The raw basket lines, index-aligned with priced.lines, kept for one-tap reorder. */
+  lines: BasketLine[];
+  source: "web" | "app" | "pos" | "phone";
+  takenBy?: string | null;
+  /** The first payment row; omitted when the till records payments separately. */
+  payment?: { provider: string; status: "requires_payment" | "cash_pending"; amount: number };
+  actor: string;
+  eventMessage: string;
+};
+
+/**
+ * The one place an order is written. Checkout and the till both come through
+ * here so an order taken at the counter is shaped exactly like one taken online.
+ * Always leaves the order pending_payment; callers decide when it is placed.
+ */
+export async function createOrder(i: CreateOrderInput) {
+  const { priced } = i;
+  let addressId: string | null = null;
+  if (i.fulfilment === "delivery" && i.address) {
+    const existing = await prisma.address.findFirst({ where: { customerId: i.customerId, line1: i.address.line1, postcode: i.postcode } });
+    const addr = existing ?? (await prisma.address.create({ data: { customerId: i.customerId, line1: i.address.line1, line2: i.address.line2, city: i.address.city, postcode: i.postcode, isDefault: true } }));
+    addressId = addr.id;
+  }
+
+  const promoRow = priced.promoCode ? await prisma.promo.findUnique({ where: { clientId_code: { clientId: i.clientId, code: priced.promoCode } }, select: { id: true } }) : null;
+  const order = await prisma.order.create({
+    data: {
+      clientId: i.clientId, locationId: i.locationId, customerId: i.customerId, addressId,
+      status: "pending_payment", fulfilment: i.fulfilment, paymentMethod: i.paymentMethod,
+      customerName: i.customerName, customerPhone: i.customerPhone, customerEmail: i.customerEmail,
+      deliveryLine1: i.address?.line1 ?? "", deliveryLine2: i.address?.line2 ?? "", deliveryCity: i.address?.city ?? "", deliveryPostcode: i.fulfilment === "delivery" ? i.postcode : "",
+      notes: i.notes, scheduledFor: i.scheduledFor,
+      subtotal: priced.subtotal, deliveryFee: priced.deliveryFee, discount: priced.discount, promoCode: priced.promoCode, total: priced.total,
+      promoId: promoRow?.id,
+      source: i.source, takenBy: i.takenBy ?? null,
+      ...(i.payment ? { payments: { create: i.payment } } : {}),
+    },
+  });
+  for (const [n, l] of priced.lines.entries()) {
+    const data: Prisma.OrderItemUncheckedCreateInput = {
+      orderId: order.id, productId: l.productId ?? null, dealId: l.dealId ?? null,
+      name: l.name, sizeKey: l.sizeKey, sizeName: l.sizeName, qty: l.qty, unitPrice: l.unitPrice, lineTotal: l.lineTotal, notes: l.notes,
+      line: i.lines[n] as Prisma.InputJsonValue,
+      modifiers: { create: l.modifiers.map((m) => ({ groupName: m.groupName, name: m.name, price: m.price })) },
+      components: { create: l.components.map((c) => ({ orderId: order.id, productId: c.productId, name: c.name, sizeKey: c.sizeKey, sizeName: c.sizeName, qty: 1, unitPrice: 0, lineTotal: 0, modifiers: { create: c.modifiers.map((m) => ({ groupName: m.groupName, name: m.name, price: m.price })) } })) },
+    };
+    await prisma.orderItem.create({ data });
+  }
+  await addEvent(order.id, "created", i.actor, i.eventMessage);
+  return order;
+}
+
+/**
+ * Marks one payment row as money received, then places the order once the
+ * settled rows cover its total. Idempotent: a repeated webhook, or a poll
+ * racing the webhook, changes nothing the second time. Safe on an order that
+ * is already placed (a "pay later" order settled from the queue).
+ */
+export async function settlePayment(paymentId: string, actor: string, data: { status: "succeeded" | "cash_collected"; receiptUrl?: string; stripePaymentIntentId?: string }) {
+  const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
+  // A refund is final: a late or replayed "succeeded" must not undo it.
+  if (!payment || payment.status === "refunded") return null;
+  // Conditional update, so of two callers racing (webhook and till poll) only one logs it.
+  const moved = await prisma.payment.updateMany({ where: { id: paymentId, status: { notIn: [data.status, "refunded"] } }, data });
+  if (moved.count) {
+    await addEvent(payment.orderId, "paid", actor, `${payment.provider} ${gbp(payment.amount)}${data.stripePaymentIntentId ? ` · ${data.stripePaymentIntentId}` : ""}`);
+  }
+  const order = await prisma.order.findUnique({ where: { id: payment.orderId }, select: { total: true, payments: { select: { status: true, amount: true } } } });
+  if (!order) return null;
+  // A "pay later" placeholder stands for what is still owed: it shrinks as money
+  // comes in and goes once the order is covered.
+  const owed = remainingPence(order.total, order.payments);
+  const pending = { orderId: payment.orderId, provider: "cash", status: "cash_pending" as const };
+  if (owed > 0) await prisma.payment.updateMany({ where: pending, data: { amount: owed } });
+  else {
+    await prisma.payment.deleteMany({ where: pending });
+    await markPlaced(payment.orderId, actor);
+  }
+  return payment.orderId;
+}
+
 /** pending_payment → placed. Idempotent. Notifies kitchen + customer. */
 export async function markPlaced(orderId: string, actor: string, paymentData?: Prisma.InputJsonValue) {
-  const existing = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!existing) return null;
-  if (existing.status !== "pending_payment") return existing;
-  const order = await prisma.order.update({ where: { id: orderId }, data: { status: "placed", placedAt: new Date() }, include: orderInclude });
+  // Claimed atomically: the webhook, the till poll and the order page can all
+  // arrive at once, and only one of them may count the order and notify.
+  const claimed = await prisma.order.updateMany({ where: { id: orderId, status: "pending_payment" }, data: { status: "placed", placedAt: new Date() } });
+  if (!claimed.count) return prisma.order.findUnique({ where: { id: orderId } });
+  const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, include: orderInclude });
   await addEvent(orderId, "placed", actor, "Order placed", paymentData);
   await prisma.customer.update({
     where: { id: order.customerId },
@@ -182,7 +281,7 @@ export async function transitionOrder(orderId: string, to: OrderStatus, actor: s
   const event = STATUS_EVENT[to];
   if (event) await notify(event, order, { reason: opts.reason });
 
-  if (to === "rejected" && order.payment?.stripePaymentIntentId && order.payment.status === "succeeded") {
+  if (to === "rejected" && order.payments.some((p) => p.stripePaymentIntentId && p.status === "succeeded")) {
     const refunded = await refundOrder(order, "rejected");
     // Only once the money has actually moved. Telling somebody their refund is
     // on its way before Stripe has accepted it is how a shop ends up promising
@@ -235,19 +334,27 @@ async function awardLoyalty(order: FullOrder) {
   await prisma.customer.update({ where: { id: order.customerId }, data: { loyaltyPoints: { increment: points } } });
 }
 
-/** Returns the pence actually refunded, or null if Stripe refused. */
+/**
+ * Refunds every card payment on the order, online and card reader alike. Cash
+ * goes back over the counter, so it is left alone. Returns the pence actually
+ * refunded, or null if Stripe refused any of them.
+ */
 async function refundOrder(order: FullOrder, reason: string): Promise<number | null> {
-  try {
-    const { getStripe, connectOpts } = await import("./stripe");
-    const cfg = getConfig();
-    const refund = await getStripe().refunds.create({ payment_intent: order.payment!.stripePaymentIntentId }, connectOpts(cfg.payments.stripeAccountId));
-    await prisma.payment.update({ where: { orderId: order.id }, data: { status: "refunded", refundedAmount: refund.amount } });
-    await addEvent(order.id, "refunded", "system", `Refunded ${gbp(refund.amount)} (${reason})`);
-    return refund.amount;
-  } catch (e) {
-    await addEvent(order.id, "refund_failed", "system", (e as Error).message);
-    return null;
+  const { getStripe, connectOpts } = await import("./stripe");
+  const cfg = getConfig();
+  let refunded = 0;
+  for (const p of order.payments.filter((p) => p.stripePaymentIntentId && p.status === "succeeded")) {
+    try {
+      const refund = await getStripe().refunds.create({ payment_intent: p.stripePaymentIntentId }, connectOpts(cfg.payments.stripeAccountId));
+      await prisma.payment.update({ where: { id: p.id }, data: { status: "refunded", refundedAmount: refund.amount } });
+      await addEvent(order.id, "refunded", "system", `Refunded ${gbp(refund.amount)} (${reason})`);
+      refunded += refund.amount;
+    } catch (e) {
+      await addEvent(order.id, "refund_failed", "system", (e as Error).message);
+      return null;
+    }
   }
+  return refunded;
 }
 
 /**

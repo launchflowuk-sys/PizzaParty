@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { prisma } from "@launchflow/db";
 import { getConfig } from "@/lib/config";
-import { getFullOrder, markPlaced, STATUS_LABEL } from "@/lib/orders";
+import { getFullOrder, settlePayment, STATUS_LABEL } from "@/lib/orders";
+import { isFullyPaid } from "@/lib/pos-money";
 import { connectOpts, getStripe, stripeEnabled } from "@/lib/stripe";
 import { gbp } from "@/lib/money";
 import { formatTime } from "@/lib/availability";
@@ -21,12 +21,12 @@ export default async function OrderPage({ params }: Params) {
   if (!order) notFound();
 
   // Webhook lag fallback: reconcile with Stripe if still awaiting payment.
-  if (order.status === "pending_payment" && order.payment?.stripePaymentIntentId && stripeEnabled()) {
+  const card = order.payments.find((p) => p.provider === "stripe" && p.stripePaymentIntentId);
+  if (order.status === "pending_payment" && card && stripeEnabled()) {
     try {
-      const pi = await getStripe().paymentIntents.retrieve(order.payment.stripePaymentIntentId, undefined, connectOpts(cfg.payments.stripeAccountId));
+      const pi = await getStripe().paymentIntents.retrieve(card.stripePaymentIntentId, undefined, connectOpts(cfg.payments.stripeAccountId));
       if (pi.status === "succeeded") {
-        await prisma.payment.update({ where: { orderId: order.id }, data: { status: "succeeded" } });
-        await markPlaced(order.id, "stripe");
+        await settlePayment(card.id, "stripe", { status: "succeeded" });
         order = (await getFullOrder(id))!;
       }
     } catch { /* show pending */ }
@@ -104,7 +104,7 @@ export default async function OrderPage({ params }: Params) {
             <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 28, letterSpacing: "-.02em" }}>{gbp(order.total)}</span>
           </div>
           <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-700)" }}>
-            {order.paymentMethod === "cash" ? `Pay cash on ${order.fulfilment}` : order.payment?.status === "succeeded" ? "Paid by card" : "Card payment pending"}
+            {order.paymentMethod === "cash" ? `Pay cash on ${order.fulfilment}` : isFullyPaid(order.total, order.payments) ? "Paid by card" : "Card payment pending"}
           </p>
         </aside>
       </div>

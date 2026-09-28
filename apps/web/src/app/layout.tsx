@@ -38,12 +38,12 @@ export const viewport: Viewport = { themeColor: "#f3f2f2", width: "device-width"
 /**
  * Screens that are not the shop.
  *
- * The back office and the kitchen have their own chrome and their own way out.
+ * The back office, kitchen, and POS till have their own chrome and their own way out.
  * Wrapping them in the storefront's header, footer and basket bar put a "Order
  * now" button and a menu of takeaway links on top of the till - which on a
  * phone pushed the actual controls off the screen entirely.
  */
-const OPS = ["/admin", "/kitchen"];
+const OPS = ["/admin", "/kitchen", "/pos"];
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Set by middleware; layouts are not given the URL they render.

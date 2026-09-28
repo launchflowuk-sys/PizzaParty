@@ -31,16 +31,17 @@ export default async function PayPage({ params }: { params: Promise<{ id: string
     where: { id },
     select: {
       id: true, number: true, total: true, status: true,
-      payment: { select: { stripePaymentIntentId: true, status: true } },
+      payments: { where: { provider: "stripe" }, orderBy: { createdAt: "asc" }, take: 1, select: { stripePaymentIntentId: true, status: true } },
     },
   });
-  if (!order?.payment?.stripePaymentIntentId) notFound();
+  const payment = order?.payments[0];
+  if (!order || !payment?.stripePaymentIntentId) notFound();
 
   const cfg = getConfig();
 
   // Already paid, or moved on. Bounce straight back into the app rather than
   // showing a card form for money that has been taken.
-  if (order.status !== "pending_payment" || order.payment.status === "succeeded") {
+  if (order.status !== "pending_payment" || payment.status === "succeeded") {
     return <MobilePay done orderId={order.id} clientSecret="" publishableKey="" accountId={null} total={order.total} number={order.number} brand={cfg.brand.primary} />;
   }
 
@@ -48,7 +49,7 @@ export default async function PayPage({ params }: { params: Promise<{ id: string
   // the second is query params, and passing request options there type-errors
   // rather than silently reading the platform account.
   const intent = await getStripe().paymentIntents.retrieve(
-    order.payment.stripePaymentIntentId,
+    payment.stripePaymentIntentId,
     undefined,
     connectOpts(cfg.payments.stripeAccountId) ?? undefined,
   );
