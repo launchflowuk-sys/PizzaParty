@@ -141,6 +141,16 @@ Every item below is in scope. Phases are only the build order.
 32. **Eat-in / table orders** if the shop wants them.
 33. **Keyboard shortcuts** for a desktop till: search, qty, pay, send.
 
+### Marketing (added 2026-09-28, building alongside Phase 1)
+34. **Push offers to app users**: push is a campaign channel next to SMS and
+    email. The offer is either an existing live one (a deal, a promo code or a
+    promo slot) or a custom one built on the spot. The audience is all app users,
+    a segment, or hand-picked customers, with "Send offer" on any customer's
+    page. Custom offers for specific people get one-person codes. The screen
+    shows a phone preview, the recipient count and a confirm step, and
+    redemptions are measured through the promo code. Marketing consent is
+    respected.
+
 ---
 
 ## 5. How it is built

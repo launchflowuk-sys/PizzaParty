@@ -5,6 +5,7 @@ import { getClientRow } from "@/lib/menu";
 import { getConfig } from "@/lib/config";
 import { gbp } from "@/lib/money";
 import { requireScreen } from "@/lib/session";
+import { can } from "@/lib/permissions";
 import { HelpSpot } from "@/components/admin/HelpSpot";
 import { AdminNotice } from "@/components/admin/AdminNotice";
 import { adjustPoints } from "../../loyalty-actions";
@@ -80,7 +81,7 @@ export default async function CustomerFile({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ m?: string; e?: string }>;
 }) {
-  await requireScreen("customers");
+  const staff = await requireScreen("customers");
   const client = await getClientRow();
   const cfg = getConfig();
   const { id } = await params;
@@ -98,6 +99,10 @@ export default async function CustomerFile({
     },
   });
   if (!customer) notFound();
+
+  // Only offered when it could actually reach them: opted in, with the app.
+  const canPush = can(staff.role, "campaigns") && customer.marketingOptIn && !customer.deletedAt &&
+    (await prisma.pushDevice.count({ where: { customerId: customer.id, disabledAt: null } })) > 0;
 
   const back = `/admin/customers/${customer.id}`;
   const paid = customer.orders.filter((o) => o.status === "completed");
@@ -128,6 +133,9 @@ export default async function CustomerFile({
           </span>
           <h1>{customer.name || customer.phone}</h1>
         </div>
+        {canPush ? (
+          <Link href={`/admin/campaigns/push?ids=${customer.id}`} className="btn btn-primary">Send offer to app</Link>
+        ) : null}
       </header>
 
       <AdminNotice message={m} error={e} back={back} />

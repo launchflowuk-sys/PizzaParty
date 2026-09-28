@@ -33,4 +33,10 @@ export const env = {
   cronSecret: trim(process.env.CRON_SECRET),
   googlePlacesKey: trim(process.env.GOOGLE_PLACES_API_KEY),
   isProd: process.env.NODE_ENV === "production",
+  // Push never leaves a development machine unless asked: its database is often
+  // a copy of production, real phones included. PUSH_DRY_RUN=1 forces a dry run
+  // anywhere (a local `next start` runs as production); =0 lets dev really send.
+  pushDryRun: trim(process.env.PUSH_DRY_RUN)
+    ? trim(process.env.PUSH_DRY_RUN) !== "0"
+    : process.env.NODE_ENV !== "production",
 };

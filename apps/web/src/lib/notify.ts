@@ -127,6 +127,10 @@ export type PushResult = {
   sent: number;
   /** Tokens Expo says are dead. The caller disables these rather than retrying forever. */
   dead: string[];
+  /** Tokens Expo accepted, so a caller sending to many people knows which of them got it. */
+  accepted: string[];
+  /** True when nothing left the building - see `env.pushDryRun`. */
+  dryRun?: boolean;
   error?: string;
 };
 
@@ -145,9 +149,18 @@ export type PushResult = {
  * noisier for the rest of the shop's life.
  */
 export async function sendPush(messages: PushMessage[]): Promise<PushResult> {
-  if (messages.length === 0) return { ok: true, sent: 0, dead: [] };
+  if (messages.length === 0) return { ok: true, sent: 0, dead: [], accepted: [] };
+
+  // A development machine usually holds a copy of production's customers, real
+  // push tokens included. Reported as a dry run rather than as success, so
+  // nothing downstream can mistake it for a delivery.
+  if (env.pushDryRun) {
+    console.log(`[push:dry-run] ${messages.length} message(s): ${messages[0]!.title} - ${messages[0]!.body}`);
+    return { ok: true, sent: messages.length, dead: [], accepted: messages.map((m) => m.to), dryRun: true };
+  }
 
   const dead: string[] = [];
+  const accepted: string[] = [];
   let sent = 0;
 
   // Expo accepts 100 per request. A shop with a few hundred devices on a
@@ -163,7 +176,7 @@ export async function sendPush(messages: PushMessage[]): Promise<PushResult> {
       });
 
       if (!res.ok) {
-        return { ok: false, sent, dead, error: `Expo returned ${res.status}` };
+        return { ok: false, sent, dead, accepted, error: `Expo returned ${res.status}` };
       }
 
       const body = (await res.json()) as {
@@ -171,7 +184,7 @@ export async function sendPush(messages: PushMessage[]): Promise<PushResult> {
       };
 
       (body.data ?? []).forEach((r, n) => {
-        if (r.status === "ok") { sent++; return; }
+        if (r.status === "ok") { sent++; if (chunk[n]) accepted.push(chunk[n]!.to); return; }
         // The app was deleted, or notifications were turned off at the OS.
         // Expo answers positionally, but guard the lookup rather than trust
         // the two arrays to stay the same length.
@@ -179,9 +192,9 @@ export async function sendPush(messages: PushMessage[]): Promise<PushResult> {
         if (token && r.details?.error === "DeviceNotRegistered") dead.push(token);
       });
     } catch (e) {
-      return { ok: false, sent, dead, error: (e as Error).message };
+      return { ok: false, sent, dead, accepted, error: (e as Error).message };
     }
   }
 
-  return { ok: true, sent, dead };
+  return { ok: true, sent, dead, accepted };
 }

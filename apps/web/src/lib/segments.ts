@@ -72,4 +72,8 @@ export function segmentWhere(key: string): Prisma.CustomerWhereInput {
   }
 }
 
-export const segmentLabel = (key: string) => SEGMENTS.find((s) => s.key === key)?.label ?? key;
+/** A push campaign to picked people records "custom#<fingerprint>" so its duplicate guard can tell lists apart. */
+export const segmentLabel = (key: string) => {
+  const base = key.split("#")[0]!;
+  return SEGMENTS.find((s) => s.key === base)?.label ?? key;
+};

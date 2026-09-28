@@ -92,6 +92,9 @@ export default async function AdminCampaigns({
                   <option value="sms">SMS &mdash; {gbp(SMS_COST_PENCE)} each</option>
                   <option value="email">Email &mdash; free</option>
                 </select>
+                <p style={{ fontSize: 12, margin: "6px 0 0" }}>
+                  Push to the app instead? <Link href="/admin/campaigns/push">Push an offer</Link> &mdash; free, with a preview.
+                </p>
               </div>
               <div className="field">
                 <label htmlFor="segment">
