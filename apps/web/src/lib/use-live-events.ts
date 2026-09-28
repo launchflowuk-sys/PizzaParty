@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import type { PosDisplayEnvelope } from "./pos-phase4-types";
 
 /** Payloads from /api/pos/stream and /api/kitchen/stream (lib/realtime.ts). */
 export type LiveHandlers = {
@@ -9,6 +10,8 @@ export type LiveHandlers = {
   menu?: () => void;
   /** Events may have been missed (server listener reconnected, or this stream did): refetch everything shown. */
   resync?: () => void;
+  /** A till's customer-display message (/api/pos/display/stream only). */
+  display?: (e: PosDisplayEnvelope) => void;
 };
 
 const MAX_BACKOFF_MS = 30_000;
@@ -56,6 +59,7 @@ export function useLiveEvents(url: string | null, handlers: LiveHandlers): { con
       s.addEventListener("order", (m) => ref.current.order?.(json(m) as { orderId: string; kind: string }));
       s.addEventListener("menu", () => ref.current.menu?.());
       s.addEventListener("resync", () => ref.current.resync?.());
+      s.addEventListener("display", (m) => ref.current.display?.(json(m) as PosDisplayEnvelope));
     };
     const onVisible = () => { if (document.visibilityState === "visible" && !es) { fails = 0; open(); } };
 

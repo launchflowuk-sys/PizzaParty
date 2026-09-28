@@ -64,10 +64,10 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
   const searchRef = useRef<HTMLInputElement>(null);
 
   // Phase 4 (POS-PLAN items 28-30): caller ID banners, the customer-facing
-  // display's BroadcastChannel, and offline detection/queueing.
+  // display link (usePosDisplay), and offline detection/queueing.
   const caller = useCallerId();
-  const display = usePosDisplay();
   const offline = useOnlineStatus(live.connected, queue.connected);
+  const display = usePosDisplay(offline);
   const offlineQueue = useOfflineQueue(!offline);
   const offlinePriced = useMemo(() => (offline ? priceOffline(order.lines, categories, deals) : null), [offline, order.lines, categories, deals]);
 
@@ -170,13 +170,14 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
   // branding). Keyed by line, not slug: offlinePriced.lines and order.lines share the
   // same `key` per line, which is the one thing both have in common with an OfflinePricedLine
   // (it has no product slug of its own - see offline-pricing.ts).
-  const lineImages = useMemo(() => {
+  // The slug rides along too, so the display does not suggest what is already in the basket.
+  const lineMeta = useMemo(() => {
     const bySlug: Record<string, string> = {};
     for (const p of allProducts) if (p.image) bySlug[p.slug] = p.image;
-    const out: Record<string, string> = {};
+    const out: Record<string, { image?: string; slug?: string }> = {};
     for (const l of order.lines) {
-      const img = l.kind === "product" && l.product ? bySlug[l.product] : undefined;
-      if (img) out[l.key] = img;
+      const slug = l.kind === "product" && l.product ? l.product : undefined;
+      out[l.key] = { image: slug ? bySlug[slug] : undefined, slug };
     }
     return out;
   }, [allProducts, order.lines]);
@@ -224,8 +225,8 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
    *  just because the till happens to be showing the Orders board. */
   const orderInProgress = order.lines.length > 0 || middleView.kind !== "grid" || showCustomerStage || showTableStage;
 
-  // Customer-facing display (POS-PLAN item 29): broadcast the live basket over
-  // BroadcastChannel whenever it changes. Offline uses the client-computed
+  // Customer-facing display (POS-PLAN item 29): send the live basket (usePosDisplay:
+  // same-browser channel + server relay for other devices) whenever it changes. Offline uses the client-computed
   // price (offlinePriced) since the server's own priced basket goes stale.
   useEffect(() => {
     const shopName = boot?.shopName ?? "";
@@ -233,7 +234,7 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
     if (offline) {
       display({
         type: "basket", shopName,
-        lines: (offlinePriced?.lines ?? []).map((l) => ({ name: l.name, detail: l.detail, qty: l.qty, lineTotal: l.lineTotal, image: lineImages[l.key] })),
+        lines: (offlinePriced?.lines ?? []).map((l) => ({ name: l.name, detail: l.detail, qty: l.qty, lineTotal: l.lineTotal, ...lineMeta[l.key] })),
         subtotal: offlinePriced?.subtotal ?? 0, discount: 0, deliveryFee: 0, total: offlinePriced?.total ?? 0,
       });
       return;
@@ -241,11 +242,12 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
     const p = order.priced;
     display({
       type: "basket", shopName,
-      lines: order.lines.map((l) => ({ name: l.name ?? "", detail: l.detail ?? "", qty: l.qty, lineTotal: l.lineTotal ?? 0, image: lineImages[l.key] })),
+      // The server's line price, as the till's own basket shows it: the client cache is the unit price until re-priced.
+      lines: order.lines.map((l) => ({ name: l.name ?? "", detail: l.detail ?? "", qty: l.qty, lineTotal: p?.lines.find((x) => x.key === l.key)?.lineTotal ?? l.lineTotal ?? 0, ...lineMeta[l.key] })),
       subtotal: p?.subtotal ?? 0, discount: p?.discount ?? 0, deliveryFee: p?.deliveryFee ?? 0, total: p?.total ?? 0,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order.lines, order.priced, offline, offlinePriced, boot?.shopName, lineImages]);
+  }, [order.lines, order.priced, offline, offlinePriced, boot?.shopName, lineMeta]);
 
   // A price/menu change lands, but never mid-order: refresh the moment the
   // basket is clear (immediately if it already was, otherwise as soon as this

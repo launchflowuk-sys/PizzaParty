@@ -3,7 +3,8 @@ import { EventEmitter } from "node:events";
 import { Client } from "pg";
 import { prisma } from "@launchflow/db";
 import { env } from "./env";
-import type { PosCall } from "./pos-phase4-types";
+import type { PosCall, PosDisplayEnvelope, PosDisplayTill } from "./pos-phase4-types";
+import { fitForNotify, mergeTill, TILL_ACTIVE_MS } from "./pos-display";
 
 /**
  * Live updates for the ops screens: Postgres LISTEN/NOTIFY fanned out over SSE.
@@ -14,7 +15,8 @@ import type { PosCall } from "./pos-phase4-types";
  * database connection. Payloads carry ids only - screens refetch what they show.
  * The one exception is `call` (caller ID): it carries the number and name, so it
  * is only ever written to the till's own stream (shopStream with `calls`), never
- * to the kitchen or to a customer's order stream.
+ * to the kitchen or to a customer's order stream. `display` (the customer display's
+ * basket) carries the message too, and only goes to displayStream.
  */
 const CHANNEL = "lf_orders";
 const MAX_STREAMS = 500; // open streams per process before a staff screen is told to poll instead
@@ -25,6 +27,7 @@ export type LiveEvent =
   | { clientId: string; kind: "order"; orderId: string; type: string }
   | { clientId: string; kind: "menu" }
   | { clientId: string; kind: "call"; call: PosCall }
+  | ({ clientId: string; kind: "display" } & PosDisplayEnvelope)
   | { kind: "resync" };
 
 /** Never throws: a missed notification is covered by the screens' slow poll. */
@@ -48,15 +51,41 @@ export function publishCall(clientId: string, call: PosCall) {
   return notify(prisma.$executeRaw`SELECT pg_notify(${CHANNEL}, ${payload})`);
 }
 
-type Hub = { bus: EventEmitter; pg: Client | null; connecting: boolean; everUp: boolean; fails: number; streams: number };
+/**
+ * A till's customer-display message. Kept whole in this process's memory (for a
+ * display that has just connected, via lastDisplays) and sent to every process by
+ * NOTIFY, trimmed to fit if the basket is long (see fitForNotify).
+ */
+export function publishDisplay(clientId: string, env: PosDisplayEnvelope) {
+  rememberDisplay(clientId, env);
+  const payload = fitForNotify(env, (e) => ({ kind: "display", clientId, ...e }) satisfies LiveEvent);
+  return notify(prisma.$executeRaw`SELECT pg_notify(${CHANNEL}, ${payload})`);
+}
+
+// ponytail: per-process memory, empty after a restart until each till next changes; fine for pairing, a table if it ever must survive one.
+function rememberDisplay(clientId: string, env: PosDisplayEnvelope) {
+  const h = hub();
+  const tills = h.displays.get(clientId) ?? new Map<string, PosDisplayTill>();
+  h.displays.set(clientId, tills);
+  tills.set(env.tillId, mergeTill(tills.get(env.tillId), env));
+}
+
+/** The tills this process has heard from recently, newest first. */
+export function lastDisplays(clientId: string): PosDisplayTill[] {
+  const now = Date.now();
+  return [...(hub().displays.get(clientId)?.values() ?? [])].filter((t) => now - t.at < TILL_ACTIVE_MS).sort((a, b) => b.at - a.at);
+}
+
+type Hub = { bus: EventEmitter; pg: Client | null; connecting: boolean; everUp: boolean; fails: number; streams: number; displays: Map<string, Map<string, PosDisplayTill>> };
 // On globalThis so dev hot reload (and each route's own module copy) shares one listener.
 const g = globalThis as unknown as { __lfRealtime?: Hub };
 function hub(): Hub {
   if (!g.__lfRealtime) {
     const bus = new EventEmitter();
     bus.setMaxListeners(0);
-    g.__lfRealtime = { bus, pg: null, connecting: false, everUp: false, fails: 0, streams: 0 };
+    g.__lfRealtime = { bus, pg: null, connecting: false, everUp: false, fails: 0, streams: 0, displays: new Map() };
   }
+  g.__lfRealtime.displays ??= new Map(); // a hub made before this field existed (dev hot reload)
   return g.__lfRealtime;
 }
 
@@ -78,7 +107,11 @@ async function connect(h: Hub) {
     setTimeout(() => void connect(h), wait).unref();
   };
   pg.on("notification", (m) => {
-    try { h.bus.emit("event", JSON.parse(m.payload ?? "") as LiveEvent); } catch { /* not ours */ }
+    let e: LiveEvent;
+    try { e = JSON.parse(m.payload ?? "") as LiveEvent; } catch { return; /* not ours */ }
+    // Every process remembers every till, so any of them can answer GET /api/pos/display.
+    if (e.kind === "display") rememberDisplay(e.clientId, { tillId: e.tillId, tillName: e.tillName, at: e.at, msg: e.msg });
+    h.bus.emit("event", e);
   });
   pg.on("error", (e) => down(e.message));
   pg.on("end", () => down("connection ended"));
@@ -156,7 +189,17 @@ export function shopStream(signal: AbortSignal, clientId: string, opts: { calls?
       else if (e.clientId !== clientId) return;
       else if (e.kind === "order") send({ orderId: e.orderId, kind: e.type }, "order");
       else if (e.kind === "call") { if (opts.calls) send(e.call, "call"); }
-      else send({}, "menu");
+      else if (e.kind === "menu") send({}, "menu");
+    }),
+  );
+}
+
+/** The customer display's stream: `event: display` (PosDisplayEnvelope) for this shop's tills, nothing else. */
+export function displayStream(signal: AbortSignal, clientId: string): Response {
+  if (hub().streams >= MAX_STREAMS) return new Response("Too many live screens", { status: 503, headers: { "retry-after": "30" } });
+  return sseResponse(signal, ({ send }) =>
+    onLive((e) => {
+      if (e.kind === "display" && e.clientId === clientId) send({ tillId: e.tillId, tillName: e.tillName, at: e.at, msg: e.msg } satisfies PosDisplayEnvelope, "display");
     }),
   );
 }

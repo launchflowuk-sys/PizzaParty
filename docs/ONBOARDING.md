@@ -538,15 +538,35 @@ PIN flow as §4. Recommended setup:
 
 ### 5.2 Customer-facing display — `/pos/display`
 
-`apps/web/src/app/pos/display/page.tsx` + `PosDisplayClient`. Opened from the
-till's top bar ("Open customer display") — it's a **second browser window on
-the same machine**, dragged onto the customer-facing monitor (a genuine dual-
-screen setup, not a second networked device). Live state (basket, paying,
-paid) reaches it over `BroadcastChannel` from whichever till window is open;
-branding, the idle hero-image rotation and the day's deal are read
-server-side from config/menu once, same as the till page. No extra
-configuration beyond the till itself being logged in and open on the same
-machine.
+`apps/web/src/app/pos/display/page.tsx` + `PosDisplayClient`. **Any screen
+works**: a second monitor on the till computer, or a separate tablet/TV facing
+the customer on the shop's Wi-Fi.
+
+- **Second monitor on the till computer:** till top bar → **Customer display**
+  → **Open on this computer**, then drag the window onto the monitor and make
+  it full screen (F11).
+- **Separate tablet or screen:** till top bar → **Customer display** shows the
+  address (`https://<shop domain>/pos/display`) with a **Copy** button. Open it
+  on the tablet and sign in with a staff PIN. Use a **Kitchen**-role PIN (make
+  a staff member such as "Counter display" with the Kitchen role): it can open
+  the display and the kitchen queue, never the till or its actions, cash or
+  reports. Put the tablet in kiosk/guided-access mode so customers cannot
+  leave the page.
+
+**Pairing.** Each till names itself (Cash & reports → Settings → **Till
+name**, default "Till 1"; stored on that till). A display follows the only
+till that is sending; if several are, it shows a full-screen "Which till is
+this screen for?" list and remembers the choice on that device. To re-pick
+later, tap the top-left corner of the display three times quickly.
+
+How it moves: the till sends each change over `BroadcastChannel` (instant,
+same browser) and to `POST /api/pos/display`, which relays it through the
+live-updates channel to `GET /api/pos/display/stream` on every device. A
+display that has just connected asks `GET /api/pos/display` for each till's
+latest state. Nothing is sent while the till is offline; it catches up when
+the internet is back. Branding, photos, the "You might also like" cards (top
+sellers with photos, never what is already in the basket), today's deal and
+the loyalty line (only when `loyalty.enabled`) come from config/menu.
 
 ### 5.3 Kitchen screen — `/kitchen`
 
@@ -594,7 +614,8 @@ lookup and the card reader wait for the internet. Each saved order carries a
 request id, so it can never land twice.
 
 **Done when:** the till signs in and takes a test order; the kitchen screen
-receives and auto-prints it; the customer display shows the live basket; a
+receives and auto-prints it; the customer display (on its own tablet, if the
+shop has one) shows the live basket; a
 card test payment completes on the reader.
 
 ---

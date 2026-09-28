@@ -38,7 +38,7 @@ export function CashPad({ remaining, busy, error, onConfirm, onBack, onTenderCha
 
   // Customer display (POS-PLAN item 29): mirror the tendered/change figures live
   // as staff type, lightly debounced so every single keypress doesn't post a
-  // BroadcastChannel message.
+  // display message (channel + server relay).
   useEffect(() => {
     if (!onTenderChange) return;
     const t = setTimeout(() => onTenderChange(amount, tendered, change), 120);

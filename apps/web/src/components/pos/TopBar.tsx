@@ -1,5 +1,5 @@
 "use client";
-import type { RefObject } from "react";
+import { useState, type RefObject } from "react";
 import type { PosBootstrap } from "@/lib/pos-types";
 import type { OrderTypeTab } from "./pos-client-types";
 
@@ -115,7 +115,7 @@ export function TopBar({
             {offlineCount} unsent · Send now
           </button>
         ) : null}
-        <button type="button" className="btn btn-ghost" style={{ minHeight: 44 }} onClick={onOpenDisplay}>Customer display</button>
+        <DisplayMenu onOpenHere={onOpenDisplay} />
         <button type="button" className="btn btn-ghost" style={{ minHeight: 44 }} onClick={onShowShortcuts} title="Keyboard shortcuts (?)">?</button>
         <span className="pos-live-pill" data-connected={liveConnected ? "1" : "0"}>
           <span className="pos-live-dot" />
@@ -138,6 +138,45 @@ export function TopBar({
         ) : null}
         <span style={{ fontWeight: 700, fontSize: 14 }}>{staffName}</span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * "Customer display": open it in a window here (a second monitor on this
+ * computer), or on any other device by going to the URL below and signing in
+ * with a staff PIN - a Kitchen-role PIN is enough (docs/ONBOARDING.md §5.2).
+ */
+function DisplayMenu({ onOpenHere }: { onOpenHere: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const url = typeof window === "undefined" ? "/pos/display" : `${window.location.origin}/pos/display`;
+  return (
+    <div style={{ position: "relative" }}>
+      <button type="button" className="btn btn-ghost" style={{ minHeight: 44 }} aria-expanded={open} onClick={() => { setOpen((o) => !o); setCopied(false); }}>
+        Customer display
+      </button>
+      {open ? (
+        <div className="card pos-display-menu" role="dialog" aria-label="Customer display">
+          <button type="button" className="btn btn-primary" style={{ minHeight: 48, width: "100%" }} onClick={() => { onOpenHere(); setOpen(false); }}>
+            Open on this computer
+          </button>
+          <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "12px 0 6px" }}>
+            Or on any tablet or screen: open this address and sign in with a staff PIN.
+          </p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input className="input" readOnly value={url} onFocus={(e) => e.currentTarget.select()} style={{ minHeight: 44, flex: 1, fontSize: 14 }} aria-label="Customer display address" />
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ minHeight: 44 }}
+              onClick={() => { void navigator.clipboard?.writeText(url).then(() => setCopied(true), () => setCopied(false)); }}
+            >
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

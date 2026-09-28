@@ -49,16 +49,24 @@ export type PosCall = {
 };
 
 /**
- * Customer-facing display at /pos/display, opened on a second screen by the same
- * browser. The till posts these on BroadcastChannel POS_DISPLAY_CHANNEL; no server involved.
+ * Customer-facing display at /pos/display, on any device. The till sends a
+ * PosDisplayEnvelope two ways: BroadcastChannel POS_DISPLAY_CHANNEL (instant, same
+ * browser) and POST /api/pos/display, which the server relays to every display as
+ * `event: display` on GET /api/pos/display/stream. GET /api/pos/display lists the
+ * tills seen recently (PosDisplayTill[]) so a display that just connected can pair.
  */
 export const POS_DISPLAY_CHANNEL = "lf-pos-display";
-export type PosDisplayLine = { name: string; detail: string; qty: number; lineTotal: number; image?: string };
+export type PosDisplayLine = { name: string; detail: string; qty: number; lineTotal: number; image?: string; slug?: string };
 export type PosDisplayMessage =
-  | { type: "basket"; shopName: string; lines: PosDisplayLine[]; subtotal: number; discount: number; deliveryFee: number; total: number }
+  /** `truncated`: the relay dropped trailing lines to fit a notification; the totals are still whole. */
+  | { type: "basket"; shopName: string; lines: PosDisplayLine[]; subtotal: number; discount: number; deliveryFee: number; total: number; truncated?: boolean }
   | { type: "paying"; total: number; method: "cash" | "reader"; tendered?: number; change?: number }
   | { type: "paid"; orderNumber: number; change?: number }
   | { type: "idle"; shopName: string };
+/** One message from one till. `at` is the till's clock (ms) - later wins, so a message arriving twice is harmless. */
+export type PosDisplayEnvelope = { tillId: string; tillName: string; at: number; msg: PosDisplayMessage };
+/** What the server remembers per till: the latest message, plus the last basket (a "paying" carries no lines). */
+export type PosDisplayTill = PosDisplayEnvelope & { basket?: Extract<PosDisplayMessage, { type: "basket" }> };
 
 /** GET /api/pos/marketplaces → which channels are switched on, for the settings card and board badges. */
 export type PosMarketplaceStatus = {

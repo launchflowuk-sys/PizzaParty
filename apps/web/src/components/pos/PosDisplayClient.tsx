@@ -1,80 +1,85 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { gbp } from "@/lib/money";
-import { POS_DISPLAY_CHANNEL, type PosDisplayMessage } from "@/lib/pos-phase4-types";
+import type { PosDisplayMessage, PosDisplayTill } from "@/lib/pos-phase4-types";
+import { useDisplayFeed } from "./useDisplayFeed";
 import "./pos.css";
 
 const IDLE_AFTER_PAID_MS = 8000;
 const HERO_SLIDE_MS = 6000;
+const UPSELL_SHOWN = 4;
+const PICKER_TAPS = 3; // taps on the hidden corner, within PICKER_TAP_WINDOW_MS, to choose another till
+const PICKER_TAP_WINDOW_MS = 1500;
 
 type Screen = PosDisplayMessage;
 type BasketScreen = Extract<Screen, { type: "basket" }>;
 type HeroImage = { src: string; alt: string };
+export type UpsellItem = { slug: string; name: string; fromPrice: number; image: string };
+export type DisplayDeal = { name: string; price: number; image: string };
 
 /**
- * Customer-facing display (POS-PLAN item 29). Driven purely by BroadcastChannel
- * messages from the till - the shop name/logo/hero rotation/promo line come from
- * the server component (page.tsx) since this window shares no React state with
- * the till.
+ * Customer display (POS-PLAN item 29). Live state comes from one till via
+ * useDisplayFeed (same-browser channel or the server relay, so any device
+ * works); branding, photos, upsell and today's deal come from the server
+ * component (page.tsx). Shows nothing staff-only: no till actions, no customer
+ * details - just the order, prices and the menu.
  *
- * "paying" messages on the wire carry no basket lines (see lib/pos-phase4-types.ts) -
- * the till already showed them once as a "basket" message a moment earlier, so this
- * component just remembers the last one and keeps rendering it while paying, per
- * the "never drop the order summary" requirement.
+ * "paying" messages carry no basket lines (see lib/pos-phase4-types.ts); the
+ * feed keeps the till's last basket so the order summary never drops.
  */
 export function PosDisplayClient({
-  shopName, logoUrl, promoLine, heroImages,
+  shopName, logoUrl, tagline, promoLine, heroImages, upsell, deal, loyaltyLine,
 }: {
   shopName: string;
   logoUrl: string;
+  tagline: string;
   promoLine: string;
   heroImages: HeroImage[];
+  upsell: UpsellItem[];
+  deal: DisplayDeal | null;
+  loyaltyLine: string;
 }) {
-  const [screen, setScreen] = useState<Screen>({ type: "idle", shopName });
-  const [basket, setBasket] = useState<BasketScreen | null>(null);
+  const feed = useDisplayFeed();
+  const entry = feed.entry;
   const [heroIndex, setHeroIndex] = useState(0);
   const [countdown, setCountdown] = useState(Math.round(IDLE_AFTER_PAID_MS / 1000));
   const [flashIdx, setFlashIdx] = useState<number | null>(null);
+  const [expiredAt, setExpiredAt] = useState<number | null>(null);
   const prevLen = useRef(0);
   const linesRef = useRef<HTMLDivElement>(null);
+  const taps = useRef<number[]>([]);
 
+  // A "paid" goes back to the welcome screen after a while - straight away if it is already old (a display that just connected).
+  const paidAt = entry?.msg.type === "paid" ? entry.at : null;
   useEffect(() => {
-    if (typeof BroadcastChannel === "undefined") return;
-    const ch = new BroadcastChannel(POS_DISPLAY_CHANNEL);
-    let idleTimer: number | undefined;
-    ch.onmessage = (e) => {
-      const msg = e.data as PosDisplayMessage;
-      clearTimeout(idleTimer);
-      setScreen(msg);
-      if (msg.type === "basket") setBasket(msg);
-      if (msg.type === "idle") { setBasket(null); prevLen.current = 0; }
-      if (msg.type === "paid") {
-        idleTimer = window.setTimeout(() => { setScreen({ type: "idle", shopName }); setBasket(null); prevLen.current = 0; }, IDLE_AFTER_PAID_MS);
-      }
-    };
-    return () => { clearTimeout(idleTimer); ch.close(); };
-  }, [shopName]);
+    if (paidAt === null) return;
+    const t = window.setTimeout(() => setExpiredAt(paidAt), Math.max(0, paidAt + IDLE_AFTER_PAID_MS - Date.now()));
+    return () => clearTimeout(t);
+  }, [paidAt]);
 
-  // Idle hero rotation (Ken Burns handled in CSS, index just picks the slide).
+  const screen: Screen = !entry || (paidAt !== null && expiredAt === paidAt) ? { type: "idle", shopName } : entry.msg;
+  const basket = screen.type === "idle" || screen.type === "paid" ? null : entry?.basket ?? null;
+
+  // Hero rotation (Ken Burns handled in CSS, index just picks the slide). Also turns the summary photo.
   useEffect(() => {
-    if (screen.type !== "idle" || heroImages.length < 2) return;
+    if (screen.type === "paid" || heroImages.length < 2) return;
     const t = window.setInterval(() => setHeroIndex((i) => (i + 1) % heroImages.length), HERO_SLIDE_MS);
     return () => clearInterval(t);
   }, [screen.type, heroImages.length]);
 
   // Flash + auto-scroll to the most recently added line.
+  const lineCount = basket?.lines.length ?? 0;
   useEffect(() => {
-    if (screen.type !== "basket") return;
-    if (screen.lines.length > prevLen.current) {
-      const idx = screen.lines.length - 1;
+    if (lineCount > prevLen.current) {
+      const idx = lineCount - 1;
       setFlashIdx(idx);
       const t = window.setTimeout(() => setFlashIdx((cur) => (cur === idx ? null : cur)), 900);
       linesRef.current?.scrollTo({ top: linesRef.current.scrollHeight, behavior: "smooth" });
-      prevLen.current = screen.lines.length;
+      prevLen.current = lineCount;
       return () => clearTimeout(t);
     }
-    prevLen.current = screen.lines.length;
-  }, [screen]);
+    prevLen.current = lineCount;
+  }, [lineCount]);
 
   // Cosmetic countdown text on the paid screen - the real return-to-idle timer lives above.
   useEffect(() => {
@@ -84,25 +89,73 @@ export function PosDisplayClient({
     return () => clearInterval(t);
   }, [screen.type]);
 
-  if (screen.type === "idle") {
-    return <IdleScreen shopName={screen.shopName || shopName} logoUrl={logoUrl} promoLine={promoLine} heroImages={heroImages} heroIndex={heroIndex} />;
-  }
+  const onCornerTap = () => {
+    const now = Date.now();
+    taps.current = [...taps.current.filter((t) => now - t < PICKER_TAP_WINDOW_MS), now];
+    if (taps.current.length >= PICKER_TAPS) { taps.current = []; feed.openPicker(); }
+  };
 
-  if (screen.type === "paid") {
-    return <PaidScreen orderNumber={screen.orderNumber} heroImages={heroImages} countdown={countdown} />;
+  let body: React.ReactNode;
+  if (feed.needsPick) {
+    body = <TillPicker tills={feed.liveTills} current={feed.follow} onChoose={feed.choose} onCancel={feed.closePicker} logoUrl={logoUrl} shopName={shopName} />;
+  } else if (screen.type === "idle") {
+    body = <IdleScreen shopName={screen.shopName || shopName} logoUrl={logoUrl} promoLine={promoLine} heroImages={heroImages} heroIndex={heroIndex} />;
+  } else if (screen.type === "paid") {
+    body = <PaidScreen orderNumber={screen.orderNumber} heroImages={heroImages} countdown={countdown} />;
+  } else {
+    // basket or paying: same layout, the summary panel changes.
+    const inBasket = new Set((basket?.lines ?? []).map((l) => l.slug).filter(Boolean));
+    const shown = upsell.filter((u) => !inBasket.has(u.slug)).slice(0, UPSELL_SHOWN);
+    // The summary photo avoids repeating a card that is already on screen.
+    const spare = heroImages.filter((h) => !shown.some((u) => u.image === h.src));
+    const photos = spare.length ? spare : heroImages;
+    body = (
+      <OrderScreen
+        shopName={shopName}
+        logoUrl={logoUrl}
+        tagline={tagline}
+        basket={basket}
+        flashIdx={screen.type === "basket" ? flashIdx : null}
+        linesRef={linesRef}
+        paying={screen.type === "paying" ? screen : null}
+        upsell={shown}
+        deal={deal}
+        promoLine={promoLine}
+        photo={photos[heroIndex % Math.max(1, photos.length)]}
+        loyaltyLine={loyaltyLine}
+      />
+    );
   }
-
-  // basket or paying: same split layout, the right pane changes.
-  const b = screen.type === "basket" ? screen : basket;
   return (
-    <OrderScreen
-      shopName={shopName}
-      logoUrl={logoUrl}
-      basket={b}
-      flashIdx={screen.type === "basket" ? flashIdx : null}
-      linesRef={linesRef}
-      paying={screen.type === "paying" ? screen : null}
-    />
+    <>
+      {body}
+      <button type="button" className="pos-display-corner" aria-label="Choose which till this screen follows" onClick={onCornerTap} />
+    </>
+  );
+}
+
+/** Full-screen "which till?" - only till names, nothing else. */
+function TillPicker({ tills, current, onChoose, onCancel, logoUrl, shopName }: {
+  tills: PosDisplayTill[]; current: string | null; onChoose: (id: string) => void; onCancel: () => void; logoUrl: string; shopName: string;
+}) {
+  return (
+    <div className="pos-display-root pos-display-picker">
+      {logoUrl ? <span className="pos-display-logo-plate"><img src={logoUrl} alt={shopName} className="pos-display-logo-xl" /></span> : null}
+      <h1 className="pos-display-picker-title">Which till is this screen for?</h1>
+      {tills.length === 0 ? (
+        <p className="pos-display-picker-hint">Waiting for a till… Open the till and ring something up, and it will appear here.</p>
+      ) : (
+        <div className="pos-display-picker-list">
+          {tills.map((t) => (
+            <button key={t.tillId} type="button" className="pos-display-picker-btn" data-current={t.tillId === current ? "1" : "0"} onClick={() => onChoose(t.tillId)}>
+              {t.tillName}
+              {tills.filter((x) => x.tillName === t.tillName).length > 1 ? <small> · {t.tillId.slice(0, 4)}</small> : null}
+            </button>
+          ))}
+        </div>
+      )}
+      {current ? <button type="button" className="pos-display-picker-cancel" onClick={onCancel}>Keep the current till</button> : null}
+    </div>
   );
 }
 
@@ -128,58 +181,123 @@ function IdleScreen({ shopName, logoUrl, promoLine, heroImages, heroIndex }: { s
 }
 
 function OrderScreen({
-  shopName, logoUrl, basket, flashIdx, linesRef, paying,
+  shopName, logoUrl, tagline, basket, flashIdx, linesRef, paying, upsell, deal, promoLine, photo, loyaltyLine,
 }: {
   shopName: string;
   logoUrl: string;
+  tagline: string;
   basket: BasketScreen | null;
   flashIdx: number | null;
   linesRef: React.RefObject<HTMLDivElement | null>;
   paying: Extract<Screen, { type: "paying" }> | null;
+  upsell: UpsellItem[];
+  deal: DisplayDeal | null;
+  promoLine: string;
+  photo: HeroImage | undefined;
+  loyaltyLine: string;
 }) {
   const lines = basket?.lines ?? [];
+  const items = lines.reduce((n, l) => n + l.qty, 0);
   return (
     <div className="pos-display-root pos-display-order" data-paying={paying ? "1" : "0"}>
       <header className="pos-display-band">
-        {logoUrl ? <img src={logoUrl} alt={shopName} className="pos-display-logo-sm" /> : null}
         <span className="pos-display-band-name">{basket?.shopName || shopName}</span>
+        {tagline ? <span className="pos-display-band-tag">{tagline}</span> : null}
       </header>
       <div className="pos-display-order-body">
-        <div className="pos-display-lines" ref={linesRef}>
-          {lines.length === 0 ? <p className="pos-display-empty">Building your order…</p> : null}
-          {lines.map((l, i) => (
-            <div key={i} className="pos-display-line" data-new={i === flashIdx ? "1" : "0"}>
-              {l.image ? (
-                <img src={l.image} alt="" className="pos-display-thumb" />
-              ) : (
-                <span className="pos-display-thumb pos-display-thumb-empty" aria-hidden="true" />
-              )}
-              <span className="pos-display-line-text">
-                <span className="pos-display-line-name">{l.qty}× {l.name}</span>
-                {l.detail ? <span className="pos-display-line-detail">{l.detail}</span> : null}
-              </span>
-              <span className="pos-display-line-price">{gbp(l.lineTotal)}</span>
-            </div>
-          ))}
+        <div className="pos-display-main">
+          <div className="pos-display-lines" ref={linesRef}>
+            {lines.length === 0 ? <p className="pos-display-empty">Building your order…</p> : null}
+            {lines.map((l, i) => (
+              <div key={i} className="pos-display-line" data-new={i === flashIdx ? "1" : "0"}>
+                {l.image ? (
+                  <img src={l.image} alt="" className="pos-display-thumb" />
+                ) : (
+                  <span className="pos-display-thumb pos-display-thumb-empty" aria-hidden="true">{l.name.slice(0, 1)}</span>
+                )}
+                <span className="pos-display-line-text">
+                  <span className="pos-display-line-name">{l.name}</span>
+                  {l.detail ? <span className="pos-display-line-detail">{l.detail}</span> : null}
+                </span>
+                <span className="pos-display-line-qty">×{l.qty}</span>
+                <span className="pos-display-line-price">{gbp(l.lineTotal)}</span>
+              </div>
+            ))}
+            {basket?.truncated ? <p className="pos-display-more">…and more on the till</p> : null}
+          </div>
+          <Upsell items={upsell} deal={deal} promoLine={promoLine} shopName={shopName} />
         </div>
 
         <aside className="pos-display-summary">
+          <div className="pos-display-sum-head">
+            {logoUrl ? <span className="pos-display-sum-logo"><img src={logoUrl} alt={shopName} /></span> : null}
+            <span className="pos-display-sum-title">Your order</span>
+            <span className="pos-display-sum-sub">{items ? `${items} item${items === 1 ? "" : "s"} · made fresh for you` : "Made fresh for you"}</span>
+          </div>
           {paying ? (
             <PaymentPanel paying={paying} />
           ) : (
             <>
-              <div className="pos-display-sumrow"><span>Subtotal</span><span>{gbp(basket?.subtotal ?? 0)}</span></div>
-              {(basket?.discount ?? 0) > 0 ? <div className="pos-display-sumrow pos-display-sumrow-discount"><span>Discount</span><span>−{gbp(basket!.discount)}</span></div> : null}
-              {(basket?.deliveryFee ?? 0) > 0 ? <div className="pos-display-sumrow"><span>Delivery</span><span>{gbp(basket!.deliveryFee)}</span></div> : null}
-              <div className="pos-display-total-block">
-                <span>Total</span>
-                <span className="pos-display-total-num">{gbp(basket?.total ?? 0)}</span>
+              <div className="pos-display-sumrows">
+                <div className="pos-display-sumrow"><span>Subtotal</span><span>{gbp(basket?.subtotal ?? 0)}</span></div>
+                {(basket?.discount ?? 0) > 0 ? <div className="pos-display-sumrow pos-display-sumrow-discount"><span>Discount</span><span>−{gbp(basket!.discount)}</span></div> : null}
+                {(basket?.deliveryFee ?? 0) > 0 ? <div className="pos-display-sumrow"><span>Delivery</span><span>{gbp(basket!.deliveryFee)}</span></div> : null}
               </div>
+              {photo ? (
+                <div className="pos-display-sum-photo" style={{ backgroundImage: `url(${photo.src})` }} role="img" aria-label={photo.alt} />
+              ) : (
+                <div className="pos-display-sum-photo pos-display-sum-photo-brand" aria-hidden="true" />
+              )}
             </>
+          )}
+          {loyaltyLine ? <div className="pos-display-loyalty"><span aria-hidden="true">★</span>{loyaltyLine}</div> : null}
+          {paying ? null : (
+            <div className="pos-display-total-block">
+              <span>Total</span>
+              <span className="pos-display-total-num">{gbp(basket?.total ?? 0)}</span>
+            </div>
           )}
         </aside>
       </div>
     </div>
+  );
+}
+
+/**
+ * Fills whatever height the lines leave: two rows of big photo cards, then one
+ * row, then just the deal ribbon (CSS container queries on .pos-display-upsell),
+ * then nothing once the lines need all of it.
+ */
+function Upsell({ items, deal, promoLine, shopName }: { items: UpsellItem[]; deal: DisplayDeal | null; promoLine: string; shopName: string }) {
+  return (
+    <section className="pos-display-upsell" aria-label="You might also like">
+      <div className="pos-display-upsell-box">
+      {items.length || deal ? (
+        <>
+          <div className="pos-display-upsell-head">
+            <span className="pos-display-upsell-title">You might also like</span>
+            <span className="pos-display-upsell-hint">Just ask - we can add it now</span>
+          </div>
+          <div className="pos-display-upsell-grid" data-deal={deal ? "1" : "0"}>
+            {deal ? (
+              <article className="pos-display-card pos-display-card-deal" style={deal.image ? { backgroundImage: `url(${deal.image})` } : undefined}>
+                <span className="pos-display-card-badge">Today&apos;s deal</span>
+                <span className="pos-display-card-name">{deal.name}</span>
+                <span className="pos-display-card-price">{gbp(deal.price)}</span>
+              </article>
+            ) : null}
+            {items.map((u) => (
+              <article key={u.slug} className="pos-display-card" style={{ backgroundImage: `url(${u.image})` }}>
+                <span className="pos-display-card-name">{u.name}</span>
+                <span className="pos-display-card-price">from {gbp(u.fromPrice)}</span>
+              </article>
+            ))}
+          </div>
+        </>
+      ) : null}
+      <p className="pos-display-upsell-ribbon">{deal ? `Today's deal: ${promoLine}` : `Thanks for choosing ${shopName}`}</p>
+      </div>
+    </section>
   );
 }
 

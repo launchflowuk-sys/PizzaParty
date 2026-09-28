@@ -134,7 +134,16 @@ Every item below is in scope. Phases are only the build order.
 28. **Caller ID**: phone rings → customer pops on the till. Route depends on the
     shop's line: VoIP/SIP webhook (cleanest), or a USB caller-ID box read with
     Web Serial on a desktop Chrome till. Decide once the shop's phone setup is known.
-29. **Customer-facing display**: second screen showing basket and total.
+29. **Customer-facing display**: second screen showing basket and total. Built:
+    `/pos/display` works on **any device** - a second monitor on the till, or a
+    separate tablet signed in with a Kitchen-role PIN (it cannot open the till).
+    The till sends over BroadcastChannel (same browser) and `POST /api/pos/display`
+    (server relay via LISTEN/NOTIFY to `/api/pos/display/stream`); a display
+    follows the only till sending, or asks which till when several are (named in
+    Cash & reports → Settings), and remembers it. Basket/paying fill the screen:
+    big photo lines, a "You might also like" upsell of top sellers + today's deal
+    in the space the lines leave, logo, loyalty line and brand total. See
+    ONBOARDING.md §5.2.
 30. **Offline mode**: keep taking cash orders when the internet drops, sync after.
 31. **Just Eat / Deliveroo / Uber Eats into the same queue** via Deliverect or the
     marketplaces' partner APIs (needs partner approval per platform).
