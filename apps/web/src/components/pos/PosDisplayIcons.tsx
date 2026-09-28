@@ -1,5 +1,7 @@
 /** The customer display's line icons. Inline so a tablet on a slow connection never shows a broken image. */
-type Name = "dine" | "bag" | "scooter" | "gift" | "chevron" | "arrow" | "plus" | "card" | "contactless" | "apple" | "google" | "cash";
+/** The kiosk (POS-PLAN item 35) shares these, plus minus/trash/star/tag/back/check/close/lock. */
+type Name = "dine" | "bag" | "scooter" | "gift" | "chevron" | "arrow" | "plus" | "card" | "contactless" | "apple" | "google" | "cash"
+  | "minus" | "trash" | "star" | "tag" | "back" | "check" | "close" | "lock";
 
 const STROKE = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
@@ -38,6 +40,22 @@ export function Icon({ name }: { name: Name }) {
           <path fill="#EA4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.5l3.3 2.6C7.2 7.7 9.4 5.9 12 5.9z" />
         </svg>
       );
+    case "minus":
+      return <svg viewBox="0 0 24 24" className="cd-icon" aria-hidden="true" {...STROKE} strokeWidth={3}><path d="M5 12h14" /></svg>;
+    case "trash":
+      return <svg viewBox="0 0 24 24" className="cd-icon" aria-hidden="true" {...STROKE}><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>;
+    case "star":
+      return <svg viewBox="0 0 24 24" className="cd-icon" aria-hidden="true"><path fill="currentColor" d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z" /></svg>;
+    case "tag":
+      return <svg viewBox="0 0 24 24" className="cd-icon" aria-hidden="true" {...STROKE}><path d="M3 12V4h8l10 10-8 8L3 12z" /><circle cx="7.5" cy="8.5" r="1.5" /></svg>;
+    case "back":
+      return <svg viewBox="0 0 24 24" className="cd-icon" aria-hidden="true" {...STROKE} strokeWidth={2.5}><path d="M20 12H5M11 6l-6 6 6 6" /></svg>;
+    case "check":
+      return <svg viewBox="0 0 24 24" className="cd-icon" aria-hidden="true" {...STROKE} strokeWidth={3}><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>;
+    case "close":
+      return <svg viewBox="0 0 24 24" className="cd-icon" aria-hidden="true" {...STROKE} strokeWidth={2.5}><path d="M6 6l12 12M18 6L6 18" /></svg>;
+    case "lock":
+      return <svg viewBox="0 0 24 24" className="cd-icon" aria-hidden="true" {...STROKE}><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>;
     case "cash":
       return <svg viewBox="0 0 24 24" className="cd-icon cd-icon-pay cd-icon-cash" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" fill="currentColor" /><circle cx="12" cy="12" r="3" fill="#fff" /><circle cx="12" cy="12" r="1.2" fill="currentColor" /></svg>;
   }

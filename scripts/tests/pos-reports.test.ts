@@ -74,7 +74,7 @@ test("Z report: sales split, discounts, channels, staff, outstanding and top sel
   assert.equal(r.sales.managerDiscounts, 300);
   assert.equal(r.sales.promoDiscounts, 400);
   assert.equal(r.sales.averageOrder, Math.round(6050 / 4));
-  assert.deepEqual(r.byChannel.map((c) => [c.channel, c.count, c.amount]), [["web", 1, 2050], ["app", 0, 0], ["pos", 1, 1000], ["phone", 1, 1800], ["justeat", 0, 0], ["deliveroo", 1, 1200], ["ubereats", 0, 0]]);
+  assert.deepEqual(r.byChannel.map((c) => [c.channel, c.count, c.amount]), [["web", 1, 2050], ["app", 0, 0], ["pos", 1, 1000], ["phone", 1, 1800], ["kiosk", 0, 0], ["justeat", 0, 0], ["deliveroo", 1, 1200], ["ubereats", 0, 0]]);
   assert.deepEqual(r.byStaff.map((s) => s.name), ["Online", "Ben", "Amy"]);
   assert.deepEqual(r.takings.map((t) => t.amount), [2050, 700, 1000], "marketplace money is not till takings");
   assert.deepEqual(r.marketplaceTakings, { count: 1, amount: 1200 });

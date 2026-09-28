@@ -1,12 +1,14 @@
 /** Phase 4 contract (POS-PLAN items 28-33). Additive to pos-types.ts and pos-queue-types.ts. No server imports. Money in pence. */
 import type { Fulfilment } from "./basket-types";
+import type { DisplayHandoff } from "./pos-display-requests";
 
 /** Eat-in is priced like collection; the table number rides on the order. */
 export type PosFulfilment = Fulfilment | "eat_in";
 
 /** Marketplace orders arrive through the aggregator webhook with one of these sources. */
 export type MarketplaceSource = "justeat" | "deliveroo" | "ubereats";
-export type AnyOrderSource = "web" | "app" | "pos" | "phone" | MarketplaceSource;
+/** "kiosk" is the self-service ordering screen (POS-PLAN item 35). */
+export type AnyOrderSource = "web" | "app" | "pos" | "phone" | "kiosk" | MarketplaceSource;
 
 /**
  * Additions to POST /api/pos/orders (PosCreateOrder):
@@ -63,7 +65,9 @@ export type PosDisplayLine = {
 };
 export type PosDisplayMessage =
   /** `truncated`: the relay dropped trailing lines to fit a notification; the totals are still whole. */
-  | { type: "basket"; shopName: string; lines: PosDisplayLine[]; subtotal: number; discount: number; deliveryFee: number; total: number; truncated?: boolean; fulfilment?: "delivery" | "collection" | "eat_in" }
+  | { type: "basket"; shopName: string; lines: PosDisplayLine[]; subtotal: number; discount: number; deliveryFee: number; total: number; truncated?: boolean; fulfilment?: "delivery" | "collection" | "eat_in";
+      /** Handed to the customer to confirm and pay on the display (lib/pos-display-requests.ts). `pending`: not yet priced as shown - the display waits before offering to pay. */
+      handoff?: DisplayHandoff; pending?: boolean }
   | { type: "paying"; total: number; method: "cash" | "reader"; tendered?: number; change?: number }
   | { type: "paid"; orderNumber: number; change?: number }
   | { type: "idle"; shopName: string };

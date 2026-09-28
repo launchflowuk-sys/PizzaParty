@@ -18,7 +18,9 @@ export async function middleware(req: NextRequest) {
   // Ops auth gates (pages only; API routes check their own cookies)
   if (pathname.startsWith("/kitchen") && pathname !== "/kitchen/login") {
     // The till (staff cookie) reprints through the same print pages the kitchen uses.
-    const staffPrint = pathname.startsWith("/kitchen/print/") && (await verifyToken(req.cookies.get(COOKIE.admin)?.value, "admin"));
+    // Not a kiosk's cookie: it faces the public and has no business with tickets.
+    const printer = pathname.startsWith("/kitchen/print/") ? await verifyToken(req.cookies.get(COOKIE.admin)?.value, "admin") : null;
+    const staffPrint = !!printer && printer.sr !== "kiosk";
     if (!staffPrint && !(await verifyToken(req.cookies.get(COOKIE.kitchen)?.value, "kitchen"))) return NextResponse.redirect(new URL("/kitchen/login", req.url));
   }
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
@@ -26,7 +28,7 @@ export async function middleware(req: NextRequest) {
     const agency = pathname.startsWith("/admin/launchflow") ? await verifyToken(req.cookies.get(COOKIE.agency)?.value, "agency") : null;
     if (!admin && !agency) return NextResponse.redirect(new URL(`/admin/login?next=${encodeURIComponent(pathname)}`, req.url));
   }
-  if (pathname.startsWith("/pos")) {
+  if (pathname.startsWith("/pos") || pathname.startsWith("/kiosk")) {
     if (!(await verifyToken(req.cookies.get(COOKIE.admin)?.value, "admin"))) return NextResponse.redirect(new URL(`/admin/login?next=${encodeURIComponent(pathname)}`, req.url));
   }
   // A layout cannot see the URL it is rendering. The root layout needs to,

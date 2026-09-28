@@ -5,6 +5,7 @@ import { prisma } from "@launchflow/db";
 import { env } from "./env";
 import type { PosCall, PosDisplayEnvelope, PosDisplayTill } from "./pos-phase4-types";
 import { fitForNotify, mergeTill, TILL_ACTIVE_MS } from "./pos-display";
+import type { DisplayRequest } from "./pos-display-requests";
 
 /**
  * Live updates for the ops screens: Postgres LISTEN/NOTIFY fanned out over SSE.
@@ -28,6 +29,7 @@ export type LiveEvent =
   | { clientId: string; kind: "menu" }
   | { clientId: string; kind: "call"; call: PosCall }
   | ({ clientId: string; kind: "display" } & PosDisplayEnvelope)
+  | { clientId: string; kind: "display-request"; req: DisplayRequest }
   | { kind: "resync" };
 
 /** Never throws: a missed notification is covered by the screens' slow poll. */
@@ -68,6 +70,12 @@ function rememberDisplay(clientId: string, env: PosDisplayEnvelope) {
   const tills = h.displays.get(clientId) ?? new Map<string, PosDisplayTill>();
   h.displays.set(clientId, tills);
   tills.set(env.tillId, mergeTill(tills.get(env.tillId), env));
+}
+
+/** A customer's tap on the display (add / remove / pay...), validated by the route. Only a till's own stream carries it (shopStream `displayRequests`). */
+export function publishDisplayRequest(clientId: string, req: DisplayRequest) {
+  const payload = JSON.stringify({ kind: "display-request", clientId, req } satisfies LiveEvent);
+  return notify(prisma.$executeRaw`SELECT pg_notify(${CHANNEL}, ${payload})`);
 }
 
 /** The tills this process has heard from recently, newest first. */
@@ -179,16 +187,19 @@ export function sseResponse(signal: AbortSignal, start: (w: { send: (data: unkno
 /**
  * The staff stream: every order and menu change for this shop. Clients refetch on each event.
  * `calls` adds caller-ID pops (`event: call`, data PosCall) - the till only.
+ * `displayRequests` adds customer-display taps (`event: display-request`, data DisplayRequest) - the till only.
+ * `menuOnly` drops order events - the public-facing kiosk only needs to know the menu changed.
  */
-export function shopStream(signal: AbortSignal, clientId: string, opts: { calls?: boolean } = {}): Response {
+export function shopStream(signal: AbortSignal, clientId: string, opts: { calls?: boolean; menuOnly?: boolean; displayRequests?: boolean } = {}): Response {
   // Staff screens only: they fall back to polling. A customer's page has no fallback, so is never turned away.
   if (hub().streams >= MAX_STREAMS) return new Response("Too many live screens", { status: 503, headers: { "retry-after": "30" } });
   return sseResponse(signal, ({ send }) =>
     onLive((e) => {
       if (e.kind === "resync") send({}, "resync");
       else if (e.clientId !== clientId) return;
-      else if (e.kind === "order") send({ orderId: e.orderId, kind: e.type }, "order");
+      else if (e.kind === "order") { if (!opts.menuOnly) send({ orderId: e.orderId, kind: e.type }, "order"); }
       else if (e.kind === "call") { if (opts.calls) send(e.call, "call"); }
+      else if (e.kind === "display-request") { if (opts.displayRequests) send(e.req, "display-request"); }
       else if (e.kind === "menu") send({}, "menu");
     }),
   );

@@ -18,7 +18,7 @@ export function TopBar({
   staffName, view, onView, badgeCount, soundOn, onEnableSound,
   orderType, onOrderType, search, onSearch, searchRef, boot,
   locationKey, onLocationKey, customerLabel, onChangeCustomer, liveConnected,
-  offline, offlineCount, onSendNow, onOpenDisplay, onShowShortcuts, logoUrl,
+  offline, offlineCount, onSendNow, onOpenDisplay, onShowShortcuts, logoUrl, customerViewing,
 }: {
   staffName: string;
   /** Shop logo (POS branding) - small, left of the screen tabs, never stealing touch space. */
@@ -48,6 +48,8 @@ export function TopBar({
   /** Customer display (item 29) and shortcuts overlay (item 33). */
   onOpenDisplay: () => void;
   onShowShortcuts: () => void;
+  /** The order is handed to the customer display (item 29) - they may be adding extras or choosing how to pay. */
+  customerViewing?: boolean;
 }) {
   const status = boot?.onlineStatus;
   return (
@@ -115,7 +117,9 @@ export function TopBar({
             {offlineCount} unsent · Send now
           </button>
         ) : null}
+        {customerViewing ? <span className="pos-viewing" role="status"><span className="pos-viewing-dot" />Customer is viewing</span> : null}
         <DisplayMenu onOpenHere={onOpenDisplay} />
+        <BoardMenu />
         <button type="button" className="btn btn-ghost" style={{ minHeight: 44 }} onClick={onShowShortcuts} title="Keyboard shortcuts (?)">?</button>
         <span className="pos-live-pill" data-connected={liveConnected ? "1" : "0"}>
           <span className="pos-live-dot" />
@@ -166,6 +170,50 @@ function DisplayMenu({ onOpenHere }: { onOpenHere: () => void }) {
           </p>
           <div style={{ display: "flex", gap: 8 }}>
             <input className="input" readOnly value={url} onFocus={(e) => e.currentTarget.select()} style={{ minHeight: 44, flex: 1, fontSize: 14 }} aria-label="Customer display address" />
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ minHeight: 44 }}
+              onClick={() => { void navigator.clipboard?.writeText(url).then(() => setCopied(true), () => setCopied(false)); }}
+            >
+              {copied ? "Copied" : "Copy"}
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * "Order status board" (POS-PLAN item 36): the same idea as DisplayMenu above,
+ * for the "Now preparing / Ready to collect" TV by the kiosk. Same sign-in as
+ * the customer display - a Kitchen-role PIN is enough (docs/ONBOARDING.md §5.7).
+ */
+function BoardMenu() {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const url = typeof window === "undefined" ? "/pos/board" : `${window.location.origin}/pos/board`;
+  return (
+    <div style={{ position: "relative" }}>
+      <button type="button" className="btn btn-ghost" style={{ minHeight: 44 }} aria-expanded={open} onClick={() => { setOpen((o) => !o); setCopied(false); }}>
+        Order status board
+      </button>
+      {open ? (
+        <div className="card pos-display-menu" role="dialog" aria-label="Order status board">
+          <button
+            type="button"
+            className="btn btn-primary"
+            style={{ minHeight: 48, width: "100%" }}
+            onClick={() => { window.open("/pos/board", "pos-board", "width=900,height=600"); setOpen(false); }}
+          >
+            Open on this computer
+          </button>
+          <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: "12px 0 6px" }}>
+            Or on the TV by the kiosk: open this address and sign in with a staff PIN.
+          </p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input className="input" readOnly value={url} onFocus={(e) => e.currentTarget.select()} style={{ minHeight: 44, flex: 1, fontSize: 14 }} aria-label="Order status board address" />
             <button
               type="button"
               className="btn btn-secondary"

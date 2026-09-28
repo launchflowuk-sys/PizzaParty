@@ -4,8 +4,10 @@ import { isMarketplaceSource, MARKETPLACE_NAME } from "./pos-phase4-types";
 
 type Shape = { fulfilment: string; tableNumber?: string | null; source?: string; courier?: string | null };
 
-/** "DELIVERY", "COLLECTION", "EAT IN · Table 4", "DELIVEROO · RIDER COLLECTS", "JUST EAT · DELIVERY". */
+/** "DELIVERY", "COLLECTION", "EAT IN · Table 4", "KIOSK · TAKEAWAY", "DELIVEROO · RIDER COLLECTS", "JUST EAT · DELIVERY". */
 export function fulfilmentLabel(o: Shape): string {
+  // A kiosk order has no table: the counter calls its number.
+  if (o.source === "kiosk") return `KIOSK · ${o.fulfilment === "eat_in" ? "EAT IN" : "TAKEAWAY"}`;
   if (o.fulfilment === "eat_in") return o.tableNumber ? `EAT IN · Table ${o.tableNumber}` : "EAT IN";
   const base = o.fulfilment === "delivery" ? "DELIVERY" : "COLLECTION";
   if (!o.source || !isMarketplaceSource(o.source)) return base;

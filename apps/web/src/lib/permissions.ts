@@ -6,7 +6,7 @@
  * change). A permission removed here disappears from all three at once.
  */
 
-export const STAFF_ROLES = ["manager", "shift_lead", "kitchen", "driver", "front_of_house"] as const;
+export const STAFF_ROLES = ["manager", "shift_lead", "kitchen", "driver", "front_of_house", "kiosk"] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
 
 export const ROLE_LABEL: Record<StaffRole, string> = {
@@ -15,13 +15,15 @@ export const ROLE_LABEL: Record<StaffRole, string> = {
   kitchen: "Kitchen",
   driver: "Driver",
   front_of_house: "Front of house",
+  // A self-service ordering screen, not a person: its PIN opens the kiosk and nothing else.
+  kiosk: "Kiosk (self-service)",
 };
 
 /** Every guarded area of the back office. */
 export const SCREENS = [
   "dashboard", "kitchen", "orders", "dispatch", "menu", "deals",
   "promos", "loyalty", "inventory", "customers", "campaigns", "reviews", "marketing",
-  "staff", "hours", "zones", "notifications", "launchflow", "help", "pos", "reports",
+  "staff", "hours", "zones", "notifications", "launchflow", "help", "pos", "reports", "kiosk",
 ] as const;
 export type Screen = (typeof SCREENS)[number];
 
@@ -29,7 +31,7 @@ export const SCREEN_LABEL: Record<Screen, string> = {
   dashboard: "Dashboard", kitchen: "Kitchen queue", orders: "Orders", dispatch: "Dispatch",
   menu: "Menu & pricing", deals: "Deals", promos: "Promotions", loyalty: "Rewards club", inventory: "Inventory",
   customers: "Customers", campaigns: "Campaigns", reviews: "Reviews", marketing: "Marketing", staff: "Staff",
-  hours: "Hours & pause", zones: "Delivery zones", notifications: "Notifications", launchflow: "LaunchFlow", help: "Help", pos: "Till", reports: "Reports & cash",
+  hours: "Hours & pause", zones: "Delivery zones", notifications: "Notifications", launchflow: "LaunchFlow", help: "Help", pos: "Till", reports: "Reports & cash", kiosk: "Self-service kiosk",
 };
 
 /**
@@ -41,6 +43,8 @@ const GRANTS: Record<Exclude<StaffRole, "manager">, Screen[]> = {
   kitchen: ["kitchen", "help"],
   driver: ["kitchen", "dispatch", "help"],
   front_of_house: ["dashboard", "kitchen", "orders", "help", "pos"],
+  // Deliberately nothing else: no till, orders board, kitchen feed, cash, reports or admin.
+  kiosk: ["kiosk"],
 };
 
 export function can(role: StaffRole, screen: Screen): boolean {
@@ -48,12 +52,13 @@ export function can(role: StaffRole, screen: Screen): boolean {
   return GRANTS[role].includes(screen);
 }
 
-/** Where a screen actually lives, since four of them are not under /admin/<screen>. */
+/** Where a screen actually lives, since five of them are not under /admin/<screen>. */
 export function pathForScreen(screen: Screen): string {
   if (screen === "dashboard") return "/admin";
   if (screen === "kitchen") return "/kitchen";
   // Reports and the cash drawer are worked from the till.
   if (screen === "pos" || screen === "reports") return "/pos";
+  if (screen === "kiosk") return "/kiosk";
   return `/admin/${screen}`;
 }
 
@@ -75,6 +80,7 @@ export function screenForPath(path: string): Screen | null {
   if (path === "/admin" || path === "/admin/") return "dashboard";
   if (path.startsWith("/kitchen")) return "kitchen";
   if (path.startsWith("/pos")) return "pos";
+  if (path.startsWith("/kiosk")) return "kiosk";
   const m = /^\/admin\/([a-z-]+)/.exec(path);
   const slug = m?.[1];
   return SCREENS.includes(slug as Screen) ? (slug as Screen) : null;

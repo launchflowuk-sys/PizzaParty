@@ -2,6 +2,7 @@
 import { gbp } from "@/lib/money";
 import type { PosDisplayLine, PosDisplayMessage } from "@/lib/pos-phase4-types";
 import { Icon } from "./PosDisplayIcons";
+import { AddedToast, CustomerActions, UpsellPanel, type CustomerUi } from "./PosDisplayConfirm";
 import "./pos-display.css";
 
 type Basket = Extract<PosDisplayMessage, { type: "basket" }>;
@@ -26,7 +27,7 @@ const ORDER_TYPE_LABEL: Record<DisplayOrderType, { label: string; icon: "dine" |
  * driven by config/menu - see app/pos/display/page.tsx.
  */
 export function OrderScreen({
-  brand, basket, paying, flashIdx, linesRef, orderTypes, cardAccepted, loyaltyName, promo, extras, descriptions,
+  brand, basket, paying, flashIdx, linesRef, orderTypes, cardAccepted, loyaltyName, promo, extras, descriptions, customer,
 }: {
   brand: DisplayBrand;
   basket: Basket | null;
@@ -39,6 +40,8 @@ export function OrderScreen({
   promo: DisplayPromo | null;
   extras: DisplayExtra[];
   descriptions: Record<string, string>;
+  /** Handed to the customer by the till: they confirm, add extras and choose how to pay here (PosDisplayConfirm.tsx). */
+  customer?: CustomerUi | null;
 }) {
   const lines = basket?.lines ?? [];
   const inBasket = new Set(lines.map((l) => l.slug).filter(Boolean));
@@ -49,21 +52,30 @@ export function OrderScreen({
         <Header brand={brand} orderTypes={orderTypes} current={basket?.fulfilment} />
         <section className="cd-left">
           <h1 className="cd-h1">Your Order</h1>
-          <p className="cd-sub">{paying ? "Almost there…" : "We're adding your items…"}</p>
+          <p className="cd-sub">
+            {customer
+              ? customer.wantsMore ? "Pick something from the right, or tell our team what you'd like." : "Is your order complete, or would you like to add something else?"
+              : paying ? "Almost there…" : "We're adding your items…"}
+          </p>
           <div className="cd-lines" ref={linesRef}>
             {lines.map((l, i) => <LineCard key={i} line={l} description={l.slug ? descriptions[l.slug] : undefined} isNew={i === flashIdx} />)}
             {basket?.truncated ? <p className="cd-more">…and more on the till</p> : null}
           </div>
-          <Suggestions items={offer.slice(EXTRAS_SHOWN, EXTRAS_SHOWN + SUGGESTIONS)} />
+          {customer ? <div className="cd-suggest" /> : <Suggestions items={offer.slice(EXTRAS_SHOWN, EXTRAS_SHOWN + SUGGESTIONS)} />}
           {loyaltyName ? <Rewards name={loyaltyName} /> : null}
         </section>
         <section className="cd-mid">
           <Summary basket={basket} paying={paying} />
-          <StatusBar paying={paying} />
-          <PayTiles cardAccepted={cardAccepted} paying={paying} />
+          {customer ? <CustomerActions ui={customer} /> : (
+            <>
+              <StatusBar paying={paying} />
+              <PayTiles cardAccepted={cardAccepted} paying={paying} />
+            </>
+          )}
         </section>
       </div>
-      <PromoPanel promo={promo} extras={offer.slice(0, EXTRAS_SHOWN)} />
+      {customer?.upsell.length ? <UpsellPanel ui={customer} /> : <PromoPanel promo={promo} extras={offer.slice(0, EXTRAS_SHOWN)} />}
+      {customer ? <AddedToast ui={customer} /> : null}
     </div>
   );
 }
@@ -92,7 +104,8 @@ function Header({ brand, orderTypes, current }: { brand: DisplayBrand; orderType
   );
 }
 
-function LineCard({ line, description, isNew }: { line: PosDisplayLine; description?: string; isNew: boolean }) {
+/** One order line as a photo card. `children`: the kiosk's qty and remove buttons, under the extras. */
+export function LineCard({ line, description, isNew, children }: { line: PosDisplayLine; description?: string; isNew: boolean; children?: React.ReactNode }) {
   // Paid extras only: the free defaults (standard base, the usual crust) are noise to a customer.
   const mods = (line.modifiers ?? []).filter((m) => m.name && m.price > 0);
   const unit = line.unitPrice ?? Math.round(line.lineTotal / Math.max(1, line.qty));
@@ -119,6 +132,7 @@ function LineCard({ line, description, isNew }: { line: PosDisplayLine; descript
           ))}
         </ul>
       ) : null}
+      {children ? <div className="cd-line-actions">{children}</div> : null}
     </article>
   );
 }
@@ -171,7 +185,9 @@ function Summary({ basket, paying }: { basket: Basket | null; paying: Paying | n
 
 /** Looks like a button, is not one: it tells the customer where the order is up to. */
 function StatusBar({ paying }: { paying: Paying | null }) {
-  const text = !paying ? "Proceed to payment" : paying.method === "reader" ? "Waiting for card…" : "Cash payment";
+  const text = !paying ? "Proceed to payment"
+    : paying.method === "reader" ? "Tap your card on the reader"
+    : (paying.change ?? 0) > 0 ? "Cash payment" : "Please pay at the counter";
   return (
     <div className="cd-status" data-state={paying ? paying.method : "basket"} role="status">
       <span>{text}</span>
@@ -212,8 +228,8 @@ function PayTiles({ cardAccepted, paying }: { cardAccepted: boolean; paying: Pay
   );
 }
 
-/** Right-hand panel: the live promo (or today's deal), then three popular extras not in the basket. */
-export function PromoPanel({ promo, extras }: { promo: DisplayPromo | null; extras: DisplayExtra[] }) {
+/** Right-hand panel: the live promo (or today's deal), then three popular extras not in the basket. `onPick` makes the extras tappable (the kiosk). */
+export function PromoPanel({ promo, extras, onPick }: { promo: DisplayPromo | null; extras: DisplayExtra[]; onPick?: (slug: string) => void }) {
   const words = promo?.headline.trim().split(/\s+/) ?? [];
   const last = words.length > 1 ? words.pop() : undefined;
   return (
@@ -230,17 +246,22 @@ export function PromoPanel({ promo, extras }: { promo: DisplayPromo | null; extr
       {extras.length ? (
         <div className="cd-extras">
           <span className="cd-extras-title">Popular Extras</span>
-          {extras.map((e) => (
-            <div key={e.slug} className="cd-extra">
-              <img src={e.image} alt="" />
-              <div>
-                <span className="cd-extra-name">{e.name}</span>
-                {e.detail ? <span className="cd-extra-detail">{e.detail}</span> : null}
-                <span className="cd-price-red">{gbp(e.price)}</span>
-              </div>
-              <span className="cd-plus" aria-hidden="true"><Icon name="plus" /></span>
-            </div>
-          ))}
+          {extras.map((e) => {
+            const body = (
+              <>
+                <img src={e.image} alt="" />
+                <div>
+                  <span className="cd-extra-name">{e.name}</span>
+                  {e.detail ? <span className="cd-extra-detail">{e.detail}</span> : null}
+                  <span className="cd-price-red">{gbp(e.price)}</span>
+                </div>
+                <span className="cd-plus" aria-hidden="true"><Icon name="plus" /></span>
+              </>
+            );
+            return onPick
+              ? <button key={e.slug} type="button" className="cd-extra" aria-label={`Add ${e.name}`} onClick={() => onPick(e.slug)}>{body}</button>
+              : <div key={e.slug} className="cd-extra">{body}</div>;
+          })}
         </div>
       ) : null}
     </aside>

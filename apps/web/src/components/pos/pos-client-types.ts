@@ -5,9 +5,9 @@ import type { PickerProduct } from "@/components/product/OptionPicker";
 export type PosProduct = PickerProduct & { minPrice: number; categoryKey: string; image?: string };
 export type PosCategory = { key: string; name: string; products: PosProduct[] };
 
-export type PosDealOption = PickerProduct & { extra: number };
+export type PosDealOption = PickerProduct & { extra: number; image?: string };
 export type PosDealSlot = { name: string; qty: number; sizeKeys: string[]; options: PosDealOption[] };
-export type PosDeal = { slug: string; name: string; price: number; description: string; slots: PosDealSlot[] };
+export type PosDeal = { slug: string; name: string; price: number; description: string; image?: string; slots: PosDealSlot[] };
 
 /** A single size, no modifier groups: nothing to build, so tapping the tile
  *  should add it straight to the basket instead of opening a builder screen. */

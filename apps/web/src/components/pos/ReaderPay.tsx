@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { gbp } from "@/lib/money";
 import type { PosOrderRef, PosPayment, PosReader } from "@/lib/pos-types";
 
-const LAST_READER_KEY = "pos-last-reader";
+export const LAST_READER_KEY = "pos-last-reader";
 const POLL_MS = 1500;
 /** Live event kinds worth an immediate status check - a webhook landed, no need to wait for the next tick. */
 const LIVE_KINDS = new Set(["paid", "payment_failed", "payment_cancelled"]);
@@ -14,7 +14,7 @@ const LIVE_KINDS = new Set(["paid", "payment_failed", "payment_cancelled"]);
  *  stream) short-circuits the 1.5s poll the moment a matching webhook lands;
  *  the poll itself stays as-is since it is what actually asks Stripe. */
 export function ReaderPay({
-  orderId, remaining, readers, onSuccess, onBack, liveEvent,
+  orderId, remaining, readers, onSuccess, onBack, liveEvent, autoReaderId,
 }: {
   orderId: string;
   remaining: number;
@@ -22,8 +22,11 @@ export function ReaderPay({
   onSuccess: (order: PosOrderRef) => void;
   onBack: () => void;
   liveEvent?: { orderId: string; kind: string } | null;
+  /** The customer chose card on the display: send to this reader straight away, no staff tap. */
+  autoReaderId?: string;
 }) {
   const [readerId, setReaderId] = useState(() => {
+    if (autoReaderId) return autoReaderId;
     try { return localStorage.getItem(LAST_READER_KEY) ?? readers[0]?.id ?? ""; } catch { return readers[0]?.id ?? ""; }
   });
   const [payment, setPayment] = useState<PosPayment | null>(null);
@@ -32,6 +35,14 @@ export function ReaderPay({
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
+  // A ref survives React's dev double-mount, so the reader is only ever sent one payment.
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!autoReaderId || autoStarted.current) return;
+    autoStarted.current = true;
+    void start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function start() {
     setBusy(true); setError("");

@@ -1,0 +1,149 @@
+/* Order status board (POS-PLAN item 36) - "Preparing / Ready to collect" for a TV by the
+   kiosk. Same white/green language as the customer display (pos-display.css). Tuned for
+   1920x1080 landscape, scales down to 1280x720; a portrait TV gets its own layout below. */
+.bd-root {
+  --bd-green: #16a34a;
+  --bd-green-dark: #15803d;
+  --bd-green-soft: #dcfce7;
+  --bd-ink: #111827;
+  --bd-grey: #6b7280;
+  --bd-line: #e5e7eb;
+  --bd-panel: color-mix(in srgb, var(--bd-green) 30%, var(--brand-secondary, #14110f));
+  --bd-font: var(--font-cd), var(--font-sans), system-ui, sans-serif;
+  --bd-pad: clamp(18px, 1.8vw, 36px);
+  position: fixed; inset: 0; overflow: hidden;
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+  background: #fff; color: var(--bd-ink); font-family: var(--bd-font);
+}
+.bd-root :where(h1, h2, p, span, b) { font-family: inherit; }
+.bd-icon { width: 1.2em; height: 1.2em; flex: 0 0 auto; }
+
+.bd-header {
+  display: flex; align-items: center; gap: clamp(14px, 1.4vw, 26px);
+  padding: clamp(14px, 2vh, 26px) var(--bd-pad); border-bottom: 1px solid var(--bd-line);
+}
+.bd-logo { height: clamp(48px, 6.5vh, 76px); width: auto; display: block; }
+.bd-brand { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bd-name { font-weight: 800; font-size: clamp(24px, 2.4vw, 42px); line-height: 1; letter-spacing: -0.01em; text-transform: uppercase; color: var(--brand-primary, var(--bd-ink)); }
+.bd-shop { font-weight: 800; font-size: clamp(24px, 2.4vw, 42px); color: var(--brand-primary, var(--bd-ink)); }
+.bd-tagline { font-size: clamp(10px, 0.8vw, 14px); font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #374151; }
+.bd-header-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.bd-sound-btn {
+  min-height: 48px; padding: 0 20px; border-radius: 12px; border: none; cursor: pointer;
+  background: var(--bd-green); color: #fff; font-weight: 700; font-size: clamp(14px, 1vw, 17px);
+}
+.bd-live-pill {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px;
+  border: 1px solid var(--bd-line); font-size: clamp(12px, 0.85vw, 15px); font-weight: 600; color: var(--bd-grey);
+}
+.bd-live-dot { width: 9px; height: 9px; border-radius: 50%; background: #d1d5db; }
+.bd-live-pill[data-connected="1"] .bd-live-dot { background: var(--bd-green); }
+@media (prefers-reduced-motion: no-preference) {
+  .bd-live-pill[data-connected="1"] .bd-live-dot { animation: bd-blink 2s ease-in-out infinite; }
+}
+@keyframes bd-blink { 50% { opacity: 0.35; } }
+
+/* -- Empty: intentional, not a void -- */
+.bd-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  height: 100%; text-align: center; padding: 40px; color: var(--bd-grey);
+}
+.bd-empty-title { font-weight: 800; font-size: clamp(32px, 3.4vw, 60px); color: var(--bd-ink); margin: 0; }
+.bd-empty-sub { font-size: clamp(16px, 1.3vw, 24px); margin: 0; }
+
+/* -- Content: the two columns, plus the rotating promo strip -- */
+.bd-content { display: grid; grid-template-columns: minmax(0, 1fr) clamp(300px, 24vw, 460px); min-height: 0; }
+/* Ready is the column a waiting customer actually watches - a bit wider and its
+   title bumped up so it reads as the dominant side, not a mirror of Preparing. */
+.bd-columns { display: grid; grid-template-columns: 1fr 1.16fr; gap: var(--bd-pad); min-height: 0; padding: var(--bd-pad); }
+.bd-col { display: flex; flex-direction: column; min-height: 0; }
+.bd-col-title { font-weight: 800; font-size: clamp(26px, 2.3vw, 42px); letter-spacing: -0.01em; margin: 0 0 clamp(12px, 1.6vh, 22px); }
+.bd-col-ready .bd-col-title { color: var(--bd-green-dark); font-size: clamp(30px, 2.7vw, 48px); }
+.bd-col-empty { color: var(--bd-grey); font-size: clamp(16px, 1.15vw, 22px); margin-top: 8px; }
+
+/* -- Cards size to fill: auto-fit (not auto-fill) collapses unused column tracks so a
+   handful of orders spread across the full row width instead of hugging the left edge,
+   and stretched auto-rows (align-content's default "stretch") let those same few cards
+   grow tall enough to fill the column instead of leaving a void underneath. Each card is
+   then its own size container so bd-card-num can read that real cell size (cqw/cqh) and
+   scale the number itself - big when there's room, smaller once more orders arrive and
+   the grid reflows to extra columns/rows. -- */
+.bd-grid {
+  flex: 1 1 0; min-height: 0; overflow-y: auto; scrollbar-width: none;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(150px, 13vw, 210px), 1fr));
+  grid-auto-rows: minmax(90px, 1fr);
+  gap: clamp(12px, 1.1vw, 20px);
+}
+.bd-grid::-webkit-scrollbar { display: none; }
+
+.bd-card {
+  container-type: size;
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: clamp(4px, 3cqh, 12px);
+  padding: clamp(10px, 8cqh, 32px) clamp(8px, 4cqw, 20px); border-radius: 18px; border: 1px solid var(--bd-line);
+  background: #f9fafb; box-shadow: 0 2px 10px rgba(17, 24, 39, 0.04);
+}
+.bd-card-source { position: absolute; top: 10px; left: 10px; color: var(--bd-grey); font-size: clamp(14px, 4cqw, 24px); }
+.bd-card-num { font-weight: 800; font-size: clamp(32px, min(20cqw, 34cqh), 140px); line-height: 1; letter-spacing: -0.02em; }
+.bd-card-name { font-size: clamp(12px, 6cqw, 20px); color: var(--bd-grey); text-transform: capitalize; }
+
+.bd-col-ready .bd-card { background: var(--bd-green-soft); border: 2px solid color-mix(in srgb, var(--bd-green) 40%, var(--bd-line)); box-shadow: 0 4px 16px rgba(21, 128, 61, 0.12); }
+.bd-col-ready .bd-card-num { color: var(--bd-green-dark); font-size: clamp(36px, min(23cqw, 38cqh), 150px); }
+.bd-col-ready .bd-card-source { color: var(--bd-green-dark); opacity: 0.8; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .bd-card[data-new="1"] { animation: bd-card-in 900ms cubic-bezier(.2,.9,.3,1); }
+}
+@keyframes bd-card-in {
+  0% { opacity: 0; transform: translateX(-24px) scale(0.92); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bd-green) 60%, transparent); }
+  55% { opacity: 1; transform: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--bd-green) 60%, transparent); }
+  100% { box-shadow: 0 2px 10px rgba(17, 24, 39, 0.04); }
+}
+
+/* -- Right: rotating promo, reusing the customer display's panel (cd-right etc, pos-display.css) -- */
+/* The display's colour tokens live on .cd-root; the board isn't one, so the promo
+   panel restates them here or its text scrim resolves to transparent. */
+.bd-promo {
+  min-height: 0; display: flex;
+  --cd-green: #16a34a;
+  --cd-panel: color-mix(in srgb, var(--cd-green) 30%, var(--brand-secondary, #14110f));
+}
+.bd-promo .cd-right { flex: 1; }
+/* .cd-extras is flex: 0 0 auto (never shrinks); on a short panel it can still eat the
+   promo hero's space entirely, so give .cd-promo a floor it never goes below. */
+.bd-promo .cd-promo { min-height: clamp(140px, 22vh, 260px); }
+
+/* The customer display's panel is a tall column, so its script headline (cd-promo-head,
+   pos-display.css) has room to sprawl. The board's panel is much shorter - at full size
+   a two-line title's rotated overflow paints straight through "Today's deal" underneath
+   it. Shrink by headline length (data-headline-len, set in BoardClient from promo.headline)
+   and cap it at three lines rather than letting a long title push everything else off. */
+.bd-promo .cd-promo-text { gap: clamp(6px, 1.1vh, 14px); padding: clamp(16px, 2.4vh, 30px) clamp(18px, 1.6vw, 32px); }
+.bd-promo .cd-promo-head {
+  font-size: clamp(30px, 2.6vw, 50px); line-height: 1.12; transform: rotate(-3deg); margin-bottom: 0.1em;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.bd-promo[data-headline-len="m"] .cd-promo-head { font-size: clamp(24px, 2.1vw, 40px); }
+.bd-promo[data-headline-len="l"] .cd-promo-head { font-size: clamp(19px, 1.7vw, 30px); }
+.bd-promo .cd-promo-sub { font-size: clamp(13px, 1vw, 18px); max-width: 18ch; }
+.bd-promo .cd-promo-price { font-size: clamp(18px, 1.6vw, 30px); padding: 4px 16px; margin-top: 2px; }
+
+/* -- Bottom band: never a plain screen, always selling something (POS-PLAN item 36's
+   "no empty voids" bar). Same mint/green language as the display's cd-rewards banner. -- */
+.bd-band {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: clamp(20px, 3vw, 56px);
+  padding: clamp(10px, 1.6vh, 18px) var(--bd-pad);
+  background: var(--bd-green-soft);
+  border-top: 1px solid color-mix(in srgb, var(--bd-green) 30%, var(--bd-line));
+}
+.bd-band-item { display: flex; align-items: center; gap: 10px; color: var(--bd-green-dark); font-weight: 700; font-size: clamp(14px, 1.15vw, 22px); }
+.bd-band-item .bd-icon { width: 1.4em; height: 1.4em; }
+
+/* -- Portrait TV (bonus): promo drops to a strip under the columns -- */
+@media (max-aspect-ratio: 1/1) {
+  .bd-content { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) clamp(220px, 22vh, 300px); }
+  .bd-columns { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; padding: var(--bd-pad) var(--bd-pad) 12px; gap: 16px; }
+  .bd-header { flex-wrap: wrap; }
+  .bd-promo .cd-right { flex-direction: row; }
+}

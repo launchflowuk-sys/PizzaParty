@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { gbp } from "@/lib/money";
 import type { PosBootstrap, PosCreateOrder, PosOrderRef, PosPayment, PosPaymentKind } from "@/lib/pos-types";
 import type { PosCreateOrderExtras, PosDisplayMessage } from "@/lib/pos-phase4-types";
@@ -10,6 +10,7 @@ import type { OrderTypeTab, PosCategory, PosDeal } from "./pos-client-types";
 import { priceOffline } from "./offline-pricing";
 import { saveOfflineOrder } from "./offline-store";
 import { printOfflineTicket } from "./offline-ticket";
+import type { AutoPay } from "./CustomerHandoff";
 
 type Stage = { kind: "choose" } | { kind: "cash" } | { kind: "reader" } | { kind: "done" } | { kind: "offline-done" };
 
@@ -32,7 +33,7 @@ type PosCreateOrderPhase4 = PosCreateOrder & PosCreateOrderExtras;
  * menu data already on the page (offline-pricing.ts) rather than the server.
  */
 export function PayPanel({
-  order, orderType, boot, onDone, onBack, liveEvent, offline, categories, deals, display, onOfflineSaved, logoUrl,
+  order, orderType, boot, onDone, onBack, liveEvent, offline, categories, deals, display, onOfflineSaved, logoUrl, autoPay,
 }: {
   order: PosOrderState;
   orderType: OrderTypeTab;
@@ -48,6 +49,8 @@ export function PayPanel({
   onOfflineSaved?: () => void;
   /** Shop logo, shown on the order-taken success screen. */
   logoUrl?: string;
+  /** The customer chose how to pay on the customer display: start that method at once, as if staff had tapped it. */
+  autoPay?: AutoPay | null;
 }) {
   const [stage, setStage] = useState<Stage>({ kind: "choose" });
   const [orderRef, setOrderRef] = useState<PosOrderRef | null>(null);
@@ -59,6 +62,16 @@ export function PayPanel({
   const total = offline ? (offlinePriced?.total ?? 0) : (order.priced?.total ?? 0);
   const remaining = orderRef ? orderRef.total - orderRef.paid : total;
   const shopName = boot?.shopName ?? "";
+
+  // A ref survives React's dev double-mount, so the display's choice creates one order, not two.
+  const autoRan = useRef(false);
+  const [autoReader, setAutoReader] = useState(autoPay?.method === "reader" ? autoPay.readerId : undefined);
+  useEffect(() => {
+    if (!autoPay || autoRan.current || offline) return;
+    autoRan.current = true;
+    void chooseMethod(autoPay.method);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function buildBody(payment: PosPaymentKind, clientRequestId: string, createdOfflineAt?: string): PosCreateOrderPhase4 {
     return {
@@ -190,10 +203,13 @@ export function PayPanel({
 
   if (stage.kind === "cash") {
     return (
+      <>
+      {autoPay?.method === "cash" ? <p className="pos-customer-note">Customer chose cash on the display - take {gbp(remaining)}</p> : null}
       <CashPad
         remaining={remaining} busy={busy} error={error} onConfirm={confirmCash} onBack={() => setStage({ kind: "choose" })}
         onTenderChange={(cashAmount, tendered, change) => display?.({ type: "paying", total: cashAmount, method: "cash", tendered, change })}
       />
+      </>
     );
   }
 
@@ -203,9 +219,10 @@ export function PayPanel({
         orderId={orderRef!.id}
         remaining={remaining}
         readers={boot?.readers ?? []}
-        onSuccess={(o) => { setOrderRef(o); if (o.paid >= o.total) display?.({ type: "paid", orderNumber: o.number }); setStage(o.paid >= o.total ? { kind: "done" } : { kind: "choose" }); }}
-        onBack={() => setStage({ kind: "choose" })}
+        onSuccess={(o) => { setAutoReader(undefined); setOrderRef(o); if (o.paid >= o.total) display?.({ type: "paid", orderNumber: o.number }); setStage(o.paid >= o.total ? { kind: "done" } : { kind: "choose" }); }}
+        onBack={() => { setAutoReader(undefined); setStage({ kind: "choose" }); }}
         liveEvent={liveEvent}
+        autoReaderId={autoReader}
       />
     );
   }

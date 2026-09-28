@@ -473,10 +473,11 @@ guards and the server actions, so they can't disagree.
 | `kitchen` | kitchen, help |
 | `driver` | kitchen, dispatch, help |
 | `front_of_house` | dashboard, kitchen, orders, help, till |
+| `kiosk` | the self-service kiosk only (§5.8) - a screen, not a person |
 
 Screens live at `/admin/<screen>` except: `dashboard` → `/admin`, `kitchen` →
 `/kitchen`, and both `pos` and `reports` → `/pos` (reports and the cash
-drawer are worked from inside the till). A role denied a page is sent to the
+drawer are worked from inside the till), and `kiosk` → `/kiosk`. A role denied a page is sent to the
 first screen it *can* open (`landingFor()`), not bounced back to `/admin` —
 that would loop forever for anyone who can't see the dashboard.
 
@@ -577,6 +578,33 @@ set up; cash always); and a promo panel - the shop's live promo slot, else
 today's deal - above "Popular extras" (best sellers with photos from outside
 the mains, never what is already in the basket).
 
+**The customer finishes the sale on the display.** When staff tap **Charge**,
+the till hands the order to the display instead of opening the pay screen
+(Cash & reports → Settings → **Customer confirms on display**, on by default,
+per till; it only kicks in while a display is following that till - the display
+says hello every minute - and never for Phone orders or offline). The till shows
+a "With the customer" strip and a **Customer is viewing** pill; the display asks
+"Is your order complete, or would you like to add something else?" with **Yes,
+I'm ready to pay** and **Add something else**, and fills the right-hand panel
+with up to six one-tap add-ons picked for this basket (pizza → dips and sides,
+burger/chicken → chips and a drink, no drink yet → drinks first, no dessert →
+desserts; only one-size, no-option items that are in stock; never a main or
+something already ordered). A tap adds the line on the till (normal server
+pricing) with a toast "Customer added Garlic Bread"; the display offers **Undo**
+for 5 seconds. **Yes, I'm ready to pay** shows the payment tiles: Card, Apple
+Pay and Google Pay (all the card reader - only when this till has an online
+reader) and Cash. Card starts the reader payment on the till exactly as if staff
+had pressed Card reader, and the display says "Tap your card on the reader";
+Cash opens the cash pad on the till ("Customer chose cash on the display") and
+the display says "Please pay at the counter". Then the usual thank-you.
+Staff can always take over: **Take payment here** (or Charge again) opens the
+till's own pay screen, **Take back** returns the display to the plain order
+view, and staff can still add or remove anything while the customer looks. The
+display can only add those simple items, undo its own adds and pick a method
+- never change prices, discounts or anything staff rang up - and the till
+ignores any tap that is not for the current hand-over. Turn the setting off on
+a till whose display faces away from customers.
+
 ### 5.3 Kitchen screen — `/kitchen`
 
 Signs in with `KITCHEN_PIN` (§4.3), or is already signed in automatically if
@@ -626,6 +654,73 @@ request id, so it can never land twice.
 receives and auto-prints it; the customer display (on its own tablet, if the
 shop has one) shows the live basket; a
 card test payment completes on the reader.
+
+### 5.7 Order status board — `/pos/board`
+
+`apps/web/src/app/pos/board/page.tsx` + `BoardClient`. A TV by the self-service
+kiosk showing "Now preparing" / "Ready to collect" (POS-PLAN item 36) - the same
+idea as a fast-food collection screen, and the same pairing story as §5.2's
+customer display: till top bar → **Order status board** → **Open on this
+computer** for a second screen on the till machine, or copy the address to a
+separate TV/tablet and sign in with a staff PIN. A **Kitchen**-role PIN is
+enough - it opens the board and the kitchen queue, never the till, cash or
+reports.
+
+- Shows today's non-delivery orders only: placed/accepted/preparing under
+  **Preparing**, ready under **Ready to collect** (bigger numbers, green).
+  Order number, first name and a source icon (kiosk/counter/phone/web/app).
+  Turn the first name off shop-wide with `pos.boardShowNames: false` in
+  `client.json` if a shop would rather show numbers alone.
+- Nothing to wire up beyond the PIN: it updates live off the same kitchen
+  stream as the kitchen screen, with a 30-second safety poll, so no extra
+  server config. A completed order stops appearing on its own; a ready order
+  that nobody marks collected clears itself after 30 minutes regardless.
+- Sound (a soft chime when an order goes ready) is off until someone taps
+  **Enable sound** on that screen - browsers block autoplay - and is then
+  remembered on that device.
+- Put the TV in kiosk/guided-access mode like the customer display, so nobody
+  can swipe away from it. Landscape (1920x1080, scales to 1280x720) is the
+  tested layout; portrait works too.
+
+### 5.8 Self-service kiosk — `/kiosk`
+
+`apps/web/src/app/kiosk/page.tsx` + `components/kiosk/*` (POS-PLAN item 35). A
+landscape tablet (10" upwards) or a big screen where customers order and pay
+themselves. Portrait works too.
+
+1. **A kiosk sign-in.** In `/admin/staff` add a staff member named after the
+   screen (e.g. "Front kiosk"), role **Kiosk (self-service)**, with its own
+   PIN. That PIN opens `/kiosk` and nothing else - not the till, the Orders
+   board, the kitchen screen, cash, reports or admin. The sign-in lasts 30
+   days, like the kitchen tablet's.
+2. **Sign the device in once**: on the kiosk open
+   `https://<domain>/admin/login?next=/kiosk` and enter the kiosk PIN. A
+   manager can also open `/kiosk` with their own PIN (to try it) - never leave
+   it running on a manager's sign-in: that cookie opens the whole back office.
+3. **Card reader.** Register a Stripe reader first (§5.5). On the kiosk, hold
+   the **top-left corner for 5 seconds**, enter a **manager PIN**, pick the
+   reader and tap **Back to the kiosk**. The choice is saved server-side in
+   that kiosk's signed sign-in (signing it in again clears it - pick it again).
+   With no reader chosen the kiosk offers pay at the counter only. Use one
+   reader per kiosk - the till should not share it.
+4. **Payment options** (`client.json`, both default to on):
+   `"pos": { "kiosk": { "card": true, "payAtCounter": true, "ordersPerMinute": 4 } }`.
+   Pay at the counter sends the order to the kitchen and the Orders board
+   straight away, unpaid; staff take the money with **Take payment** on that
+   order. `ordersPerMinute` caps orders per kiosk sign-in (kiosks sharing one
+   PIN share it), so a tampered kiosk cannot flood the kitchen. The kitchen's
+   **Pause** stops kiosk orders too.
+5. **Eat in** shows only when `pos.eatIn` is on; the kiosk never offers
+   delivery. Offers come from the shop's own promo slots, today's deals and
+   best sellers - put a photo on a deal or slot for it to appear in the loop.
+6. **Lock the device** in kiosk / guided-access mode (Android "App pinning" or
+   a kiosk browser; iPad Guided Access) and use **Full screen** from the same
+   staff menu. **Leave kiosk mode** (same menu) signs the kiosk out.
+
+Kiosk orders show a purple **Kiosk** badge on the till's Orders board and the
+kitchen screen, and have their own line in the Z report's channels. A customer
+who walks away is covered: after 60 seconds untouched the kiosk asks "Are you
+still there?", then clears the order after 15 more.
 
 ---
 

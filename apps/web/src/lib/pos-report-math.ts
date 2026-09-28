@@ -13,7 +13,7 @@ import type {
 const KIND: Record<string, PaymentKind> = { stripe: "card", stripe_terminal: "reader", cash: "cash" };
 export const kindOf = (provider: string): PaymentKind => KIND[provider] ?? "card";
 const KINDS: PaymentKind[] = ["card", "reader", "cash"];
-const CHANNELS: AnyOrderSource[] = ["web", "app", "pos", "phone", "justeat", "deliveroo", "ubereats"];
+const CHANNELS: AnyOrderSource[] = ["web", "app", "pos", "phone", "kiosk", "justeat", "deliveroo", "ubereats"];
 /** The aggregator's money: reported on its own line, never as till takings. */
 const MARKETPLACE = "marketplace";
 /** Money that actually came in: a later full refund does not un-take it (the refund is counted on its own). */

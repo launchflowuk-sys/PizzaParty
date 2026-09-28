@@ -4,6 +4,7 @@ import { getClientRow } from "@/lib/menu";
 import { posGuard } from "@/lib/pos";
 import { kitchenOrAdmin } from "@/lib/kitchen-auth";
 import { lastDisplays, publishDisplay } from "@/lib/realtime";
+import { REQUEST_ID } from "@/lib/pos-display-requests";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -17,7 +18,8 @@ const Line = z.object({
   modifiers: z.array(z.object({ name: z.string().max(80), price: z.number().int().min(-1_000_000).max(1_000_000) })).max(30).optional(),
 });
 const Msg = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("basket"), shopName: z.string().max(120), lines: z.array(Line).max(150), subtotal: pence, discount: pence, deliveryFee: pence, total: pence, fulfilment: z.enum(["delivery", "collection", "eat_in"]).optional() }),
+  z.object({ type: z.literal("basket"), shopName: z.string().max(120), lines: z.array(Line).max(150), subtotal: pence, discount: pence, deliveryFee: pence, total: pence, fulfilment: z.enum(["delivery", "collection", "eat_in"]).optional(),
+    handoff: z.object({ id: z.string().regex(REQUEST_ID), methods: z.array(z.enum(["card", "cash"])).max(2) }).optional(), pending: z.boolean().optional() }),
   z.object({ type: z.literal("paying"), total: pence, method: z.enum(["cash", "reader"]), tendered: pence.optional(), change: pence.optional() }),
   z.object({ type: z.literal("paid"), orderNumber: z.number().int().min(0), change: pence.optional() }),
   z.object({ type: z.literal("idle"), shopName: z.string().max(120) }),

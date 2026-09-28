@@ -796,6 +796,8 @@ textarea.input, textarea.lf-input { border-radius: var(--radius-md); }
 .tag-danger  { background: var(--danger-bg); color: var(--danger); border-color: var(--danger-line) !important; }
 .tag-info    { background: var(--info-bg);   color: var(--info);   border-color: var(--info-line) !important; }
 .tag-busy    { background: var(--busy-bg);   color: var(--busy);   border-color: var(--busy-line) !important; }
+/* Orders placed on the self-service kiosk (POS-PLAN item 35): its own colour on the till and the kitchen screen. */
+.tag-kiosk   { background: #6d28d9;         color: #fff;          border-color: #5b21b6 !important; }
 
 /* ── Panels ─────────────────────────────────────────────────────────────────
    Screens were one long column of forms with nothing separating them. A titled

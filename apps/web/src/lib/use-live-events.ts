@@ -12,6 +12,8 @@ export type LiveHandlers = {
   resync?: () => void;
   /** A till's customer-display message (/api/pos/display/stream only). */
   display?: (e: PosDisplayEnvelope) => void;
+  /** A customer's tap on the customer display (/api/pos/stream only). Unchecked JSON - the till validates it. */
+  displayRequest?: (e: unknown) => void;
 };
 
 const MAX_BACKOFF_MS = 30_000;
@@ -60,6 +62,7 @@ export function useLiveEvents(url: string | null, handlers: LiveHandlers): { con
       s.addEventListener("menu", () => ref.current.menu?.());
       s.addEventListener("resync", () => ref.current.resync?.());
       s.addEventListener("display", (m) => ref.current.display?.(json(m) as PosDisplayEnvelope));
+      s.addEventListener("display-request", (m) => ref.current.displayRequest?.(json(m)));
     };
     const onVisible = () => { if (document.visibilityState === "visible" && !es) { fails = 0; open(); } };
 

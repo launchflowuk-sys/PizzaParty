@@ -29,6 +29,7 @@ import { usePosDisplay } from "./usePosDisplay";
 import { useOnlineStatus } from "./useOnlineStatus";
 import { useOfflineQueue } from "./useOfflineQueue";
 import { priceOffline } from "./offline-pricing";
+import { HandoffBanner, HandoffToasts, useCustomerHandoff } from "./CustomerHandoff";
 
 export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: { staffName: string; staffRole: StaffRole; categories: PosCategory[]; deals: PosDeal[]; logoUrl?: string }) {
   const order = usePosOrder();
@@ -41,6 +42,7 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
     order: (e) => { setOrderEvent(e); void queue.refresh(); },
     menu: () => void menu.check(),
     resync: () => { void queue.refresh(); void menu.check(); },
+    displayRequest: (e) => handoff.onRequest(e),
   });
   // Runs for the life of the till, not just while the Orders view is open, so
   // the badge count and the new-order chime stay live while someone is ringing
@@ -166,6 +168,15 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
   }
 
   const allProducts = useMemo(() => categories.flatMap((c) => c.products), [categories]);
+  // Customer confirms on the display (item 29): Charge hands over, the customer's taps come back here.
+  const handoff = useCustomerHandoff({ order, products: allProducts, readers: boot?.readers ?? [], offline, orderType, onPay: () => setMiddleView({ kind: "pay" }) });
+  // Staff opening the pay screen themselves (Charge again, Enter, "Take payment here") takes the order back.
+  // Leaving the pay screen drops the customer's pay choice, so a later Charge never starts it again.
+  useEffect(() => { if (middleView.kind === "pay") handoff.stop(); else handoff.clearAutoPay(); }, [middleView.kind]); // eslint-disable-line react-hooks/exhaustive-deps
+  function charge() {
+    if (!handoff.active && handoff.canStart()) handoff.start();
+    else setMiddleView({ kind: "pay" });
+  }
   // Basket-line key -> product photo, for the customer display's thumbnails (item 29
   // branding). Keyed by line, not slug: offlinePriced.lines and order.lines share the
   // same `key` per line, which is the one thing both have in common with an OfflinePricedLine
@@ -201,6 +212,7 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
 
   function resetAll() {
     order.reset();
+    handoff.stop();
     setOrderType("collection");
     setPhoneReady(false);
     setPrefillPhone("");
@@ -256,9 +268,10 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
         };
       }),
       subtotal: p?.subtotal ?? 0, discount: p?.discount ?? 0, deliveryFee: p?.deliveryFee ?? 0, total: p?.total ?? 0,
+      ...(handoff.message ? { handoff: handoff.message, pending: handoff.pending } : {}),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order.lines, order.priced, offline, offlinePriced, boot?.shopName, lineMeta, orderType, order.fulfilment]);
+  }, [order.lines, order.priced, offline, offlinePriced, boot?.shopName, lineMeta, orderType, order.fulfilment, handoff.message?.id, handoff.message?.methods.join(), handoff.pending]);
 
   // A price/menu change lands, but never mid-order: refresh the moment the
   // basket is clear (immediately if it already was, otherwise as soon as this
@@ -275,6 +288,7 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
   return (
     <div className="pos-root">
       <CallBanner calls={caller.calls} onDismiss={caller.dismiss} onTakeOrder={takeOrderFromCall} />
+      <HandoffToasts toasts={handoff.toasts} />
       {showShortcuts ? <ShortcutsOverlay onClose={() => setShowShortcuts(false)} /> : null}
 
       <div className="pos-topwrap">
@@ -308,6 +322,7 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
           onSendNow={() => void offlineQueue.sendNow()}
           onOpenDisplay={() => window.open("/pos/display", "pos-display", "width=900,height=600")}
           onShowShortcuts={() => setShowShortcuts(true)}
+          customerViewing={handoff.active}
         />
         {offline ? <OfflineBar /> : null}
         {menu.changed && orderInProgress ? (
@@ -357,6 +372,9 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
           <CategoryRail categories={categories} activeKey={activeKey} onSelect={(k) => { setActiveKey(k); setSearch(""); }} hasPopular={!!boot?.bestsellers.length} />
 
           <main className="pos-main">
+            {middleView.kind === "grid" && handoff.active ? (
+              <HandoffBanner onPayHere={() => setMiddleView({ kind: "pay" })} onCancel={handoff.stop} />
+            ) : null}
             {middleView.kind === "grid" ? (
               <ItemGrid
                 products={gridProducts}
@@ -374,11 +392,12 @@ export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: 
               <PayPanel
                 order={order} orderType={orderType} boot={boot} onDone={resetAll} onBack={() => setMiddleView({ kind: "grid" })} liveEvent={orderEvent}
                 offline={offline} categories={categories} deals={deals} display={display} onOfflineSaved={offlineQueue.refresh} logoUrl={logoUrl}
+                autoPay={handoff.autoPay}
               />
             )}
           </main>
 
-          <Basket order={order} onCharge={() => setMiddleView({ kind: "pay" })} offline={offline} offlinePriced={offlinePriced} />
+          <Basket order={order} onCharge={charge} offline={offline} offlinePriced={offlinePriced} />
         </div>
       )}
     </div>

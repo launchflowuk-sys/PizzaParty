@@ -43,7 +43,7 @@ export const viewport: Viewport = { themeColor: "#f3f2f2", width: "device-width"
  * now" button and a menu of takeaway links on top of the till - which on a
  * phone pushed the actual controls off the screen entirely.
  */
-const OPS = ["/admin", "/kitchen", "/pos"];
+const OPS = ["/admin", "/kitchen", "/pos", "/kiosk"];
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Set by middleware; layouts are not given the URL they render.

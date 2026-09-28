@@ -9,8 +9,9 @@ export const COOKIE: Record<Role, string> = { kitchen: "lf_kitchen", admin: "lf_
 const TTL: Record<Role, number> = { kitchen: 60 * 60 * 24 * 30, admin: 60 * 60 * 12, agency: 60 * 60 * 4, customer: 60 * 60 * 24 * 90 };
 
 /** `sr` is the staff role for admin sessions; `nm` their display name. Absent on a
- *  shared-password session, which is treated as a manager. */
-type Payload = { role: Role; sub: string; exp: number; loc?: string; sr?: string; nm?: string };
+ *  shared-password session, which is treated as a manager. `rd` is the Stripe reader a
+ *  manager assigned to a kiosk (POS-PLAN item 35) - signed, so a tampered kiosk cannot pick another. */
+type Payload = { role: Role; sub: string; exp: number; loc?: string; sr?: string; nm?: string; rd?: string };
 
 const enc = new TextEncoder();
 const b64u = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");

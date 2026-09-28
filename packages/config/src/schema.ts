@@ -145,11 +145,28 @@ export const ClientSchema = z.object({
    */
   /**
    * The till. `eatIn` offers "Eat in" with a table number on the till only -
-   * the website and app never offer it, whatever this says.
+   * the website and app never offer it, whatever this says. `boardShowNames`
+   * is the order status board (`/pos/board`, POS-PLAN item 36): first name
+   * under the order number, on by default - a shop with privacy concerns
+   * turns it off and the board shows numbers alone.
    */
   pos: z
     .object({
       eatIn: z.boolean().default(false),
+      boardShowNames: z.boolean().default(true),
+      /**
+       * The self-service kiosk (`/kiosk`, POS-PLAN item 35): which ways the
+       * customer may pay there. Card also needs Stripe and a reader chosen on
+       * the kiosk; "pay at the counter" sends the order to the kitchen unpaid.
+       */
+      kiosk: z
+        .object({
+          card: z.boolean().default(true),
+          payAtCounter: z.boolean().default(true),
+          /** Orders one kiosk sign-in may place a minute (kiosks sharing a PIN share it). Stops a tampered kiosk flooding the kitchen with unpaid tickets. */
+          ordersPerMinute: z.number().int().min(1).max(60).default(4),
+        })
+        .default({}),
     })
     .default({}),
   referral: z

@@ -384,6 +384,31 @@
             "eatIn": {
               "type": "boolean",
               "default": false
+            },
+            "boardShowNames": {
+              "type": "boolean",
+              "default": true
+            },
+            "kiosk": {
+              "type": "object",
+              "properties": {
+                "card": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "payAtCounter": {
+                  "type": "boolean",
+                  "default": true
+                },
+                "ordersPerMinute": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 60,
+                  "default": 4
+                }
+              },
+              "additionalProperties": false,
+              "default": {}
             }
           },
           "additionalProperties": false,

@@ -4,6 +4,7 @@ import { COOKIE, cookieOptions, safeEqual, sha256, signToken } from "@/lib/auth"
 import { getClientRow } from "@/lib/menu";
 import { STAFF_ROLES, can, type StaffRole } from "@/lib/permissions";
 import { env } from "@/lib/env";
+import { KIOSK_TTL_S } from "@/lib/kiosk";
 
 /**
  * Three ways in, in order of privilege:
@@ -43,14 +44,22 @@ export async function POST(req: NextRequest) {
     const member = await prisma.staff.findFirst({ where: { clientId: client.id, active: true, pinHash: hash } });
     if (member) {
       const role: StaffRole = (STAFF_ROLES as readonly string[]).includes(member.role) ? (member.role as StaffRole) : "kitchen";
-      res.cookies.set(COOKIE.admin, await signToken({ role: "admin", sub: member.id, sr: role, nm: member.name }), cookieOptions("admin"));
+      // A kiosk is signed in once and left for weeks, like the kitchen tablet; its role opens nothing but /kiosk.
+      const ttl = role === "kiosk" ? KIOSK_TTL_S : undefined;
+      res.cookies.set(COOKIE.admin, await signToken({ role: "admin", sub: member.id, sr: role, nm: member.name }, ttl), { ...cookieOptions("admin"), ...(ttl ? { maxAge: ttl } : {}) });
       // The kitchen screen sits behind its own cookie so a shared tablet can be
       // signed in once and left alone. Someone whose role includes the kitchen
       // has already proved who they are, so give them that cookie too rather
       // than bouncing them to a second login.
       if (can(role, "kitchen")) {
         res.cookies.set(COOKIE.kitchen, await signToken({ role: "kitchen", sub: member.id }), cookieOptions("kitchen"));
+      } else {
+        // A shared tablet may still hold the last person's kitchen cookie (30 days). Left
+        // behind, a kiosk would carry it straight past kitchenOrAdmin to the kitchen feed.
+        res.cookies.set(COOKIE.kitchen, "", { path: "/", maxAge: 0 });
       }
+      // Likewise an agency cookie from earlier: adminOnly would fall back to it.
+      res.cookies.set(COOKIE.agency, "", { path: "/", maxAge: 0 });
       return res;
     }
   }

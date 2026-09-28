@@ -37,8 +37,11 @@ export function usePosOrder() {
   const [pricingLoading, setPricingLoading] = useState(false);
   const [pricingError, setPricingError] = useState("");
 
+  /** Returns the new line's key (the customer display's "undo" removes by it). */
   const addLine = useCallback((line: Omit<BasketLine, "key">) => {
-    setLines((prev) => [...prev, { ...line, key: genKey() }]);
+    const key = genKey();
+    setLines((prev) => [...prev, { ...line, key }]);
+    return key;
   }, []);
   const setQty = useCallback((key: string, qty: number) => {
     setLines((prev) => (qty <= 0 ? prev.filter((l) => l.key !== key) : prev.map((l) => (l.key === key ? { ...l, qty: Math.min(50, qty) } : l))));

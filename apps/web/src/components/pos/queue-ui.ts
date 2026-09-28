@@ -6,13 +6,13 @@ import { MARKETPLACE_NAME, isMarketplaceSource, type AnyOrderSource, type Market
 export { isMarketplaceSource };
 
 export const SOURCE_LABEL: Record<AnyOrderSource, string> = {
-  web: "Web", app: "App", pos: "Counter", phone: "Phone",
+  web: "Web", app: "App", pos: "Counter", phone: "Phone", kiosk: "Kiosk",
   ...MARKETPLACE_NAME,
 };
 /** Four subtle back-office tag colours for the shop's own channels, three distinct
  *  brand colours for the marketplaces (POS-PLAN item 31) so they read at a glance. */
 export const SOURCE_TAG: Record<AnyOrderSource, string> = {
-  web: "tag-info", app: "tag-accent-2", pos: "tag-neutral", phone: "tag-warn",
+  web: "tag-info", app: "tag-accent-2", pos: "tag-neutral", phone: "tag-warn", kiosk: "tag-kiosk",
   justeat: "tag-justeat", deliveroo: "tag-deliveroo", ubereats: "tag-ubereats",
 };
 

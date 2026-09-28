@@ -27,3 +27,12 @@ export function getTillName(): string {
 export function setTillName(name: string) {
   store()?.setItem(NAME_KEY, name.trim().slice(0, 40) || DEFAULT_TILL_NAME);
 }
+
+/** Settings → "Customer confirms on display": Charge hands the order to a paired display first. On unless switched off here. */
+const HANDOFF_KEY = "lf-till-handoff";
+export function getHandoffPref(): boolean {
+  return store()?.getItem(HANDOFF_KEY) !== "0";
+}
+export function setHandoffPref(on: boolean) {
+  store()?.setItem(HANDOFF_KEY, on ? "1" : "0");
+}

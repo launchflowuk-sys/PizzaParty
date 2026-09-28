@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PosDisplayMessage, PosDisplayTill } from "@/lib/pos-phase4-types";
 import { useDisplayFeed } from "./useDisplayFeed";
+import { useCustomerDisplay } from "./useCustomerDisplay";
 import { OrderScreen, ThankYouScreen, type DisplayExtra, type DisplayOrderType, type DisplayPromo } from "./PosDisplayOrder";
 import "./pos.css";
 
@@ -59,6 +60,8 @@ export function PosDisplayClient({
 
   const screen: Screen = !entry || (paidAt !== null && expiredAt === paidAt) ? { type: "idle", shopName } : entry.msg;
   const basket = screen.type === "idle" || screen.type === "paid" ? null : entry?.basket ?? null;
+  // Handed over by the till: the customer confirms, adds extras and picks how to pay (item 29).
+  const customer = useCustomerDisplay(feed.follow, entry?.basket ?? null, screen.type === "basket" && !feed.needsPick);
 
   // Idle hero rotation (Ken Burns handled in CSS, index just picks the slide).
   useEffect(() => {
@@ -117,6 +120,7 @@ export function PosDisplayClient({
         promo={promo}
         extras={extras}
         descriptions={descriptions}
+        customer={customer}
       />
     );
   }

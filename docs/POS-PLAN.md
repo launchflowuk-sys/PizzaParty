@@ -144,6 +144,19 @@ Every item below is in scope. Phases are only the build order.
     owner's reference design: header with order types, photo line cards with extras,
     summary + status bar + payment methods, promo slot/today's deal + popular extras. See
     ONBOARDING.md §5.2.
+    **Interactive (two-way):** with "Customer confirms on display" on (Settings, per till,
+    default on while a display follows the till), Charge hands the basket to the display
+    (basket message carries `handoff {id, methods}` + `pending`). The customer confirms,
+    adds up to 8 one-tap extras (ranked by `rankUpsell` in lib/pos-display-requests.ts
+    via `GET /api/pos/display/upsell`), undoes their own adds, and picks Card (Apple/Google
+    Pay = the reader) or Cash. Taps go `POST /api/pos/display/request` (kitchen-or-admin
+    sign-in, zod, 1 KB cap, 20/min per sign-in; an add must be a live, in-stock, one-size,
+    no-option product) → NOTIFY → `event: display-request` on the till's own
+    `/api/pos/stream` only. The till is the authority (`checkDisplayRequest`): only its
+    own tillId, only the current hand-over id, removes only lines the display added, pays
+    only an offered method for the exact total shown once priced. Card auto-starts
+    ReaderPay on the till's reader; cash opens the CashPad. Staff can take over at any
+    point ("Take payment here" / "Take back"). Toasts on the till for every customer tap.
 30. **Offline mode**: keep taking cash orders when the internet drops, sync after.
 31. **Just Eat / Deliveroo / Uber Eats into the same queue** via Deliverect or the
     marketplaces' partner APIs (needs partner approval per platform).
@@ -159,6 +172,60 @@ Every item below is in scope. Phases are only the build order.
     shows a phone preview, the recipient count and a confirm step, and
     redemptions are measured through the promo code. Marketing consent is
     respected.
+
+### Self-service (added 2026-09-28, building alongside Phase 1)
+35. **Self-service kiosk**: `/kiosk`, a landscape tablet or screen at the
+    counter - "like the McDonald's screens" - in the customer display's design
+    (white, Poppins, script promo headlines, brand-red prices, green actions,
+    deep-green promo panels, big food photos), all from the shop's config and
+    menu. Flow: attract loop (promo slots, today's deals, best sellers; Ken
+    Burns, sliding headline, price pop; "Touch to start your order") → eat in
+    or take away (eat in only with `pos.eatIn`; never delivery) → menu (rail of
+    Popular, Deals and the shop's categories with their icons; photo cards;
+    sold out greyed; order bar "View order (3) · £24.50") → builder (sizes as
+    big cards, options as chips, whole toppings only; deals slot by slot) →
+    "Make it a meal?" (three best sellers from other categories, skippable) →
+    basket (the display's order column with qty/remove, loyalty banner, server
+    price) → pay (card on this kiosk's own Stripe reader, "Tap your card on the
+    reader below"; or pay at the counter) → optional first name on a big
+    on-screen keyboard → the order number, "Paid" or "Please pay at the
+    counter", back to the offers after 20 s. 60 s idle anywhere asks "Are you
+    still there?" with a 15 s countdown, then clears the order.
+    **Security**: a `kiosk` staff role whose only screen is `kiosk` (a manager
+    can open it too); `posGuard` refuses it, and `kitchenOrAdmin`/`adminOnly`
+    and the print pages refuse its cookie, so a kiosk PIN never reaches the
+    till, orders board, kitchen feed, cash, reports, CSV export or admin. Its
+    own endpoints `/api/kiosk/{price,orders,orders/:id/pay,…,unlock,stream}`:
+    zod-validated, server prices only (the website's `priceRequest`), no
+    discounts or promo codes, rate-limited per device and per sign-in,
+    `clientRequestId` idempotency, and a kiosk can only pay for its own orders
+    from the last hour. Orders go through `createOrder` with `source: "kiosk"`
+    (purple **Kiosk** badge on the Orders board and kitchen screen, its own
+    row in the Z report's channels, "KIOSK · TAKEAWAY" on tickets). Pay at the
+    counter = the till's pay-later (straight to the kitchen, owing cash;
+    staff settle with Take payment); card places on payment like the till.
+    Staff exit: hold the top-left corner 5 s, then a manager PIN
+    (`managerForPin`, 5 tries then 15 min lockout) opens reader choice, full
+    screen and "Leave kiosk mode". Menu changes arrive live (menu-only
+    stream). Config: `pos.kiosk.card` / `pos.kiosk.payAtCounter` (both on by
+    default), `pos.kiosk.ordersPerMinute` (4, per kiosk sign-in). The reader
+    is held in the kiosk's signed cookie (`rd`, set by /api/kiosk/unlock
+    behind the manager PIN); /pay never takes one from the request. See
+    docs/ONBOARDING.md §5.8.
+36. **Order status board**: `/pos/board`, a TV by the self-service kiosk
+    showing "Now preparing" / "Ready to collect" - like a fast-food collection
+    screen. Today's non-delivery orders only: placed/accepted/preparing group
+    under Preparing, ready under Ready to collect (bigger numbers, green);
+    order number, first name (`pos.boardShowNames`, on by default) and a
+    source icon (kiosk/counter/phone/web/app). A completed order simply stops
+    appearing; a ready order that nobody marks collected clears itself after
+    30 minutes regardless. Live via the kitchen stream with a 30s safety poll
+    - no staff actions, no customer data beyond a first name. Guarded the same
+    way as the customer display: a Kitchen-role PIN signs a TV in, never the
+    till itself. A rotating promo/best-seller strip (the display's own promo
+    panel) sells while people wait; the empty state invites people to the
+    kiosk or counter rather than showing a blank screen. See
+    docs/ONBOARDING.md §5.7.
 
 ---
 
@@ -233,6 +300,7 @@ pushed live until Shoji has tested it locally and approved it.
 | Live push | Postgres LISTEN/NOTIFY into SSE (not WebSockets: standalone Next behind Coolify, and every write is already a POST). About 0.1 s to every screen. Optional `DATABASE_URL_DIRECT` if a pooler is ever put in front of the database |
 | 3 — Money you can trust | Built, reviewed and tested locally end to end (2026-09-28). The 2026-09-21 test day reports £60.50 sales, £46.50 net and a drawer £1.00 short, all checked by hand. The price log covers new items. A refund Stripe made is never recorded as failed because its reply was lost, and managers can reconcile a day against Stripe |
 | 4 — Beyond Foodhub | Not started: caller ID, customer display, offline mode, Just Eat/Deliveroo/Uber, eat-in, keyboard shortcuts |
+| Self-service kiosk (item 35) | Built and tested locally (2026-09-28) at 1280x800 and 1920x1080 (portrait checked): the full journey, a card payment on the simulated reader, a pay-at-the-counter order on the Orders board and the kitchen screen with the Kiosk badge. No migration (source and role are strings) |
 
 ### Before it goes live
 

@@ -5,7 +5,7 @@ import { HelpSpot } from "@/components/admin/HelpSpot";
 import { useLiveEvents } from "@/lib/use-live-events";
 
 type Item = { qty: number; name: string; size: string; modifiers: string[]; components: string[]; notes: string };
-type O = { id: string; number: number; status: string; fulfilment: string; paymentMethod: string; paid: boolean; customerName: string; customerPhone: string; address: string; notes: string; scheduledFor: string | null; etaAt: string | null; etaMinutes: number | null; total: number; createdAt: string; placedAt: string | null; locationKey: string; locationName: string; rejectReason: string; items: Item[]; text: string };
+type O = { id: string; number: number; status: string; source: string; fulfilment: string; paymentMethod: string; paid: boolean; customerName: string; customerPhone: string; address: string; notes: string; scheduledFor: string | null; etaAt: string | null; etaMinutes: number | null; total: number; createdAt: string; placedAt: string | null; locationKey: string; locationName: string; rejectReason: string; items: Item[]; text: string };
 type Loc = { key: string; name: string; open: boolean; paused: boolean; pausedUntil: string | null; pauseReason: string; prepMinutes: number; deliveryMinutes: number };
 /** Which of the three alert channels this shop actually has switched on. */
 type Alerts = { sms: boolean; email: boolean; printer: boolean };
@@ -342,7 +342,8 @@ export function KitchenScreen() {
                       </div>
 
                       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 11 }}>
-                        <span className="tag tag-neutral">{o.fulfilment === "delivery" ? "Delivery" : "Collection"}</span>
+                        {o.source === "kiosk" ? <span className="tag tag-kiosk">Kiosk</span> : null}
+                        <span className="tag tag-neutral">{o.fulfilment === "delivery" ? "Delivery" : o.fulfilment === "eat_in" ? "Eat in" : "Collection"}</span>
                         <span className="tag tag-neutral">{o.paid ? "Paid" : o.paymentMethod === "cash" ? `Cash ${gbp(o.total)}` : "Unpaid"}</span>
                         {o.scheduledFor ? (
                           <span className="tag tag-accent">
