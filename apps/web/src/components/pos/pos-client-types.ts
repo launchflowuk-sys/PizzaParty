@@ -2,7 +2,7 @@
  *  is sent to or read from the server as-is. */
 import type { PickerProduct } from "@/components/product/OptionPicker";
 
-export type PosProduct = PickerProduct & { minPrice: number; categoryKey: string };
+export type PosProduct = PickerProduct & { minPrice: number; categoryKey: string; image?: string };
 export type PosCategory = { key: string; name: string; products: PosProduct[] };
 
 export type PosDealOption = PickerProduct & { extra: number };

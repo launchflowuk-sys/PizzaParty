@@ -32,7 +32,7 @@ type PosCreateOrderPhase4 = PosCreateOrder & PosCreateOrderExtras;
  * menu data already on the page (offline-pricing.ts) rather than the server.
  */
 export function PayPanel({
-  order, orderType, boot, onDone, onBack, liveEvent, offline, categories, deals, display, onOfflineSaved,
+  order, orderType, boot, onDone, onBack, liveEvent, offline, categories, deals, display, onOfflineSaved, logoUrl,
 }: {
   order: PosOrderState;
   orderType: OrderTypeTab;
@@ -46,6 +46,8 @@ export function PayPanel({
   display?: (msg: PosDisplayMessage) => void;
   /** Tells the TopBar's unsent-order badge (PosScreen's useOfflineQueue) to recount right away, rather than waiting for the till to come back online. */
   onOfflineSaved?: () => void;
+  /** Shop logo, shown on the order-taken success screen. */
+  logoUrl?: string;
 }) {
   const [stage, setStage] = useState<Stage>({ kind: "choose" });
   const [orderRef, setOrderRef] = useState<PosOrderRef | null>(null);
@@ -156,6 +158,7 @@ export function PayPanel({
   if (stage.kind === "done" && orderRef) {
     return (
       <div style={{ maxWidth: 420, textAlign: "center" }}>
+        {logoUrl ? <img src={logoUrl} alt="" className="pos-success-logo" /> : null}
         <span className="pos-bignum">#{orderRef.number}</span>
         <p style={{ marginTop: 8 }}>Order taken. Kitchen ticket is printing.</p>
         <div style={{ display: "flex", gap: 12, marginTop: 20, justifyContent: "center" }}>

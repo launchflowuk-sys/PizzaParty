@@ -53,7 +53,7 @@ export type PosCall = {
  * browser. The till posts these on BroadcastChannel POS_DISPLAY_CHANNEL; no server involved.
  */
 export const POS_DISPLAY_CHANNEL = "lf-pos-display";
-export type PosDisplayLine = { name: string; detail: string; qty: number; lineTotal: number };
+export type PosDisplayLine = { name: string; detail: string; qty: number; lineTotal: number; image?: string };
 export type PosDisplayMessage =
   | { type: "basket"; shopName: string; lines: PosDisplayLine[]; subtotal: number; discount: number; deliveryFee: number; total: number }
   | { type: "paying"; total: number; method: "cash" | "reader"; tendered?: number; change?: number }

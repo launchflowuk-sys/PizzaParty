@@ -18,9 +18,11 @@ export function TopBar({
   staffName, view, onView, badgeCount, soundOn, onEnableSound,
   orderType, onOrderType, search, onSearch, searchRef, boot,
   locationKey, onLocationKey, customerLabel, onChangeCustomer, liveConnected,
-  offline, offlineCount, onSendNow, onOpenDisplay, onShowShortcuts,
+  offline, offlineCount, onSendNow, onOpenDisplay, onShowShortcuts, logoUrl,
 }: {
   staffName: string;
+  /** Shop logo (POS branding) - small, left of the screen tabs, never stealing touch space. */
+  logoUrl?: string;
   view: PosView;
   onView: (v: PosView) => void;
   /** Orders needing action: status placed, plus ready-but-unpaid. */
@@ -50,6 +52,7 @@ export function TopBar({
   const status = boot?.onlineStatus;
   return (
     <div className="pos-topbar">
+      {logoUrl ? <img src={logoUrl} alt="" className="pos-topbar-logo" /> : null}
       <div className="seg" role="group" aria-label="Screen">
         <label className="seg-opt" style={{ minHeight: 60, padding: "0 20px", fontSize: 15, fontWeight: 700 }}>
           <input type="radio" name="pos-view" checked={view === "till"} onChange={() => onView("till")} />

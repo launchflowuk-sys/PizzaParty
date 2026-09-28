@@ -30,7 +30,7 @@ import { useOnlineStatus } from "./useOnlineStatus";
 import { useOfflineQueue } from "./useOfflineQueue";
 import { priceOffline } from "./offline-pricing";
 
-export function PosScreen({ staffName, staffRole, categories, deals }: { staffName: string; staffRole: StaffRole; categories: PosCategory[]; deals: PosDeal[] }) {
+export function PosScreen({ staffName, staffRole, categories, deals, logoUrl }: { staffName: string; staffRole: StaffRole; categories: PosCategory[]; deals: PosDeal[]; logoUrl?: string }) {
   const order = usePosOrder();
   const [orderEvent, setOrderEvent] = useState<{ orderId: string; kind: string } | null>(null);
   // Mounted once, for the till's whole life. `queue`/`menu` are referenced
@@ -166,6 +166,20 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
   }
 
   const allProducts = useMemo(() => categories.flatMap((c) => c.products), [categories]);
+  // Basket-line key -> product photo, for the customer display's thumbnails (item 29
+  // branding). Keyed by line, not slug: offlinePriced.lines and order.lines share the
+  // same `key` per line, which is the one thing both have in common with an OfflinePricedLine
+  // (it has no product slug of its own - see offline-pricing.ts).
+  const lineImages = useMemo(() => {
+    const bySlug: Record<string, string> = {};
+    for (const p of allProducts) if (p.image) bySlug[p.slug] = p.image;
+    const out: Record<string, string> = {};
+    for (const l of order.lines) {
+      const img = l.kind === "product" && l.product ? bySlug[l.product] : undefined;
+      if (img) out[l.key] = img;
+    }
+    return out;
+  }, [allProducts, order.lines]);
   const term = search.trim().toLowerCase();
   const gridProducts = term
     ? allProducts.filter((p) => p.name.toLowerCase().includes(term))
@@ -219,7 +233,7 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
     if (offline) {
       display({
         type: "basket", shopName,
-        lines: (offlinePriced?.lines ?? []).map((l) => ({ name: l.name, detail: l.detail, qty: l.qty, lineTotal: l.lineTotal })),
+        lines: (offlinePriced?.lines ?? []).map((l) => ({ name: l.name, detail: l.detail, qty: l.qty, lineTotal: l.lineTotal, image: lineImages[l.key] })),
         subtotal: offlinePriced?.subtotal ?? 0, discount: 0, deliveryFee: 0, total: offlinePriced?.total ?? 0,
       });
       return;
@@ -227,11 +241,11 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
     const p = order.priced;
     display({
       type: "basket", shopName,
-      lines: order.lines.map((l) => ({ name: l.name ?? "", detail: l.detail ?? "", qty: l.qty, lineTotal: l.lineTotal ?? 0 })),
+      lines: order.lines.map((l) => ({ name: l.name ?? "", detail: l.detail ?? "", qty: l.qty, lineTotal: l.lineTotal ?? 0, image: lineImages[l.key] })),
       subtotal: p?.subtotal ?? 0, discount: p?.discount ?? 0, deliveryFee: p?.deliveryFee ?? 0, total: p?.total ?? 0,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [order.lines, order.priced, offline, offlinePriced, boot?.shopName]);
+  }, [order.lines, order.priced, offline, offlinePriced, boot?.shopName, lineImages]);
 
   // A price/menu change lands, but never mid-order: refresh the moment the
   // basket is clear (immediately if it already was, otherwise as soon as this
@@ -252,6 +266,7 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
 
       <div className="pos-topwrap">
         <TopBar
+          logoUrl={logoUrl}
           staffName={staffName}
           view={view}
           onView={setView}
@@ -345,7 +360,7 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
             ) : (
               <PayPanel
                 order={order} orderType={orderType} boot={boot} onDone={resetAll} onBack={() => setMiddleView({ kind: "grid" })} liveEvent={orderEvent}
-                offline={offline} categories={categories} deals={deals} display={display} onOfflineSaved={offlineQueue.refresh}
+                offline={offline} categories={categories} deals={deals} display={display} onOfflineSaved={offlineQueue.refresh} logoUrl={logoUrl}
               />
             )}
           </main>

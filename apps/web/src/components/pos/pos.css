@@ -370,19 +370,163 @@
 .pos-shortcuts-backdrop { position: fixed; inset: 0; z-index: 95; background: color-mix(in srgb, var(--color-neutral-900) 45%, transparent); display: flex; align-items: center; justify-content: center; }
 .pos-shortcuts-card { width: min(420px, 92vw); max-height: 80vh; overflow-y: auto; background: var(--color-bg); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 20px; }
 
-/* Customer-facing display (item 29) - full screen, big friendly type. */
+/* ══ Customer-facing display (item 29) - full-bleed kiosk screen, four states ══ */
+/* Landscape-first (1280x800, 1920x1080), still sane on a 10" tablet portrait. */
+
 .pos-display-root {
-  position: fixed; inset: 0; background: var(--color-bg); color: var(--color-text);
-  display: flex; align-items: center; justify-content: center; text-align: center; padding: 32px;
+  position: fixed; inset: 0; overflow: hidden; color: #fff;
+  font-family: var(--font-sans, inherit);
 }
-.pos-display-idle { display: flex; flex-direction: column; gap: 16px; align-items: center; }
-.pos-display-shop { font-family: var(--font-heading); font-weight: 800; font-size: 64px; letter-spacing: -0.02em; }
-.pos-display-shop.small { font-size: 28px; }
-.pos-display-promo { font-size: 20px; color: var(--color-neutral-700); }
-.pos-display-basket { width: min(720px, 100%); display: flex; flex-direction: column; gap: 20px; text-align: left; }
-.pos-display-lines { display: flex; flex-direction: column; gap: 10px; font-size: 22px; }
-.pos-display-line { display: flex; justify-content: space-between; gap: 16px; }
-.pos-display-total { display: flex; justify-content: space-between; font-family: var(--font-heading); font-weight: 800; font-size: 40px; border-top: 3px solid var(--color-divider); padding-top: 16px; }
-.pos-display-pay { display: flex; flex-direction: column; gap: 12px; align-items: center; }
-.pos-display-label { font-size: 26px; color: var(--color-neutral-700); }
-.pos-display-bignum { font-family: var(--font-heading); font-weight: 800; font-size: 96px; letter-spacing: -0.02em; }
+
+/* -- Idle: rotating hero photography + brand panel -- */
+.pos-display-idle { display: flex; align-items: flex-end; justify-content: center; }
+.pos-display-hero {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--brand-secondary, #14110f) 85%, black) 0%, color-mix(in srgb, var(--brand-primary) 55%, black) 100%);
+}
+.pos-display-hero-slide {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  opacity: 0; transition: opacity 1.4s ease;
+}
+.pos-display-hero-slide[data-active="true"] { opacity: 1; z-index: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .pos-display-hero-slide[data-active="true"] { animation: pos-kenburns 7s ease-out forwards; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pos-display-hero-slide { transition: none; }
+}
+@keyframes pos-kenburns { from { transform: scale(1); } to { transform: scale(1.08); } }
+.pos-display-hero-scrim {
+  position: absolute; inset: 0; z-index: 2;
+  background: linear-gradient(0deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.35) 38%, rgba(0,0,0,0.05) 62%, rgba(0,0,0,0.25) 100%);
+}
+.pos-display-idle-panel {
+  position: relative; z-index: 3; width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  padding: 0 40px 64px; text-align: center;
+}
+.pos-display-logo-plate {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #fff; border-radius: 28px; padding: 22px 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+}
+.pos-display-logo-xl { height: 84px; width: auto; display: block; }
+.pos-display-shop { font-family: var(--font-heading); font-weight: 800; font-size: 64px; letter-spacing: -0.02em; text-shadow: 0 4px 24px rgba(0,0,0,0.5); }
+.pos-display-idle-promo {
+  font-size: 24px; font-weight: 600; color: #fff;
+  background: color-mix(in srgb, var(--brand-primary) 88%, transparent);
+  padding: 10px 28px; border-radius: 999px; text-shadow: none;
+}
+
+/* -- Basket / paying: brand header band + two-column order pane -- */
+.pos-display-order { display: flex; flex-direction: column; background: var(--color-bg); color: var(--color-text); }
+.pos-display-band {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 16px; padding: 18px 32px;
+  background: var(--brand-primary); color: var(--brand-primary-ink);
+}
+.pos-display-logo-sm { height: 40px; width: auto; display: block; background: #fff; border-radius: 8px; padding: 4px 8px; }
+.pos-display-band-name { font-family: var(--font-heading); font-weight: 800; font-size: 22px; letter-spacing: -0.01em; }
+
+.pos-display-order-body { flex: 1 1 auto; display: grid; grid-template-columns: minmax(0, 1fr) 420px; min-height: 0; }
+@media (max-width: 900px) { .pos-display-order-body { grid-template-columns: 1fr; grid-template-rows: minmax(0,1fr) auto; } }
+
+.pos-display-lines { overflow-y: auto; padding: 20px 28px; display: flex; flex-direction: column; gap: 4px; scroll-behavior: smooth; }
+.pos-display-empty { font-size: 20px; color: var(--color-neutral-700); text-align: center; margin-top: 40px; }
+.pos-display-line {
+  display: grid; grid-template-columns: 64px minmax(0,1fr) auto; align-items: center; gap: 16px;
+  padding: 12px 10px; border-radius: var(--radius-md);
+}
+.pos-display-thumb { width: 64px; height: 64px; border-radius: 14px; object-fit: cover; background: var(--color-surface); }
+.pos-display-thumb-empty { display: block; background: var(--color-surface); border: 1px solid var(--color-divider); }
+.pos-display-line-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pos-display-line-name { font-weight: 700; font-size: 19px; }
+.pos-display-line-detail { font-size: 13px; color: var(--color-neutral-700); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pos-display-line-price { font-weight: 800; font-size: 19px; white-space: nowrap; }
+@media (prefers-reduced-motion: no-preference) {
+  .pos-display-line[data-new="1"] { animation: pos-line-in 700ms ease-out; }
+}
+@keyframes pos-line-in {
+  0% { background: color-mix(in srgb, var(--brand-primary) 30%, transparent); transform: translateX(10px); opacity: 0; }
+  40% { opacity: 1; transform: translateX(0); }
+  100% { background: transparent; }
+}
+
+.pos-display-summary {
+  border-left: 2px solid var(--color-divider); background: var(--color-surface);
+  padding: 24px; display: flex; flex-direction: column; gap: 10px; min-height: 0;
+}
+.pos-display-sumrow { display: flex; justify-content: space-between; font-size: 16px; color: var(--color-neutral-700); }
+.pos-display-sumrow-discount { color: var(--color-action); }
+.pos-display-total-block {
+  margin-top: auto; display: flex; flex-direction: column; gap: 4px;
+  background: var(--brand-primary); color: var(--brand-primary-ink);
+  border-radius: var(--radius-md); padding: 20px 24px; text-align: center;
+}
+.pos-display-total-block span:first-child { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.85; }
+.pos-display-total-num { font-family: var(--font-heading); font-weight: 800; font-size: 52px; letter-spacing: -0.02em; }
+
+/* -- Payment state, in the same summary column -- */
+.pos-display-pay-panel { display: flex; flex-direction: column; align-items: center; gap: 14px; margin: auto 0; text-align: center; }
+.pos-display-pay-label { font-size: 16px; font-weight: 700; color: var(--color-neutral-700); text-transform: uppercase; letter-spacing: 0.06em; }
+.pos-display-pay-total { font-family: var(--font-heading); font-weight: 800; font-size: 56px; letter-spacing: -0.02em; color: var(--brand-primary); }
+.pos-display-pay-hint { font-size: 16px; color: var(--color-neutral-700); font-weight: 600; }
+.pos-display-pulse-dot::before { content: "●"; margin-right: 6px; color: var(--brand-primary); }
+@media (prefers-reduced-motion: no-preference) { .pos-display-pulse-dot::before { animation: pos-pulse-op 1.4s ease-in-out infinite; } }
+@keyframes pos-pulse-op { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+.pos-display-card-anim { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.pos-display-card-svg { width: 140px; height: auto; }
+.pos-display-card-body { fill: var(--color-neutral-700); }
+.pos-display-card-stripe { fill: var(--color-bg); opacity: 0.85; }
+.pos-display-wave { fill: none; stroke: var(--brand-primary); stroke-width: 4; stroke-linecap: round; opacity: 0.35; }
+@media (prefers-reduced-motion: no-preference) {
+  .pos-display-wave1 { animation: pos-wave 1.6s ease-in-out infinite; }
+  .pos-display-wave2 { animation: pos-wave 1.6s ease-in-out 0.2s infinite; }
+  .pos-display-wave3 { animation: pos-wave 1.6s ease-in-out 0.4s infinite; }
+}
+@keyframes pos-wave { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+.pos-display-cash-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pos-display-cash-row { display: flex; gap: 8px; font-size: 18px; color: var(--color-neutral-700); font-weight: 600; }
+.pos-display-change-row { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 6px; }
+.pos-display-change-row > span:first-child { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-neutral-700); }
+.pos-display-change-num { font-family: var(--font-heading); font-weight: 800; font-size: 72px; letter-spacing: -0.02em; color: var(--color-action); }
+
+/* -- Paid: celebratory full-bleed thank-you -- */
+.pos-display-paid { display: flex; align-items: center; justify-content: center; }
+.pos-display-paid-bg {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  background-color: var(--brand-secondary, #14110f); filter: brightness(0.8);
+}
+.pos-display-paid-scrim { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(0,0,0,0.75), color-mix(in srgb, var(--brand-primary) 55%, black) 100%); }
+.pos-display-paid-card {
+  position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 48px 56px; text-align: center;
+}
+.pos-display-tick { width: 96px; height: 96px; }
+.pos-display-tick-bg { fill: var(--brand-primary); }
+.pos-display-tick-check { stroke: var(--brand-primary-ink); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 36; stroke-dashoffset: 36; }
+@media (prefers-reduced-motion: no-preference) {
+  .pos-display-tick { animation: pos-pop 420ms cubic-bezier(.2,1.4,.4,1) both; }
+  .pos-display-tick-check { animation: pos-tick-check 420ms 380ms ease-out forwards; }
+}
+@media (prefers-reduced-motion: reduce) { .pos-display-tick-check { stroke-dashoffset: 0; } }
+@keyframes pos-pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes pos-tick-check { to { stroke-dashoffset: 0; } }
+.pos-display-thankyou { font-family: var(--font-heading); font-weight: 800; font-size: 56px; letter-spacing: -0.02em; }
+.pos-display-order-pill {
+  font-family: var(--font-heading); font-weight: 800; font-size: 40px; letter-spacing: -0.01em;
+  background: var(--brand-primary); color: var(--brand-primary-ink);
+  border-radius: 999px; padding: 10px 36px;
+}
+.pos-display-paid-msg { font-size: 20px; color: rgba(255,255,255,0.9); max-width: 480px; }
+.pos-display-countdown-track { width: 220px; height: 4px; border-radius: 999px; background: rgba(255,255,255,0.25); overflow: hidden; margin-top: 8px; }
+.pos-display-countdown-bar { height: 100%; width: 100%; background: #fff; transform-origin: left; }
+@media (prefers-reduced-motion: no-preference) { .pos-display-countdown-bar { animation: pos-countdown-shrink 8s linear forwards; } }
+@media (prefers-reduced-motion: reduce) { .pos-display-countdown-bar { width: 0; } }
+@keyframes pos-countdown-shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.pos-display-countdown-text { font-size: 13px; color: rgba(255,255,255,0.7); }
+
+/* -- Till: shop logo, small and unobtrusive -- */
+.pos-topbar-logo { height: 36px; width: auto; display: block; border-radius: 6px; }
+.pos-success-logo { height: 40px; width: auto; display: block; margin: 0 auto 12px; }
