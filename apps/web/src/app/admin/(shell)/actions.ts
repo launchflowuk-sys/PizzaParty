@@ -6,6 +6,7 @@ import { can, type Screen } from "@/lib/permissions";
 import { getClientRow, MENU_TAG, CLIENT_TAG } from "@/lib/menu";
 import { toPence } from "@/lib/money";
 import { TRIGGERS, runAutomation } from "@/lib/marketing";
+import { assignDriver as assignDriverTo } from "@/lib/dispatch";
 
 /**
  * Every mutation goes through here. Hiding a link in the sidebar is cosmetic - without
@@ -293,12 +294,8 @@ export async function assignDriver(fd: FormData) {
   const driverId = String(fd.get("driverId") ?? "");
   const orderId = String(fd.get("orderId") ?? "");
   if (!driverId || !orderId) return;
-  const order = await prisma.order.findFirst({ where: { id: orderId, clientId: client.id }, select: { id: true } });
-  if (!order) return;
-  await prisma.driver.updateMany({
-    where: { id: driverId, clientId: client.id },
-    data: { status: "on_delivery", activeOrderId: orderId, backAt: new Date(Date.now() + 30 * 60_000) },
-  });
+  const staff = await currentStaff();
+  await assignDriverTo(client.id, orderId, driverId, staff?.name ?? "admin");
   revalidatePath("/admin/dispatch");
 }
 

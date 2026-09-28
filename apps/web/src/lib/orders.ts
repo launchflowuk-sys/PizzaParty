@@ -56,7 +56,7 @@ export const STATUS_ROW: Partial<Record<OrderStatus, "danger" | "warn" | "ok" | 
   cancelled: "danger",
 };
 
-const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+export const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   pending_payment: ["placed", "cancelled"],
   placed: ["accepted", "rejected", "cancelled"],
   accepted: ["preparing", "ready", "out_for_delivery", "completed", "cancelled"],
@@ -179,18 +179,29 @@ export async function createOrder(i: CreateOrderInput) {
       ...(i.payment ? { payments: { create: i.payment } } : {}),
     },
   });
-  for (const [n, l] of priced.lines.entries()) {
-    const data: Prisma.OrderItemUncheckedCreateInput = {
-      orderId: order.id, productId: l.productId ?? null, dealId: l.dealId ?? null,
-      name: l.name, sizeKey: l.sizeKey, sizeName: l.sizeName, qty: l.qty, unitPrice: l.unitPrice, lineTotal: l.lineTotal, notes: l.notes,
-      line: i.lines[n] as Prisma.InputJsonValue,
-      modifiers: { create: l.modifiers.map((m) => ({ groupName: m.groupName, name: m.name, price: m.price })) },
-      components: { create: l.components.map((c) => ({ orderId: order.id, productId: c.productId, name: c.name, sizeKey: c.sizeKey, sizeName: c.sizeName, qty: 1, unitPrice: 0, lineTotal: 0, modifiers: { create: c.modifiers.map((m) => ({ groupName: m.groupName, name: m.name, price: m.price })) } })) },
-    };
-    await prisma.orderItem.create({ data });
-  }
+  await writeItems(prisma, order.id, priced.lines, i.lines);
   await addEvent(order.id, "created", i.actor, i.eventMessage);
   return order;
+}
+
+/**
+ * Writes priced lines as order items (deal contents as child rows). Shared by
+ * a new order and an edit to a sent one, so both are shaped alike. `lines` are
+ * the raw basket lines, index-aligned, kept for reorder. Returns the new ids.
+ */
+export async function writeItems(db: Prisma.TransactionClient, orderId: string, pricedLines: PricedBasket["lines"], lines: BasketLine[]): Promise<string[]> {
+  const ids: string[] = [];
+  for (const [n, l] of pricedLines.entries()) {
+    const data: Prisma.OrderItemUncheckedCreateInput = {
+      orderId, productId: l.productId ?? null, dealId: l.dealId ?? null,
+      name: l.name, sizeKey: l.sizeKey, sizeName: l.sizeName, qty: l.qty, unitPrice: l.unitPrice, lineTotal: l.lineTotal, notes: l.notes,
+      line: lines[n] as Prisma.InputJsonValue,
+      modifiers: { create: l.modifiers.map((m) => ({ groupName: m.groupName, name: m.name, price: m.price })) },
+      components: { create: l.components.map((c) => ({ orderId, productId: c.productId, name: c.name, sizeKey: c.sizeKey, sizeName: c.sizeName, qty: 1, unitPrice: 0, lineTotal: 0, modifiers: { create: c.modifiers.map((m) => ({ groupName: m.groupName, name: m.name, price: m.price })) } })) },
+    };
+    ids.push((await db.orderItem.create({ data, select: { id: true } })).id);
+  }
+  return ids;
 }
 
 /**
@@ -208,11 +219,11 @@ export async function settlePayment(paymentId: string, actor: string, data: { st
   if (moved.count) {
     await addEvent(payment.orderId, "paid", actor, `${payment.provider} ${gbp(payment.amount)}${data.stripePaymentIntentId ? ` · ${data.stripePaymentIntentId}` : ""}`);
   }
-  const order = await prisma.order.findUnique({ where: { id: payment.orderId }, select: { total: true, payments: { select: { status: true, amount: true } } } });
+  const order = await prisma.order.findUnique({ where: { id: payment.orderId }, select: { total: true, writtenOff: true, payments: { select: { status: true, amount: true, refundedAmount: true } } } });
   if (!order) return null;
   // A "pay later" placeholder stands for what is still owed: it shrinks as money
   // comes in and goes once the order is covered.
-  const owed = remainingPence(order.total, order.payments);
+  const owed = remainingPence(order.total - order.writtenOff, order.payments);
   const pending = { orderId: payment.orderId, provider: "cash", status: "cash_pending" as const };
   if (owed > 0) await prisma.payment.updateMany({ where: pending, data: { amount: owed } });
   else {
@@ -345,8 +356,10 @@ async function refundOrder(order: FullOrder, reason: string): Promise<number | n
   let refunded = 0;
   for (const p of order.payments.filter((p) => p.stripePaymentIntentId && p.status === "succeeded")) {
     try {
+      // No amount: Stripe sends back whatever the till has not already refunded.
       const refund = await getStripe().refunds.create({ payment_intent: p.stripePaymentIntentId }, connectOpts(cfg.payments.stripeAccountId));
-      await prisma.payment.update({ where: { id: p.id }, data: { status: "refunded", refundedAmount: refund.amount } });
+      await prisma.payment.update({ where: { id: p.id }, data: { status: "refunded", refundedAmount: { increment: refund.amount } } });
+      await prisma.refund.create({ data: { orderId: order.id, paymentId: p.id, provider: p.provider, amount: refund.amount, reason, status: refund.status === "failed" ? "failed" : "succeeded", stripeRefundId: refund.id } });
       await addEvent(order.id, "refunded", "system", `Refunded ${gbp(refund.amount)} (${reason})`);
       refunded += refund.amount;
     } catch (e) {
@@ -374,7 +387,7 @@ async function notifyPrinter(order: FullOrder) {
   });
   await addEvent(order.id, "print_sent", "system", r.ok ? "ok" : r.error ?? "failed");
 }
-function printPayload(order: FullOrder) {
+export function printPayload(order: FullOrder) {
   return {
     number: order.number, fulfilment: order.fulfilment, paymentMethod: order.paymentMethod, status: order.status,
     customer: { name: order.customerName, phone: order.customerPhone },

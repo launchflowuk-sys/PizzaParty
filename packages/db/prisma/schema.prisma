@@ -447,12 +447,18 @@ model Order {
   source              String        @default("web")
   /// Staff name for counter and phone orders; null for customer self-service.
   takenBy             String?
+  /// Last time items were added or voided after the order was taken; the queue and kitchen highlight it.
+  amendedAt           DateTime?
+  /// Pence refunded as goodwill on goods the customer kept (beyond any overpayment).
+  /// What is owed = total - writtenOff - net paid, so such a refund never shows as a balance due.
+  writtenOff          Int           @default(0)
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
   items    OrderItem[]
   /// More than one when a till order is split, e.g. part cash and part card reader.
   payments Payment[]
+  refunds  Refund[]
   events  OrderEvent[]
   promo   Promo?       @relation(fields: [promoId], references: [id])
   promoId String?
@@ -521,6 +527,7 @@ model Payment {
   tendered              Int?
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
+  refunds               Refund[]
 
   @@index([orderId])
   @@index([stripePaymentIntentId])
@@ -907,4 +914,31 @@ model PromoSlot {
   updatedAt DateTime @updatedAt
 
   @@index([clientId, active, placement, sortOrder])
+}
+
+/// Money sent back, one row per refund. Card refunds go through Stripe; a cash
+/// refund is money out of the drawer, counted by the end-of-day report.
+/// Payment.refundedAmount is the running total per payment.
+model Refund {
+  id             String   @id @default(cuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentId      String
+  payment        Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  /// stripe | stripe_terminal | cash - copied from the payment.
+  provider       String
+  amount         Int
+  reason         String   @default("")
+  /// Who asked for it.
+  actor          String   @default("system")
+  /// Manager whose PIN approved it.
+  approvedBy     String   @default("")
+  /// pending | succeeded | failed
+  status         String   @default("pending")
+  stripeRefundId String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([provider, createdAt])
 }

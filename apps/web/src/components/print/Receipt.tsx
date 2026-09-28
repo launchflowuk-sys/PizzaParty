@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { FullOrder } from "@/lib/orders";
 import { gbp } from "@/lib/money";
+import { orderMoney } from "@/lib/pos-money";
 
 /**
  * The paper.
@@ -45,7 +46,10 @@ export function Receipt({
 }) {
   const tz = order.location.timezone;
   const delivery = order.fulfilment === "delivery";
-  const cash = order.paymentMethod === "cash";
+  // What is still owed, not the order's price: a part-paid or edited order has
+  // a balance, and a cash order paid at the counter has none.
+  const owed = orderMoney(order.total, order.writtenOff, order.payments).balance;
+  const cash = owed > 0;
   const showPrices = copy !== "kitchen";
   const address = [order.deliveryLine1, order.deliveryLine2, order.deliveryCity, order.deliveryPostcode].filter(Boolean);
 
@@ -89,7 +93,7 @@ export function Receipt({
       {/* Whether there is money to collect is the single most important line on
           a driver's copy, so it is a band rather than a row. */}
       <div className={`rc-pay ${cash ? "cash" : "paid"}`}>
-        {cash ? `COLLECT ${gbp(order.total)} CASH` : "PAID ONLINE — collect nothing"}
+        {cash ? `COLLECT ${gbp(owed)}` : "PAID — collect nothing"}
       </div>
 
       {copy !== "kitchen" || order.notes ? <hr className="rc-rule" /> : null}
@@ -141,7 +145,7 @@ export function Receipt({
           </table>
         </>
       ) : (
-        <div className="rc-kitchen-total">{order.items.reduce((n, i) => n + i.qty, 0)} items · {gbp(order.total)} {cash ? "CASH" : "PAID"}</div>
+        <div className="rc-kitchen-total">{order.items.reduce((n, i) => n + i.qty, 0)} items · {cash ? `${gbp(owed)} TO PAY` : `${gbp(order.total)} PAID`}</div>
       )}
 
       {order.notes ? (

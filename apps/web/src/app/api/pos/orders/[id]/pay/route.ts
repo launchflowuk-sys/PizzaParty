@@ -31,9 +31,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // so two tills (or a double tap) cannot both take the same balance. The row is
   // "processing" until settled, which outstandingPence already counts as held.
   const reserved = await prisma.$transaction(async (tx) => {
-    const [row] = await tx.$queryRaw<{ status: string; total: number }[]>`SELECT status::text AS status, total FROM "Order" WHERE id = ${order.id} FOR UPDATE`;
+    const [row] = await tx.$queryRaw<{ status: string; total: number }[]>`SELECT status::text AS status, total - "writtenOff" AS total FROM "Order" WHERE id = ${order.id} FOR UPDATE`;
     if (!row || !(OPEN_FOR_PAYMENT as readonly string[]).includes(row.status)) return { error: `This order is ${row?.status ?? "gone"}.`, outstanding: 0 };
-    const payments = await tx.payment.findMany({ where: { orderId: order.id }, select: { status: true, amount: true } });
+    const payments = await tx.payment.findMany({ where: { orderId: order.id }, select: { status: true, amount: true, refundedAmount: true } });
     const outstanding = outstandingPence(row.total, payments);
     if (body.amount > outstanding) return { error: outstanding === 0 ? "Nothing left to pay." : `Only ${gbp(outstanding)} is left to pay.`, outstanding };
     const payment = await tx.payment.create({

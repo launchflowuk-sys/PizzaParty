@@ -3,6 +3,9 @@ import { getFullOrder } from "@/lib/orders";
 import { getConfig, assetUrl } from "@/lib/config";
 import { Receipt, type Copy } from "@/components/print/Receipt";
 import { AutoPrint } from "@/components/print/AutoPrint";
+import { ChangeTicket } from "@/components/print/ChangeTicket";
+import { prisma } from "@launchflow/db";
+import type { ChangeData } from "@/lib/pos-edit";
 
 export const dynamic = "force-dynamic";
 
@@ -25,15 +28,29 @@ const COPIES: Copy[] = ["kitchen", "customer", "driver"];
 
 type Params = {
   params: Promise<{ order: string }>;
-  searchParams: Promise<{ copy?: string; auto?: string }>;
+  searchParams: Promise<{ copy?: string; auto?: string; event?: string }>;
 };
 
 export default async function PrintOrder({ params, searchParams }: Params) {
   const { order: id } = await params;
-  const { copy: rawCopy, auto } = await searchParams;
+  const { copy: rawCopy, auto, event } = await searchParams;
 
   const order = await getFullOrder(id);
   if (!order) notFound();
+
+  // `?copy=changes&event=` prints only what an edit added or voided, so the
+  // kitchen is not handed the whole order twice.
+  if (rawCopy === "changes") {
+    const e = event ? await prisma.orderEvent.findFirst({ where: { id: event, orderId: id, type: "amended" } }) : null;
+    if (!e) notFound();
+    return (
+      <div className="rc-page">
+        {auto === "1" ? <AutoPrint /> : null}
+        <div className="rc-bar"><span>Order #{order.number} · changes</span><PrintLinks id={id} /></div>
+        <ChangeTicket order={order} changes={e.data as unknown as ChangeData} at={e.createdAt} by={e.actor} />
+      </div>
+    );
+  }
 
   const cfg = getConfig();
   const shop = {

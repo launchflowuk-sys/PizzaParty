@@ -73,8 +73,14 @@ export async function POST(req: NextRequest) {
       const piId = typeof ch.payment_intent === "string" ? ch.payment_intent : ch.payment_intent?.id;
       if (piId) {
         const payment = await prisma.payment.findFirst({ where: { stripePaymentIntentId: piId } });
-        if (payment) {
-          await prisma.payment.update({ where: { id: payment.id }, data: { status: "refunded", refundedAmount: ch.amount_refunded } });
+        // Fires for partial refunds too. Only a full refund makes the row "refunded";
+        // a partial one keeps it succeeded with the running total, and a late event
+        // never lowers a total the till has already reserved for a newer refund.
+        if (payment && ch.amount_refunded > payment.refundedAmount) {
+          await prisma.payment.update({
+            where: { id: payment.id },
+            data: { refundedAmount: ch.amount_refunded, ...(ch.amount_refunded >= payment.amount ? { status: "refunded" } : {}) },
+          });
           await addEvent(payment.orderId, "refunded", "stripe", `Refunded ${ch.amount_refunded}p`);
         }
       }

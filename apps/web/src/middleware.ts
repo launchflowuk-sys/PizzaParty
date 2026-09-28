@@ -17,7 +17,9 @@ export async function middleware(req: NextRequest) {
 
   // Ops auth gates (pages only; API routes check their own cookies)
   if (pathname.startsWith("/kitchen") && pathname !== "/kitchen/login") {
-    if (!(await verifyToken(req.cookies.get(COOKIE.kitchen)?.value, "kitchen"))) return NextResponse.redirect(new URL("/kitchen/login", req.url));
+    // The till (staff cookie) reprints through the same print pages the kitchen uses.
+    const staffPrint = pathname.startsWith("/kitchen/print/") && (await verifyToken(req.cookies.get(COOKIE.admin)?.value, "admin"));
+    if (!staffPrint && !(await verifyToken(req.cookies.get(COOKIE.kitchen)?.value, "kitchen"))) return NextResponse.redirect(new URL("/kitchen/login", req.url));
   }
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     const admin = await verifyToken(req.cookies.get(COOKIE.admin)?.value, "admin");

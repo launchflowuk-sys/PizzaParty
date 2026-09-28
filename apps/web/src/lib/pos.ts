@@ -126,7 +126,7 @@ export async function posCustomer(clientId: string, where: { phone: string } | {
 }
 
 export async function orderRef(orderId: string): Promise<PosOrderRef> {
-  const o = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, select: { id: true, number: true, total: true, status: true, payments: { select: { status: true, amount: true } } } });
+  const o = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, select: { id: true, number: true, total: true, status: true, payments: { select: { status: true, amount: true, refundedAmount: true } } } });
   return { id: o.id, number: o.number, total: o.total, paid: paidPence(o.payments), status: o.status };
 }
 
