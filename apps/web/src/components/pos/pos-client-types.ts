@@ -15,7 +15,7 @@ export function isSimpleProduct(p: PosProduct): boolean {
   return p.sizes.length <= 1 && p.groups.length === 0;
 }
 
-export type OrderTypeTab = "collection" | "delivery" | "phone";
+export type OrderTypeTab = "collection" | "delivery" | "phone" | "eat_in";
 
 export type MiddleView =
   | { kind: "grid" }

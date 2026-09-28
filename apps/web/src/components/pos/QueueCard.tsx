@@ -1,7 +1,7 @@
 "use client";
 import { gbp } from "@/lib/money";
 import type { QueueOrder } from "@/lib/pos-queue-types";
-import { PAID_LABEL, PAID_TAG, SOURCE_LABEL, SOURCE_TAG, ageTone, fmtTime, minutesBetween } from "./queue-ui";
+import { MARKETPLACE_PAID_LABEL, PAID_LABEL, PAID_TAG, SOURCE_LABEL, SOURCE_TAG, ageTone, fmtTime, fulfilmentLabel, isMarketplaceSource, minutesBetween } from "./queue-ui";
 
 export function QueueCard({ order, now, flash, onOpen }: { order: QueueOrder; now: string; flash: boolean; onOpen: () => void }) {
   const tone = ageTone(order, now);
@@ -15,15 +15,24 @@ export function QueueCard({ order, now, flash, onOpen }: { order: QueueOrder; no
       </div>
 
       <div className="pos-q-card-row">
-        <span className="tag tag-neutral">{order.fulfilment === "delivery" ? "Delivery" : "Collection"}</span>
-        <span className={`tag ${PAID_TAG[order.paidState]}`}>{PAID_LABEL[order.paidState]}</span>
+        <span className="tag tag-neutral">{fulfilmentLabel(order.fulfilment, order.tableNumber)}</span>
+        {isMarketplaceSource(order.source) ? (
+          <span className="tag tag-ok">{MARKETPLACE_PAID_LABEL[order.source]}</span>
+        ) : (
+          <span className={`tag ${PAID_TAG[order.paidState]}`}>{PAID_LABEL[order.paidState]}</span>
+        )}
         {order.amendedAt ? <span className="tag tag-warn">Amended</span> : null}
+        {order.needsAttention ? <span className="tag tag-danger">Check items</span> : null}
       </div>
 
       <span className="pos-q-card-name">{order.customerName}</span>
       {order.address ? <span className="pos-q-card-addr">{order.address}</span> : null}
       <span className="pos-q-card-summary">{order.summary}</span>
-      {order.driver ? <span className="pos-q-card-driver">Driver: {order.driver.name}</span> : null}
+      {order.courier === "marketplace" ? (
+        <span className="pos-q-card-driver">Rider collects</span>
+      ) : order.driver ? (
+        <span className="pos-q-card-driver">Driver: {order.driver.name}</span>
+      ) : null}
 
       <div className="pos-q-card-bottom">
         <span className="pos-q-card-age" data-tone={tone || undefined}>

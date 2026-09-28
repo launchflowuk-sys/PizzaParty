@@ -6,8 +6,10 @@ import { DriverCashPanel } from "./DriverCashPanel";
 import { DayReportPanel } from "./DayReportPanel";
 import { StripeCheckPanel } from "./StripeCheckPanel";
 import { PriceHistoryPanel } from "./PriceHistoryPanel";
+import { MarketplacesPanel } from "./MarketplacesPanel";
+import { SettingsPanel } from "./SettingsPanel";
 
-type CashSubTab = "drawer" | "drivers" | "day" | "stripe" | "prices";
+type CashSubTab = "drawer" | "drivers" | "day" | "stripe" | "prices" | "marketplaces" | "settings";
 
 /**
  * "Cash & reports" (docs/POS-PLAN.md items 23-27). The drawer is every till
@@ -18,13 +20,18 @@ type CashSubTab = "drawer" | "drivers" | "day" | "stripe" | "prices";
  * hit a 403.
  */
 export function CashTab({
-  staffRole, locationKey, liveEvent, queueOrderIds, onOpenOrder,
+  staffRole, locationKey, liveEvent, queueOrderIds, onOpenOrder, serialSupported, serialConnected, serialError, onConnectSerial,
 }: {
   staffRole: StaffRole;
   locationKey?: string;
   liveEvent: { orderId: string; kind: string } | null;
   queueOrderIds: Set<string>;
   onOpenOrder: (orderId: string) => void;
+  /** Caller ID box (POS-PLAN item 28) - state lives in PosScreen (the banner needs it everywhere), just the connect button lives here. */
+  serialSupported: boolean;
+  serialConnected: boolean;
+  serialError: string;
+  onConnectSerial: () => void;
 }) {
   const canReports = can(staffRole, "reports");
   const isManager = staffRole === "manager";
@@ -33,7 +40,8 @@ export function CashTab({
   const tabs: { key: CashSubTab; label: string }[] = [
     { key: "drawer", label: "Drawer" },
     ...(canReports ? ([{ key: "drivers", label: "Driver cash" }, { key: "day", label: "Day report" }] as const) : []),
-    ...(isManager ? ([{ key: "stripe", label: "Stripe check" }, { key: "prices", label: "Price history" }] as const) : []),
+    ...(isManager ? ([{ key: "stripe", label: "Stripe check" }, { key: "prices", label: "Price history" }, { key: "marketplaces", label: "Marketplaces" }] as const) : []),
+    { key: "settings", label: "Settings" },
   ];
 
   return (
@@ -52,6 +60,10 @@ export function CashTab({
         {tab === "day" && canReports ? <DayReportPanel canClose={isManager} queueOrderIds={queueOrderIds} onOpenOrder={onOpenOrder} /> : null}
         {tab === "stripe" && isManager ? <StripeCheckPanel /> : null}
         {tab === "prices" && isManager ? <PriceHistoryPanel /> : null}
+        {tab === "marketplaces" && isManager ? <MarketplacesPanel /> : null}
+        {tab === "settings" ? (
+          <SettingsPanel serialSupported={serialSupported} serialConnected={serialConnected} serialError={serialError} onConnectSerial={onConnectSerial} />
+        ) : null}
       </div>
     </div>
   );

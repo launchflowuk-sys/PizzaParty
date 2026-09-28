@@ -1,11 +1,36 @@
 /** Display-only helpers shared by the queue board and the order panel. Nothing
  *  here talks to the server - the wire contract is lib/pos-queue-types.ts. */
-import type { OrderSource } from "@/lib/pos-types";
 import type { OrderStatus, PaidState } from "@/lib/pos-queue-types";
+import { MARKETPLACE_NAME, isMarketplaceSource, type AnyOrderSource, type MarketplaceSource } from "@/lib/pos-phase4-types";
 
-export const SOURCE_LABEL: Record<OrderSource, string> = { web: "Web", app: "App", pos: "Counter", phone: "Phone" };
-/** Four distinct, subtle tag colours - reusing the back-office palette rather than inventing a fifth. */
-export const SOURCE_TAG: Record<OrderSource, string> = { web: "tag-info", app: "tag-accent-2", pos: "tag-neutral", phone: "tag-warn" };
+export { isMarketplaceSource };
+
+export const SOURCE_LABEL: Record<AnyOrderSource, string> = {
+  web: "Web", app: "App", pos: "Counter", phone: "Phone",
+  ...MARKETPLACE_NAME,
+};
+/** Four subtle back-office tag colours for the shop's own channels, three distinct
+ *  brand colours for the marketplaces (POS-PLAN item 31) so they read at a glance. */
+export const SOURCE_TAG: Record<AnyOrderSource, string> = {
+  web: "tag-info", app: "tag-accent-2", pos: "tag-neutral", phone: "tag-warn",
+  justeat: "tag-justeat", deliveroo: "tag-deliveroo", ubereats: "tag-ubereats",
+};
+
+export const MARKETPLACE_PAID_LABEL: Record<MarketplaceSource, string> = Object.fromEntries(
+  (Object.entries(MARKETPLACE_NAME) as [MarketplaceSource, string][]).map(([k, name]) => [k, `Paid on ${name}`]),
+) as Record<MarketplaceSource, string>;
+
+/** True for "eat_in". */
+export function isEatIn(fulfilment: string): boolean {
+  return fulfilment === "eat_in";
+}
+
+/** "Delivery" / "Collection" / "Eat in · Table 4" for a queue card or order panel. */
+export function fulfilmentLabel(fulfilment: string, tableNumber: string | null): string {
+  if (fulfilment === "delivery") return "Delivery";
+  if (isEatIn(fulfilment)) return tableNumber ? `Eat in · Table ${tableNumber}` : "Eat in";
+  return "Collection";
+}
 
 export const PAID_LABEL: Record<PaidState, string> = { paid: "Paid", part: "Part", unpaid: "Unpaid", refund_due: "Refund due" };
 export const PAID_TAG: Record<PaidState, string> = { paid: "tag-ok", part: "tag-warn", unpaid: "tag-danger", refund_due: "tag-info" };

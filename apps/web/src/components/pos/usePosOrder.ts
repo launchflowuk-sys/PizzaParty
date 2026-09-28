@@ -26,6 +26,8 @@ export function usePosOrder() {
   const [discount, setDiscount] = useState<PosDiscount | undefined>(undefined);
   const [customer, setCustomer] = useState<PosCustomer | null>(null);
   const [walkInName, setWalkInName] = useState("");
+  /** Eat-in only (POS-PLAN item 32) - not part of Fulfilment, so it rides alongside it rather than in it. */
+  const [tableNumber, setTableNumber] = useState("");
 
   const [priced, setPriced] = useState<PosPriced | null>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
@@ -45,7 +47,7 @@ export function usePosOrder() {
 
   const reset = useCallback(() => {
     setLines([]); setOrderNote(""); setFulfilment("collection"); setAddress({ line1: "", line2: "", city: "", postcode: "" });
-    setScheduledFor(undefined); setDiscount(undefined); setCustomer(null); setWalkInName(""); setPriced(null); setPricingError("");
+    setScheduledFor(undefined); setDiscount(undefined); setCustomer(null); setWalkInName(""); setPriced(null); setPricingError(""); setTableNumber("");
   }, []);
 
   const posBasket = useMemo<PosBasket>(
@@ -89,6 +91,7 @@ export function usePosOrder() {
     discount, setDiscount,
     customer, setCustomer,
     walkInName, setWalkInName,
+    tableNumber, setTableNumber,
     posBasket, priced, pricingLoading, pricingError,
     reset,
   };

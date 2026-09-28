@@ -5,8 +5,9 @@ import { DeliveryFields } from "./DeliveryFields";
 import { DiscountPad } from "./DiscountPad";
 import { TimePicker } from "./TimePicker";
 import type { PosOrderState } from "./usePosOrder";
+import type { OfflinePriced } from "./offline-pricing";
 
-export function Basket({ order, onCharge }: { order: PosOrderState; onCharge: () => void }) {
+export function Basket({ order, onCharge, offline, offlinePriced }: { order: PosOrderState; onCharge: () => void; offline?: boolean; offlinePriced?: OfflinePriced | null }) {
   const [showDiscount, setShowDiscount] = useState(false);
   const [showTime, setShowTime] = useState(false);
   const [noteOpen, setNoteOpen] = useState(!!order.orderNote);
@@ -17,6 +18,8 @@ export function Basket({ order, onCharge }: { order: PosOrderState; onCharge: ()
   const whenLabel = order.scheduledFor
     ? new Date(order.scheduledFor).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
     : "ASAP";
+  const offlineLine = (key: string) => offlinePriced?.lines.find((l) => l.key === key);
+  const offlineTotal = offlinePriced?.total ?? 0;
 
   return (
     <aside className="pos-basket">
@@ -26,12 +29,13 @@ export function Basket({ order, onCharge }: { order: PosOrderState; onCharge: ()
         {lines.length === 0 ? <p style={{ color: "var(--color-neutral-700)", padding: "16px 4px" }}>Basket is empty.</p> : null}
         {lines.map((line) => {
           const priceLine = priced?.lines.find((l) => l.key === line.key);
+          const lineTotal = offline ? (offlineLine(line.key)?.lineTotal ?? 0) : (priceLine?.lineTotal ?? line.lineTotal ?? 0);
           const noteOpenForLine = openLineNotes.has(line.key) || !!line.notes;
           return (
             <div key={line.key} className="pos-basket-line">
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                 <span style={{ fontWeight: 700 }}>{line.name ?? line.product ?? line.deal}</span>
-                <span style={{ fontWeight: 700 }}>{gbp(priceLine?.lineTotal ?? line.lineTotal ?? 0)}</span>
+                <span style={{ fontWeight: 700 }}>{gbp(lineTotal)}</span>
               </div>
               {line.detail ? <span style={{ fontSize: 13, color: "var(--color-neutral-700)" }}>{line.detail}</span> : null}
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -83,26 +87,35 @@ export function Basket({ order, onCharge }: { order: PosOrderState; onCharge: ()
               {order.orderNote || "Add order note"}
             </button>
           )}
-          <button
-            type="button" className="btn btn-secondary" style={{ minHeight: 44, flexShrink: 0 }}
-            onClick={() => setShowDiscount(true)}
-          >
-            {order.discount ? (order.discount.kind === "percent" ? `${order.discount.value}% off` : `${gbp(order.discount.value)} off`) : "Discount"}
-          </button>
+          {/* No manager discount offline (POS-PLAN item 30) - it needs the server to validate the PIN and the priced basket. */}
+          {!offline ? (
+            <button
+              type="button" className="btn btn-secondary" style={{ minHeight: 44, flexShrink: 0 }}
+              onClick={() => setShowDiscount(true)}
+            >
+              {order.discount ? (order.discount.kind === "percent" ? `${order.discount.value}% off` : `${gbp(order.discount.value)} off`) : "Discount"}
+            </button>
+          ) : null}
         </div>
-        {showDiscount ? <DiscountPad current={order.discount} onApply={order.setDiscount} onClose={() => setShowDiscount(false)} /> : null}
+        {showDiscount && !offline ? <DiscountPad current={order.discount} onApply={order.setDiscount} onClose={() => setShowDiscount(false)} /> : null}
 
-        {pricingError ? <p className="fp-error" style={{ margin: 0, fontSize: 13 }}>{pricingError}</p> : null}
-        {priced?.errors.length ? priced.errors.map((e, i) => <p key={i} className="fp-error" style={{ margin: 0, fontSize: 13 }}>{e}</p>) : null}
+        {offline ? (
+          <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-700)" }}>Offline prices are estimated (no delivery fee or promo applied).</p>
+        ) : (
+          <>
+            {pricingError ? <p className="fp-error" style={{ margin: 0, fontSize: 13 }}>{pricingError}</p> : null}
+            {priced?.errors.length ? priced.errors.map((e, i) => <p key={i} className="fp-error" style={{ margin: 0, fontSize: 13 }}>{e}</p>) : null}
+          </>
+        )}
 
         <div style={{ borderTop: "1px solid var(--color-divider)", paddingTop: 8, display: "grid", gap: 4, fontSize: 14 }}>
-          <Row label="Subtotal" value={priced?.subtotal} />
-          {priced?.deliveryFee ? <Row label="Delivery fee" value={priced.deliveryFee} /> : null}
-          {priced?.discount ? <Row label="Discount" value={-priced.discount} /> : null}
-          {priced?.manualDiscount ? <Row label="Manager discount" value={-priced.manualDiscount} /> : null}
+          <Row label="Subtotal" value={offline ? offlinePriced?.subtotal : priced?.subtotal} />
+          {!offline && priced?.deliveryFee ? <Row label="Delivery fee" value={priced.deliveryFee} /> : null}
+          {!offline && priced?.discount ? <Row label="Discount" value={-priced.discount} /> : null}
+          {!offline && priced?.manualDiscount ? <Row label="Manager discount" value={-priced.manualDiscount} /> : null}
           <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: 18 }}>
             <span>Total</span>
-            <span>{gbp(priced?.total ?? 0)}</span>
+            <span>{gbp(offline ? offlineTotal : (priced?.total ?? 0))}</span>
           </div>
         </div>
 
@@ -110,10 +123,10 @@ export function Basket({ order, onCharge }: { order: PosOrderState; onCharge: ()
           type="button"
           className="btn btn-primary btn-block"
           style={{ minHeight: 64, fontSize: 17, justifyContent: "center" }}
-          disabled={!lines.length || !priced || pricingLoading || !!priced.errors.length}
+          disabled={offline ? !lines.length : (!lines.length || !priced || pricingLoading || !!priced.errors.length)}
           onClick={onCharge}
         >
-          {pricingLoading ? "Pricing…" : `Charge ${gbp(priced?.total ?? 0)}`}
+          {offline ? `Charge ${gbp(offlineTotal)}` : pricingLoading ? "Pricing…" : `Charge ${gbp(priced?.total ?? 0)}`}
         </button>
       </div>
     </aside>

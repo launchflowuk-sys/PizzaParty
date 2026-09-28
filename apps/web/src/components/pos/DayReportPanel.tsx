@@ -189,6 +189,14 @@ export function DayReportPanel({
             {report.refunds.map((t) => <ReportRow key={t.kind} label={`${PAYMENT_LABEL[t.kind]} (${t.count})`} value={-t.amount} />)}
             <ReportRow label="Net takings" value={report.netTakings} bold />
           </Section>
+          {report.marketplaceTakings.count > 0 ? (
+            <Section title="Marketplace takings">
+              <ReportRow label={`Just Eat / Deliveroo / Uber Eats (${report.marketplaceTakings.count})`} value={report.marketplaceTakings.amount} />
+              <p style={{ fontSize: 12, color: "var(--color-neutral-700)", margin: 0 }}>
+                Paid to the platform, which pays the shop out later - not in the drawer or Stripe, so kept out of net takings above.
+              </p>
+            </Section>
+          ) : null}
           <div style={{ display: "flex", gap: 16, fontSize: 13, color: "var(--color-neutral-700)" }}>
             <span>of which goodwill {gbp(report.goodwill)}</span>
             <span>Tips {gbp(report.tips)}</span>

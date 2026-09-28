@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { gbp } from "@/lib/money";
 
 /**
@@ -35,6 +35,18 @@ export function CashPad({ remaining, busy, error, onConfirm, onBack }: { remaini
   const short = Math.max(0, amount - tendered);
   const canConfirm = amount > 0 && amount <= remaining && tendered >= amount;
   const quick = useMemo(() => quickCashAmounts(amount), [amount]);
+
+  // Enter confirms (POS-PLAN item 33) - never while typing into the amount field.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (document.activeElement?.tagName ?? "").toLowerCase();
+      if (e.key !== "Enter" || tag === "input" || tag === "textarea" || !canConfirm || busy) return;
+      e.preventDefault();
+      onConfirm(amount, tendered);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canConfirm, busy, amount, tendered, onConfirm]);
 
   function key(next: (prev: number) => number) {
     setTendered((prev) => Math.min(MAX_TENDER, next(typing ? prev : 0)));

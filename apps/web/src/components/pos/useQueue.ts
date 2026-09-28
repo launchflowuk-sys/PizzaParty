@@ -1,11 +1,12 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { QueueDriver, QueueOrder, QueueResponse } from "@/lib/pos-queue-types";
+import { MARKETPLACE_SOURCES } from "@/lib/pos-phase4-types";
 
 const POLL_MS = 4000;
 /** A counter or phone order was just rung up by whoever is looking at this
- *  screen - only web/app arrivals are a surprise worth a chime. */
-const ALERT_SOURCES = new Set(["web", "app"]);
+ *  screen - only web/app/marketplace arrivals are a surprise worth a chime. */
+const ALERT_SOURCES = new Set<string>(["web", "app", ...MARKETPLACE_SOURCES]);
 /** How long a just-arrived card keeps flashing. */
 const FLASH_MS = 3000;
 

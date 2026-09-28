@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import "./pos.css";
 import type { PosBootstrap } from "@/lib/pos-types";
-import type { Fulfilment } from "@/lib/basket-types";
+import type { BasketLine, Fulfilment } from "@/lib/basket-types";
 import type { StaffRole } from "@/lib/permissions";
 import { useLiveEvents } from "@/lib/use-live-events";
 import { TopBar, type PosView } from "./TopBar";
@@ -20,6 +20,15 @@ import { useMenuVersion } from "./useMenuVersion";
 import { QueueBoard } from "./QueueBoard";
 import { CashTab } from "./CashTab";
 import { isSimpleProduct, type MiddleView, type OrderTypeTab, type PosCategory, type PosDeal, type PosProduct } from "./pos-client-types";
+import { EatInPanel } from "./EatInPanel";
+import { CallBanner } from "./CallBanner";
+import { OfflineBar } from "./OfflineBar";
+import { ShortcutsOverlay } from "./ShortcutsOverlay";
+import { useCallerId, type LiveCall } from "./useCallerId";
+import { usePosDisplay } from "./usePosDisplay";
+import { useOnlineStatus } from "./useOnlineStatus";
+import { useOfflineQueue } from "./useOfflineQueue";
+import { priceOffline } from "./offline-pricing";
 
 export function PosScreen({ staffName, staffRole, categories, deals }: { staffName: string; staffRole: StaffRole; categories: PosCategory[]; deals: PosDeal[] }) {
   const order = usePosOrder();
@@ -44,11 +53,23 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
   const [boot, setBoot] = useState<PosBootstrap | null>(null);
   const [orderType, setOrderType] = useState<OrderTypeTab>("collection");
   const [phoneReady, setPhoneReady] = useState(false);
+  const [prefillPhone, setPrefillPhone] = useState("");
+  const [tableReady, setTableReady] = useState(false);
   const [activeKey, setActiveKey] = useState<string>(categories[0]?.key ?? DEALS_KEY);
   const [search, setSearch] = useState("");
   const [middleView, setMiddleView] = useState<MiddleView>({ kind: "grid" });
   const [flashSlug, setFlashSlug] = useState<string | null>(null);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [lastRemoved, setLastRemoved] = useState<BasketLine | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // Phase 4 (POS-PLAN items 28-30): caller ID banners, the customer-facing
+  // display's BroadcastChannel, and offline detection/queueing.
+  const caller = useCallerId();
+  const display = usePosDisplay();
+  const offline = useOnlineStatus(live.connected, queue.connected);
+  const offlineQueue = useOfflineQueue(!offline);
+  const offlinePriced = useMemo(() => (offline ? priceOffline(order.lines, categories, deals) : null), [offline, order.lines, categories, deals]);
 
   const basketQty = useMemo(() => {
     const out: Record<string, number> = {};
@@ -91,22 +112,57 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Keyboard shortcuts (POS-PLAN item 33). Never while typing, except Esc/Enter where sensible.
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const tag = (document.activeElement?.tagName ?? "").toLowerCase();
       const typing = tag === "input" || tag === "textarea" || tag === "select";
-      if (e.key === "/" && !typing) { e.preventDefault(); searchRef.current?.focus(); }
-      else if (e.key === "Escape" && middleView.kind !== "grid") { setMiddleView({ kind: "grid" }); }
+      if (e.key === "/" && !typing) { e.preventDefault(); searchRef.current?.focus(); return; }
+      if (e.key === "Escape") {
+        if (showShortcuts) { setShowShortcuts(false); return; }
+        if (middleView.kind !== "grid") { setMiddleView({ kind: "grid" }); return; }
+        return;
+      }
+      if (typing) return;
+      if (e.key === "?") { setShowShortcuts((v) => !v); return; }
+      if (e.key === "F1") { e.preventDefault(); setView("till"); return; }
+      if (e.key === "F2") { e.preventDefault(); setView("queue"); return; }
+      if (e.key === "F3") { e.preventDefault(); setView("cash"); return; }
+      if (e.key === "F4") { e.preventDefault(); selectOrderType("phone"); return; }
+      if (view !== "till") return;
+      if (e.key === "Enter" && middleView.kind === "grid" && order.lines.length > 0) { setMiddleView({ kind: "pay" }); return; }
+      const last = order.lines[order.lines.length - 1];
+      if ((e.key === "+" || e.key === "=") && last) { order.setQty(last.key, last.qty + 1); return; }
+      if (e.key === "-" && last) { order.setQty(last.key, last.qty - 1); return; }
+      if (e.key === "Delete" && last) { setLastRemoved(last); order.removeLine(last.key); return; }
+      if (e.key.toLowerCase() === "z" && (e.ctrlKey || e.metaKey) && lastRemoved) { e.preventDefault(); order.addLine(lastRemoved); setLastRemoved(null); }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [middleView.kind]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [middleView.kind, showShortcuts, view, order.lines, lastRemoved]);
 
   function selectOrderType(t: OrderTypeTab) {
     setOrderType(t);
     setMiddleView({ kind: "grid" });
     if (t === "phone") { setPhoneReady(false); return; }
+    if (t === "eat_in") { setTableReady(false); order.setFulfilment("collection"); return; }
     order.setFulfilment(t as Fulfilment);
+  }
+
+  /** Take the call: switch to Phone mode with the number prefilled. An
+   *  in-progress basket is never wiped silently (POS-PLAN item 28). */
+  function takeOrderFromCall(call: LiveCall) {
+    const proceed = () => {
+      caller.dismiss(call.id);
+      setPrefillPhone(call.phone);
+      setOrderType("phone");
+      setPhoneReady(false);
+      setMiddleView({ kind: "grid" });
+    };
+    if (orderInProgress && !window.confirm("Switch to this call? The order you're ringing up now will be cleared.")) return;
+    if (orderInProgress) order.reset();
+    proceed();
   }
 
   const allProducts = useMemo(() => categories.flatMap((c) => c.products), [categories]);
@@ -120,21 +176,53 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
         : (categories.find((c) => c.key === activeKey)?.products ?? []);
   const gridDeals = !term && activeKey === DEALS_KEY ? deals : [];
 
-  const customerLabel = order.customer ? `${order.customer.name} · ${order.customer.phone}` : orderType === "phone" && phoneReady ? order.walkInName || "Walk-in" : null;
+  const customerLabel = order.customer
+    ? `${order.customer.name} · ${order.customer.phone}`
+    : orderType === "phone" && phoneReady
+      ? (order.walkInName || "Walk-in")
+      : orderType === "eat_in" && tableReady
+        ? `Eat in · Table ${order.tableNumber}`
+        : null;
 
   function resetAll() {
     order.reset();
     setOrderType("collection");
     setPhoneReady(false);
+    setPrefillPhone("");
+    setTableReady(false);
     setMiddleView({ kind: "grid" });
     setActiveKey(categories[0]?.key ?? DEALS_KEY);
     setSearch("");
   }
 
   const showCustomerStage = orderType === "phone" && !phoneReady;
+  const showTableStage = orderType === "eat_in" && !tableReady;
   /** Basket state, not view - a menu change must not wipe an order mid-ring-up
    *  just because the till happens to be showing the Orders board. */
-  const orderInProgress = order.lines.length > 0 || middleView.kind !== "grid" || showCustomerStage;
+  const orderInProgress = order.lines.length > 0 || middleView.kind !== "grid" || showCustomerStage || showTableStage;
+
+  // Customer-facing display (POS-PLAN item 29): broadcast the live basket over
+  // BroadcastChannel whenever it changes. Offline uses the client-computed
+  // price (offlinePriced) since the server's own priced basket goes stale.
+  useEffect(() => {
+    const shopName = boot?.shopName ?? "";
+    if (!order.lines.length) { display({ type: "idle", shopName }); return; }
+    if (offline) {
+      display({
+        type: "basket", shopName,
+        lines: (offlinePriced?.lines ?? []).map((l) => ({ name: l.name, detail: l.detail, qty: l.qty, lineTotal: l.lineTotal })),
+        subtotal: offlinePriced?.subtotal ?? 0, discount: 0, deliveryFee: 0, total: offlinePriced?.total ?? 0,
+      });
+      return;
+    }
+    const p = order.priced;
+    display({
+      type: "basket", shopName,
+      lines: order.lines.map((l) => ({ name: l.name ?? "", detail: l.detail ?? "", qty: l.qty, lineTotal: l.lineTotal ?? 0 })),
+      subtotal: p?.subtotal ?? 0, discount: p?.discount ?? 0, deliveryFee: p?.deliveryFee ?? 0, total: p?.total ?? 0,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order.lines, order.priced, offline, offlinePriced, boot?.shopName]);
 
   // A price/menu change lands, but never mid-order: refresh the moment the
   // basket is clear (immediately if it already was, otherwise as soon as this
@@ -150,6 +238,9 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
 
   return (
     <div className="pos-root">
+      <CallBanner calls={caller.calls} onDismiss={caller.dismiss} onTakeOrder={takeOrderFromCall} />
+      {showShortcuts ? <ShortcutsOverlay onClose={() => setShowShortcuts(false)} /> : null}
+
       <div className="pos-topwrap">
         <TopBar
           staffName={staffName}
@@ -167,9 +258,15 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
           locationKey={order.locationKey}
           onLocationKey={order.setLocationKey}
           customerLabel={customerLabel}
-          onChangeCustomer={() => setPhoneReady(false)}
+          onChangeCustomer={() => { if (orderType === "eat_in") setTableReady(false); else setPhoneReady(false); }}
           liveConnected={live.connected}
+          offline={offline}
+          offlineCount={offlineQueue.count}
+          onSendNow={() => void offlineQueue.sendNow()}
+          onOpenDisplay={() => window.open("/pos/display", "pos-display", "width=900,height=600")}
+          onShowShortcuts={() => setShowShortcuts(true)}
         />
+        {offline ? <OfflineBar /> : null}
         {menu.changed && orderInProgress ? (
           <div className="pos-menubanner">Menu updated by the office — refreshing after this order.</div>
         ) : null}
@@ -199,10 +296,18 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
           liveEvent={orderEvent}
           queueOrderIds={queueOrderIds}
           onOpenOrder={(id) => { setQueueOpenId(id); setView("queue"); }}
+          serialSupported={caller.serialSupported}
+          serialConnected={caller.serialConnected}
+          serialError={caller.serialError}
+          onConnectSerial={() => void caller.connectSerial()}
         />
       ) : showCustomerStage ? (
         <div className="pos-main">
-          <CustomerPanel order={order} onContinue={(f) => { order.setFulfilment(f); setPhoneReady(true); }} />
+          <CustomerPanel order={order} initialPhone={prefillPhone} onContinue={(f) => { order.setFulfilment(f); setPhoneReady(true); }} />
+        </div>
+      ) : showTableStage ? (
+        <div className="pos-main">
+          <EatInPanel initial={order.tableNumber} onContinue={(t) => { order.setTableNumber(t); setTableReady(true); }} />
         </div>
       ) : (
         <div className="pos-body">
@@ -223,11 +328,14 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
             ) : middleView.kind === "deal" ? (
               <DealPanel deal={middleView.deal} onAdd={(line) => { order.addLine(line); setMiddleView({ kind: "grid" }); }} onCancel={() => setMiddleView({ kind: "grid" })} />
             ) : (
-              <PayPanel order={order} orderType={orderType} boot={boot} onDone={resetAll} onBack={() => setMiddleView({ kind: "grid" })} liveEvent={orderEvent} />
+              <PayPanel
+                order={order} orderType={orderType} boot={boot} onDone={resetAll} onBack={() => setMiddleView({ kind: "grid" })} liveEvent={orderEvent}
+                offline={offline} categories={categories} deals={deals} display={display} onOfflineSaved={offlineQueue.refresh}
+              />
             )}
           </main>
 
-          <Basket order={order} onCharge={() => setMiddleView({ kind: "pay" })} />
+          <Basket order={order} onCharge={() => setMiddleView({ kind: "pay" })} offline={offline} offlinePriced={offlinePriced} />
         </div>
       )}
     </div>

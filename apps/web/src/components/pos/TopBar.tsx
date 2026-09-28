@@ -7,7 +7,10 @@ const TABS: { key: OrderTypeTab; label: string }[] = [
   { key: "collection", label: "Collection" },
   { key: "delivery", label: "Delivery" },
   { key: "phone", label: "Phone" },
+  { key: "eat_in", label: "Eat in" },
 ];
+/** Offline (POS-PLAN item 30): no delivery (needs server zone pricing), no phone (pay-later settlement needs the server too). */
+const OFFLINE_DISABLED = new Set<OrderTypeTab>(["delivery", "phone"]);
 
 export type PosView = "till" | "queue" | "cash";
 
@@ -15,6 +18,7 @@ export function TopBar({
   staffName, view, onView, badgeCount, soundOn, onEnableSound,
   orderType, onOrderType, search, onSearch, searchRef, boot,
   locationKey, onLocationKey, customerLabel, onChangeCustomer, liveConnected,
+  offline, offlineCount, onSendNow, onOpenDisplay, onShowShortcuts,
 }: {
   staffName: string;
   view: PosView;
@@ -35,6 +39,13 @@ export function TopBar({
   onChangeCustomer: () => void;
   /** The live push stream (lib/use-live-events.ts), not the queue's own poll - shown as a small pill next to the staff name. */
   liveConnected: boolean;
+  /** Offline mode (POS-PLAN item 30). */
+  offline: boolean;
+  offlineCount: number;
+  onSendNow: () => void;
+  /** Customer display (item 29) and shortcuts overlay (item 33). */
+  onOpenDisplay: () => void;
+  onShowShortcuts: () => void;
 }) {
   const status = boot?.onlineStatus;
   return (
@@ -58,12 +69,15 @@ export function TopBar({
       {view === "till" ? (
         <>
           <div className="seg" role="group" aria-label="Order type">
-            {TABS.map((t) => (
-              <label key={t.key} className="seg-opt" style={{ minHeight: 60, padding: "0 20px", fontSize: 15, fontWeight: 700 }}>
-                <input type="radio" name="pos-order-type" checked={orderType === t.key} onChange={() => onOrderType(t.key)} />
-                {t.label}
-              </label>
-            ))}
+            {TABS.filter((t) => t.key !== "eat_in" || boot?.eatIn).map((t) => {
+              const disabled = offline && OFFLINE_DISABLED.has(t.key);
+              return (
+                <label key={t.key} className="seg-opt" style={{ minHeight: 60, padding: "0 20px", fontSize: 15, fontWeight: 700, opacity: disabled ? 0.4 : 1 }} title={disabled ? "Not available offline" : undefined}>
+                  <input type="radio" name="pos-order-type" checked={orderType === t.key} disabled={disabled} onChange={() => onOrderType(t.key)} />
+                  {t.label}
+                </label>
+              );
+            })}
           </div>
 
           <input
@@ -92,6 +106,13 @@ export function TopBar({
       ) : null}
 
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+        {offlineCount > 0 ? (
+          <button type="button" className="btn btn-secondary" style={{ minHeight: 44 }} onClick={onSendNow}>
+            {offlineCount} unsent · Send now
+          </button>
+        ) : null}
+        <button type="button" className="btn btn-ghost" style={{ minHeight: 44 }} onClick={onOpenDisplay}>Customer display</button>
+        <button type="button" className="btn btn-ghost" style={{ minHeight: 44 }} onClick={onShowShortcuts} title="Keyboard shortcuts (?)">?</button>
         <span className="pos-live-pill" data-connected={liveConnected ? "1" : "0"}>
           <span className="pos-live-dot" />
           {liveConnected ? "Live" : "Reconnecting…"}

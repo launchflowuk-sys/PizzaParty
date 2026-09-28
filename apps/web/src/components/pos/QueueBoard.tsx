@@ -4,10 +4,10 @@ import type { PosReader } from "@/lib/pos-types";
 import type { QueueDriver, QueueOrder } from "@/lib/pos-queue-types";
 import { QueueCard } from "./QueueCard";
 import { OrderPanel } from "./OrderPanel";
-import { DONE_STATUSES } from "./queue-ui";
+import { DONE_STATUSES, isEatIn, isMarketplaceSource } from "./queue-ui";
 import type { PosCategory, PosDeal } from "./pos-client-types";
 
-type Filter = "all" | "delivery" | "collection" | "unpaid";
+type Filter = "all" | "delivery" | "collection" | "eat_in" | "marketplace" | "unpaid";
 
 const COLUMNS: { key: string; label: string; match: (o: QueueOrder) => boolean }[] = [
   { key: "new", label: "New", match: (o) => o.status === "placed" },
@@ -46,6 +46,8 @@ export function QueueBoard({
   const filtered = useMemo(() => orders.filter((o) => {
     if (filter === "delivery" && o.fulfilment !== "delivery") return false;
     if (filter === "collection" && o.fulfilment !== "collection") return false;
+    if (filter === "eat_in" && !isEatIn(o.fulfilment)) return false;
+    if (filter === "marketplace" && !isMarketplaceSource(o.source)) return false;
     if (filter === "unpaid" && o.paidState === "paid") return false;
     if (term && !`${o.number} ${o.customerName} ${o.customerPhone}`.toLowerCase().includes(term)) return false;
     return true;
@@ -55,7 +57,7 @@ export function QueueBoard({
     <div className="pos-q-board-wrap">
       <div className="pos-q-toolbar">
         <div className="seg" role="group" aria-label="Filter">
-          {([["all", "All"], ["delivery", "Delivery"], ["collection", "Collection"], ["unpaid", "Unpaid"]] as [Filter, string][]).map(([f, label]) => (
+          {([["all", "All"], ["delivery", "Delivery"], ["collection", "Collection"], ["eat_in", "Eat in"], ["marketplace", "Marketplace"], ["unpaid", "Unpaid"]] as [Filter, string][]).map(([f, label]) => (
             <label key={f} className="seg-opt" style={{ minHeight: 48, padding: "0 16px" }}>
               <input type="radio" name="pos-q-filter" checked={filter === f} onChange={() => setFilter(f)} />
               {label}

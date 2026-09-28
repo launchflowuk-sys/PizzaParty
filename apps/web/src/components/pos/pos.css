@@ -340,3 +340,49 @@
 .pos-live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
 .pos-live-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--color-action); }
 .pos-live-pill[data-connected="0"] .pos-live-dot { background: var(--warn); }
+
+/* ══ Phase 4 — beyond Foodhub (docs/POS-PLAN.md items 28-33) ══ */
+
+/* Marketplace brand colours (item 31) - fixed 3rd-party brand colours, not design tokens. */
+.tag-justeat   { background: #ff8000; color: #fff; }
+.tag-deliveroo { background: #00ccbc; color: #00251c; }
+.tag-ubereats  { background: #06c167; color: #06110c; }
+
+/* Caller ID banner (item 28) - slides down over the till, stacks, never blocks it. */
+.pos-call-stack { position: fixed; top: 0; left: 0; right: 0; z-index: 90; display: flex; flex-direction: column; }
+.pos-call-banner {
+  display: flex; align-items: center; gap: 14px; padding: 10px 20px; min-height: 64px;
+  background: var(--color-accent-700); color: var(--color-bg);
+  animation: pos-call-drop 250ms ease-out;
+  border-bottom: 2px solid var(--color-divider);
+}
+@keyframes pos-call-drop { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+.pos-call-icon { font-size: 22px; }
+.pos-call-text { flex: 1; font-weight: 700; font-size: 15px; }
+
+/* Offline bar (item 30). */
+.pos-offlinebar {
+  padding: 8px 16px; text-align: center; font-size: 13px; font-weight: 700;
+  background: var(--warn-bg); color: var(--warn); border-bottom: 2px solid var(--warn-line);
+}
+
+/* Shortcuts overlay (item 33). */
+.pos-shortcuts-backdrop { position: fixed; inset: 0; z-index: 95; background: color-mix(in srgb, var(--color-neutral-900) 45%, transparent); display: flex; align-items: center; justify-content: center; }
+.pos-shortcuts-card { width: min(420px, 92vw); max-height: 80vh; overflow-y: auto; background: var(--color-bg); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 20px; }
+
+/* Customer-facing display (item 29) - full screen, big friendly type. */
+.pos-display-root {
+  position: fixed; inset: 0; background: var(--color-bg); color: var(--color-text);
+  display: flex; align-items: center; justify-content: center; text-align: center; padding: 32px;
+}
+.pos-display-idle { display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.pos-display-shop { font-family: var(--font-heading); font-weight: 800; font-size: 64px; letter-spacing: -0.02em; }
+.pos-display-shop.small { font-size: 28px; }
+.pos-display-promo { font-size: 20px; color: var(--color-neutral-700); }
+.pos-display-basket { width: min(720px, 100%); display: flex; flex-direction: column; gap: 20px; text-align: left; }
+.pos-display-lines { display: flex; flex-direction: column; gap: 10px; font-size: 22px; }
+.pos-display-line { display: flex; justify-content: space-between; gap: 16px; }
+.pos-display-total { display: flex; justify-content: space-between; font-family: var(--font-heading); font-weight: 800; font-size: 40px; border-top: 3px solid var(--color-divider); padding-top: 16px; }
+.pos-display-pay { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.pos-display-label { font-size: 26px; color: var(--color-neutral-700); }
+.pos-display-bignum { font-family: var(--font-heading); font-weight: 800; font-size: 96px; letter-spacing: -0.02em; }

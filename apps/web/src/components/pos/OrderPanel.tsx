@@ -7,7 +7,7 @@ import type {
   PosDriverResult, PosEditResult, PosOrderDetail, PosReprintResult, PosRefundResult, PosStatusMove,
   PrintCopy, QueueDriver, QueueOrder,
 } from "@/lib/pos-queue-types";
-import { PAID_LABEL, PAID_TAG, SOURCE_LABEL, SOURCE_TAG, STATUS_LABEL, fmtTime } from "./queue-ui";
+import { MARKETPLACE_PAID_LABEL, PAID_LABEL, PAID_TAG, SOURCE_LABEL, SOURCE_TAG, STATUS_LABEL, fmtTime, fulfilmentLabel, isMarketplaceSource } from "./queue-ui";
 import { AddItemsPanel } from "./AddItemsPanel";
 import { TakePaymentPanel } from "./TakePaymentPanel";
 import { RefundPanel } from "./RefundPanel";
@@ -255,19 +255,32 @@ export function OrderPanel({
             <div className="pos-osection">
               <div className="pos-q-card-row">
                 <span className={`tag ${SOURCE_TAG[detail.source]}`}>{SOURCE_LABEL[detail.source]}</span>
-                <span className="tag tag-neutral">{detail.fulfilment === "delivery" ? "Delivery" : "Collection"}</span>
-                <span className={`tag ${PAID_TAG[detail.paidState]}`}>{PAID_LABEL[detail.paidState]}</span>
+                <span className="tag tag-neutral">{fulfilmentLabel(detail.fulfilment, detail.tableNumber)}</span>
+                {isMarketplaceSource(detail.source) ? (
+                  <span className="tag tag-ok">{MARKETPLACE_PAID_LABEL[detail.source]}</span>
+                ) : (
+                  <span className={`tag ${PAID_TAG[detail.paidState]}`}>{PAID_LABEL[detail.paidState]}</span>
+                )}
                 {detail.amendedAt ? <span className="tag tag-warn">Amended {fmtTime(detail.amendedAt)}</span> : null}
+                {detail.needsAttention ? <span className="tag tag-danger">Check items</span> : null}
               </div>
               <span style={{ fontWeight: 700 }}>{detail.customerName} · <a href={`tel:${detail.customerPhone}`}>{detail.customerPhone}</a></span>
               {detail.address ? <span style={{ fontSize: 13, color: "var(--color-neutral-700)" }}>{detail.address}</span> : null}
-              {detail.driver ? <span style={{ fontSize: 13 }}>Driver: {detail.driver.name}</span> : null}
+              {detail.marketplaceRef ? <span style={{ fontSize: 13, color: "var(--color-neutral-700)" }}>Marketplace order {detail.marketplaceRef}</span> : null}
+              {detail.courier === "marketplace" ? <span style={{ fontSize: 13 }}>Rider collects</span> : detail.driver ? <span style={{ fontSize: 13 }}>Driver: {detail.driver.name}</span> : null}
               <span style={{ fontSize: 13, color: "var(--color-neutral-700)" }}>
                 {detail.dueAt ? `${detail.scheduled ? "For" : "Due"} ${fmtTime(detail.dueAt)}` : "ASAP"} · placed {fmtTime(detail.placedAt)}
+                {detail.createdOfflineAt ? ` · taken offline ${fmtTime(detail.createdOfflineAt)}` : ""}
               </span>
               {detail.notes ? <span style={{ fontSize: 13 }}>Note: {detail.notes}</span> : null}
               {detail.rejectReason ? <span style={{ fontSize: 13, color: "var(--danger)" }}>Rejected: {detail.rejectReason}</span> : null}
             </div>
+
+            {detail.needsAttention ? (
+              <div className="pos-osection">
+                <p className="fp-error" style={{ margin: 0 }}>Something on this order could not be matched to the menu — check the items before it goes to the kitchen.</p>
+              </div>
+            ) : null}
 
             {warnings.length ? (
               <div className="pos-osection">
@@ -439,7 +452,7 @@ export function OrderPanel({
               </div>
             ) : null}
 
-            {detail.fulfilment === "delivery" && detail.status !== "completed" && detail.status !== "rejected" && detail.status !== "cancelled" ? (
+            {detail.fulfilment === "delivery" && detail.courier !== "marketplace" && detail.status !== "completed" && detail.status !== "rejected" && detail.status !== "cancelled" ? (
               <div className="pos-osection">
                 <span className="pos-osection-label">Driver</span>
                 <div className="pos-chip-row">
@@ -461,8 +474,9 @@ export function OrderPanel({
 
             <div className="pos-osection" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               {detail.editable ? <button type="button" className="btn btn-secondary" style={{ minHeight: 56 }} onClick={() => { setActionError(""); setMode({ kind: "add-items" }); }}>Add items</button> : null}
-              {detail.balance > 0 ? <button type="button" className="btn btn-primary" style={{ minHeight: 56 }} onClick={() => { setActionError(""); setMode({ kind: "pay" }); }}>Take payment · {gbp(detail.balance)}</button> : null}
-              {detail.refundDue > 0 || detail.paid > 0 ? <button type="button" className="btn btn-secondary" style={{ minHeight: 56 }} onClick={() => { setActionError(""); setMode({ kind: "refund" }); }}>Refund</button> : null}
+              {/* Marketplace orders are paid on the marketplace itself - refunds happen there too, not on this till. */}
+              {!isMarketplaceSource(detail.source) && detail.balance > 0 ? <button type="button" className="btn btn-primary" style={{ minHeight: 56 }} onClick={() => { setActionError(""); setMode({ kind: "pay" }); }}>Take payment · {gbp(detail.balance)}</button> : null}
+              {!isMarketplaceSource(detail.source) && (detail.refundDue > 0 || detail.paid > 0) ? <button type="button" className="btn btn-secondary" style={{ minHeight: 56 }} onClick={() => { setActionError(""); setMode({ kind: "refund" }); }}>Refund</button> : null}
             </div>
 
             <div className="pos-osection" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>

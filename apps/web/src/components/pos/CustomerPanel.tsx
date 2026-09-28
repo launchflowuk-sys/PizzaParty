@@ -9,8 +9,8 @@ const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "clear", "0", "back"]
 
 /** Phone mode: dial a number, find (or start) the customer, then choose
  *  collection or delivery to drop into the normal till view. */
-export function CustomerPanel({ order, onContinue }: { order: PosOrderState; onContinue: (fulfilment: Fulfilment) => void }) {
-  const [phone, setPhone] = useState("");
+export function CustomerPanel({ order, onContinue, initialPhone }: { order: PosOrderState; onContinue: (fulfilment: Fulfilment) => void; initialPhone?: string }) {
+  const [phone, setPhone] = useState(initialPhone ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [customer, setCustomer] = useState<PosCustomer | null>(null);
