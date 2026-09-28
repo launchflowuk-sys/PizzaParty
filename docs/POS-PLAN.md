@@ -220,6 +220,18 @@ pushed live until Shoji has tested it locally and approved it.
 |---|---|
 | 1 — Take an order, get paid (incl. card reader) | Built, reviewed, tested locally on a simulated reader (2026-09-28) |
 | Push offers (item 34) | Built and reviewed. The app's tap-to-open handler is in farm-pizza-app, uncommitted |
-| 2 — One queue | Backend built and tested (2026-09-28). Queue screen and second review in progress |
-| 3 — Money you can trust | Not started |
-| 4 — Beyond Foodhub | Not started |
+| 2 — One queue | Built, reviewed and tested locally (2026-09-28). Refunds, and rejecting or cancelling a paid order, need a manager PIN |
+| Live push | Postgres LISTEN/NOTIFY into SSE (not WebSockets: standalone Next behind Coolify, and every write is already a POST). About 0.1 s to every screen. Optional `DATABASE_URL_DIRECT` if a pooler is ever put in front of the database |
+| 3 — Money you can trust | Built, reviewed and tested locally end to end (2026-09-28). The 2026-09-21 test day reports £60.50 sales, £46.50 net and a drawer £1.00 short, all checked by hand. The price log covers new items. A refund Stripe made is never recorded as failed because its reply was lost, and managers can reconcile a day against Stripe |
+| 4 — Beyond Foodhub | Not started: caller ID, customer display, offline mode, Just Eat/Deliveroo/Uber, eat-in, keyboard shortcuts |
+
+### Before it goes live
+
+1. Shoji tests locally: `/pos` on the pos-dev launch config (port 3100, database `pos_dev`).
+2. Merge `feat/pos`, then deploy. The migrations run at start (`prisma migrate deploy`). There are three: `pos`, `pos_queue` and `pos_money`.
+3. Stripe **live** keys must replace the test keys before any real trading (HANDOFF.md, outstanding #2).
+4. Order a Stripe reader (WisePOS E or S700) and register it: `scripts/pos-terminal.ts` with the reader's registration code.
+5. Staff PINs. Pizza Party has no staff yet, so create at least one manager and the counter staff in /admin/staff.
+6. Webhooks: add `refund.updated`, `refund.failed` and `charge.refund.updated` to the Stripe webhook endpoint, next to the existing events.
+7. Push offers: dry run is off only in production. The app's tap-to-open code is uncommitted in `farm-pizza-app`.
+8. The desk 1024x768 layout was checked earlier but not on the final pass. Test at the real tablet's size.
