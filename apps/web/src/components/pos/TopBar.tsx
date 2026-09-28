@@ -72,9 +72,10 @@ export function TopBar({
             {TABS.filter((t) => t.key !== "eat_in" || boot?.eatIn).map((t) => {
               const disabled = offline && OFFLINE_DISABLED.has(t.key);
               return (
-                <label key={t.key} className="seg-opt" style={{ minHeight: 60, padding: "0 20px", fontSize: 15, fontWeight: 700, opacity: disabled ? 0.4 : 1 }} title={disabled ? "Not available offline" : undefined}>
+                <label key={t.key} className="seg-opt" style={{ minHeight: 60, padding: "0 20px", fontSize: 15, fontWeight: 700, opacity: disabled ? 0.4 : 1 }} title={disabled ? "Needs internet" : undefined}>
                   <input type="radio" name="pos-order-type" checked={orderType === t.key} disabled={disabled} onChange={() => onOrderType(t.key)} />
                   {t.label}
+                  {disabled ? <span style={{ fontSize: 10, fontWeight: 500, marginLeft: 4, opacity: 0.85 }}>(needs internet)</span> : null}
                 </label>
               );
             })}

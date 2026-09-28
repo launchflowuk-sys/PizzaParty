@@ -25,7 +25,7 @@ function quickCashAmounts(totalPence: number): number[] {
  *  split, leaving the rest for a reader payment. Tendered is built digit-by-digit
  *  from a numeric keypad, pence in from the right (like a real till), and change
  *  is tendered minus amount, shown very large per the spec. */
-export function CashPad({ remaining, busy, error, onConfirm, onBack }: { remaining: number; busy: boolean; error: string; onConfirm: (amount: number, tendered: number) => void; onBack: () => void }) {
+export function CashPad({ remaining, busy, error, onConfirm, onBack, onTenderChange }: { remaining: number; busy: boolean; error: string; onConfirm: (amount: number, tendered: number) => void; onBack: () => void; onTenderChange?: (amount: number, tendered: number, change: number) => void }) {
   const [amount, setAmount] = useState(remaining);
   const [tendered, setTendered] = useState(remaining);
   // The first key press replaces the prefilled amount instead of appending to it.
@@ -35,6 +35,15 @@ export function CashPad({ remaining, busy, error, onConfirm, onBack }: { remaini
   const short = Math.max(0, amount - tendered);
   const canConfirm = amount > 0 && amount <= remaining && tendered >= amount;
   const quick = useMemo(() => quickCashAmounts(amount), [amount]);
+
+  // Customer display (POS-PLAN item 29): mirror the tendered/change figures live
+  // as staff type, lightly debounced so every single keypress doesn't post a
+  // BroadcastChannel message.
+  useEffect(() => {
+    if (!onTenderChange) return;
+    const t = setTimeout(() => onTenderChange(amount, tendered, change), 120);
+    return () => clearTimeout(t);
+  }, [amount, tendered, change, onTenderChange]);
 
   // Enter confirms (POS-PLAN item 33) - never while typing into the amount field.
   useEffect(() => {

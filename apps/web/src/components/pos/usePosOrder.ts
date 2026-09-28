@@ -26,6 +26,10 @@ export function usePosOrder() {
   const [discount, setDiscount] = useState<PosDiscount | undefined>(undefined);
   const [customer, setCustomer] = useState<PosCustomer | null>(null);
   const [walkInName, setWalkInName] = useState("");
+  /** Offline-only (POS-PLAN item 30): a name+phone typed straight onto a plain
+   *  Collection order while Phone mode itself is unavailable (no lookup server).
+   *  Not PosCustomer - just enough to reach the order's own customer.phone. */
+  const [offlinePhone, setOfflinePhone] = useState("");
   /** Eat-in only (POS-PLAN item 32) - not part of Fulfilment, so it rides alongside it rather than in it. */
   const [tableNumber, setTableNumber] = useState("");
 
@@ -47,7 +51,7 @@ export function usePosOrder() {
 
   const reset = useCallback(() => {
     setLines([]); setOrderNote(""); setFulfilment("collection"); setAddress({ line1: "", line2: "", city: "", postcode: "" });
-    setScheduledFor(undefined); setDiscount(undefined); setCustomer(null); setWalkInName(""); setPriced(null); setPricingError(""); setTableNumber("");
+    setScheduledFor(undefined); setDiscount(undefined); setCustomer(null); setWalkInName(""); setOfflinePhone(""); setPriced(null); setPricingError(""); setTableNumber("");
   }, []);
 
   const posBasket = useMemo<PosBasket>(
@@ -91,6 +95,7 @@ export function usePosOrder() {
     discount, setDiscount,
     customer, setCustomer,
     walkInName, setWalkInName,
+    offlinePhone, setOfflinePhone,
     tableNumber, setTableNumber,
     posBasket, priced, pricingLoading, pricingError,
     reset,

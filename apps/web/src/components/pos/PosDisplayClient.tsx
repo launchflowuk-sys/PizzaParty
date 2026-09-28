@@ -65,10 +65,10 @@ export function PosDisplayClient() {
         </div>
       ) : screen.type === "paying" ? (
         <div className="pos-display-pay">
-          {screen.method === "cash" && typeof screen.change === "number" && screen.change > 0 ? (
+          {screen.method === "cash" && typeof screen.tendered === "number" ? (
             <>
-              <span className="pos-display-label">Change</span>
-              <span className="pos-display-bignum">{gbp(screen.change)}</span>
+              <span className="pos-display-label">You gave {gbp(screen.tendered)}</span>
+              <span className="pos-display-bignum">Change {gbp(screen.change ?? 0)}</span>
             </>
           ) : (
             <>

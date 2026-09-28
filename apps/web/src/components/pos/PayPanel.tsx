@@ -66,7 +66,7 @@ export function PayPanel({
       clientRequestId,
       createdOfflineAt,
       source: orderType === "phone" ? "phone" : "pos",
-      customer: { name: order.customer?.name || order.walkInName || "Walk-in", phone: order.customer?.phone, email: order.customer?.email || undefined },
+      customer: { name: order.customer?.name || order.walkInName || "Walk-in", phone: order.customer?.phone || order.offlinePhone || undefined, email: order.customer?.email || undefined },
       address: order.fulfilment === "delivery" ? { line1: order.address.line1, line2: order.address.line2 || undefined, city: order.address.city || undefined, postcode: order.address.postcode } : undefined,
       notes: order.orderNote || undefined,
       scheduledFor: order.scheduledFor,
@@ -185,7 +185,14 @@ export function PayPanel({
     );
   }
 
-  if (stage.kind === "cash") return <CashPad remaining={remaining} busy={busy} error={error} onConfirm={confirmCash} onBack={() => setStage({ kind: "choose" })} />;
+  if (stage.kind === "cash") {
+    return (
+      <CashPad
+        remaining={remaining} busy={busy} error={error} onConfirm={confirmCash} onBack={() => setStage({ kind: "choose" })}
+        onTenderChange={(cashAmount, tendered, change) => display?.({ type: "paying", total: cashAmount, method: "cash", tendered, change })}
+      />
+    );
+  }
 
   if (stage.kind === "reader") {
     return (

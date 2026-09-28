@@ -100,7 +100,16 @@ export function Basket({ order, onCharge, offline, offlinePriced }: { order: Pos
         {showDiscount && !offline ? <DiscountPad current={order.discount} onApply={order.setDiscount} onClose={() => setShowDiscount(false)} /> : null}
 
         {offline ? (
-          <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-700)" }}>Offline prices are estimated (no delivery fee or promo applied).</p>
+          <>
+            {/* Phone mode itself needs the server (lookup), but a name + number for
+                this plain Collection/Eat-in order can still be typed in by hand -
+                POS-PLAN item 30/28 - saved as order.customer.phone on sync. */}
+            <div style={{ display: "flex", gap: 8 }}>
+              <input className="input" style={{ minHeight: 40, fontSize: 13, flex: 1 }} placeholder="Name (optional)" value={order.walkInName} onChange={(e) => order.setWalkInName(e.target.value)} />
+              <input className="input" style={{ minHeight: 40, fontSize: 13, flex: 1 }} placeholder="Phone (optional)" inputMode="tel" value={order.offlinePhone} onChange={(e) => order.setOfflinePhone(e.target.value)} />
+            </div>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--color-neutral-700)" }}>Offline prices are estimated (no delivery fee or promo applied).</p>
+          </>
         ) : (
           <>
             {pricingError ? <p className="fp-error" style={{ margin: 0, fontSize: 13 }}>{pricingError}</p> : null}

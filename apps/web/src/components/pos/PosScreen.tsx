@@ -195,6 +195,15 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
     setSearch("");
   }
 
+  // Invariant: tableReady/phoneReady are pure UI staging flags, independent of
+  // `view` - switching to Orders/Cash & reports and back to Till must always
+  // land you on exactly the screen you left (till body if it was up, staging
+  // screen only if it genuinely still was). Nothing here keys off `view`, so
+  // there is no remount/effect path that can flip these on a view switch. The
+  // only thing that can send a ready order back to a staging screen is the
+  // explicit "· change" button (onChangeCustomer below) - guarded the same way
+  // takeOrderFromCall guards clearing a basket, so a stray/duplicate tap on it
+  // mid-order can't silently drop the till back into eat-in/phone setup.
   const showCustomerStage = orderType === "phone" && !phoneReady;
   const showTableStage = orderType === "eat_in" && !tableReady;
   /** Basket state, not view - a menu change must not wipe an order mid-ring-up
@@ -258,7 +267,13 @@ export function PosScreen({ staffName, staffRole, categories, deals }: { staffNa
           locationKey={order.locationKey}
           onLocationKey={order.setLocationKey}
           customerLabel={customerLabel}
-          onChangeCustomer={() => { if (orderType === "eat_in") setTableReady(false); else setPhoneReady(false); }}
+          onChangeCustomer={() => {
+            // Same guard as takeOrderFromCall: once there are real items rung up, a
+            // stray/duplicate tap on "· change" must not silently bounce the till
+            // back to the table/phone picker out from under the order in progress.
+            if (order.lines.length > 0 && !window.confirm("Change the table/customer? The basket stays, but you'll pick it again first.")) return;
+            if (orderType === "eat_in") setTableReady(false); else setPhoneReady(false);
+          }}
           liveConnected={live.connected}
           offline={offline}
           offlineCount={offlineQueue.count}
