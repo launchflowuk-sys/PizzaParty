@@ -44,5 +44,5 @@ export default async function PosPage() {
     })),
   }));
 
-  return <PosScreen staffName={staff.name} categories={categories} deals={deals} />;
+  return <PosScreen staffName={staff.name} staffRole={staff.role} categories={categories} deals={deals} />;
 }

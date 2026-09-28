@@ -21,6 +21,7 @@ const DONE_SHOWN = 12;
 
 export function QueueBoard({
   orders, drivers, now, connected, justArrived, readers, categories, deals, updateOrder, setDrivers,
+  openId, onOpenChange, liveEvent, liveConnected,
 }: {
   orders: QueueOrder[];
   drivers: QueueDriver[];
@@ -32,10 +33,14 @@ export function QueueBoard({
   deals: PosDeal[];
   updateOrder: (o: QueueOrder) => void;
   setDrivers: (d: QueueDriver[]) => void;
+  /** Controlled by PosScreen so a "still owed" row in the day report can open the same order here. */
+  openId: string | null;
+  onOpenChange: (id: string | null) => void;
+  liveEvent: { orderId: string; kind: string } | null;
+  liveConnected: boolean;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
-  const [openId, setOpenId] = useState<string | null>(null);
 
   const term = search.trim().toLowerCase();
   const filtered = useMemo(() => orders.filter((o) => {
@@ -83,7 +88,7 @@ export function QueueBoard({
               <div className="pos-q-col-body">
                 {shown.length === 0 ? <p className="pos-q-empty">Nothing here.</p> : null}
                 {shown.map((o) => (
-                  <QueueCard key={o.id} order={o} now={now} flash={justArrived.has(o.id)} onOpen={() => setOpenId(o.id)} />
+                  <QueueCard key={o.id} order={o} now={now} flash={justArrived.has(o.id)} onOpen={() => onOpenChange(o.id)} />
                 ))}
                 {col.key === "done" && items.length > DONE_SHOWN ? <p className="pos-q-more">+{items.length - DONE_SHOWN} more today</p> : null}
               </div>
@@ -99,9 +104,11 @@ export function QueueBoard({
           readers={readers}
           categories={categories}
           deals={deals}
-          onClose={() => setOpenId(null)}
+          onClose={() => onOpenChange(null)}
           onOrderUpdated={updateOrder}
           onDriversUpdated={setDrivers}
+          liveEvent={liveEvent}
+          liveConnected={liveConnected}
         />
       ) : null}
     </div>

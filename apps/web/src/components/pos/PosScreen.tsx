@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import "./pos.css";
 import type { PosBootstrap } from "@/lib/pos-types";
 import type { Fulfilment } from "@/lib/basket-types";
+import type { StaffRole } from "@/lib/permissions";
+import { useLiveEvents } from "@/lib/use-live-events";
 import { TopBar, type PosView } from "./TopBar";
 import { CategoryRail, DEALS_KEY, POPULAR_KEY } from "./CategoryRail";
 import { ItemGrid } from "./ItemGrid";
@@ -16,17 +18,29 @@ import { usePosOrder } from "./usePosOrder";
 import { useQueue } from "./useQueue";
 import { useMenuVersion } from "./useMenuVersion";
 import { QueueBoard } from "./QueueBoard";
+import { CashTab } from "./CashTab";
 import { isSimpleProduct, type MiddleView, type OrderTypeTab, type PosCategory, type PosDeal, type PosProduct } from "./pos-client-types";
 
-export function PosScreen({ staffName, categories, deals }: { staffName: string; categories: PosCategory[]; deals: PosDeal[] }) {
+export function PosScreen({ staffName, staffRole, categories, deals }: { staffName: string; staffRole: StaffRole; categories: PosCategory[]; deals: PosDeal[] }) {
   const order = usePosOrder();
+  const [orderEvent, setOrderEvent] = useState<{ orderId: string; kind: string } | null>(null);
+  // Mounted once, for the till's whole life. `queue`/`menu` are referenced
+  // inside these handlers before they are declared below - safe, because the
+  // handlers only run later (async, on a stream event), by which point both
+  // are assigned; see lib/use-live-events.ts for the event shapes.
+  const live = useLiveEvents("/api/pos/stream", {
+    order: (e) => { setOrderEvent(e); void queue.refresh(); },
+    menu: () => void menu.check(),
+    resync: () => { void queue.refresh(); void menu.check(); },
+  });
   // Runs for the life of the till, not just while the Orders view is open, so
   // the badge count and the new-order chime stay live while someone is ringing
   // up a counter sale - and so switching to Orders never loses this basket.
-  const queue = useQueue();
-  const menu = useMenuVersion();
+  const queue = useQueue(live.connected);
+  const menu = useMenuVersion(live.connected);
   const router = useRouter();
   const [view, setView] = useState<PosView>("till");
+  const [queueOpenId, setQueueOpenId] = useState<string | null>(null);
   const [boot, setBoot] = useState<PosBootstrap | null>(null);
   const [orderType, setOrderType] = useState<OrderTypeTab>("collection");
   const [phoneReady, setPhoneReady] = useState(false);
@@ -43,6 +57,9 @@ export function PosScreen({ staffName, categories, deals }: { staffName: string;
     }
     return out;
   }, [order.lines]);
+
+  // For the day report's "still owed" rows: only one worth opening in the Orders panel is one still in today's live queue.
+  const queueOrderIds = useMemo(() => new Set(queue.orders.map((o) => o.id)), [queue.orders]);
 
   /** One-tap add for a simple product (single size, no modifier groups): bump
    *  the last basket line if it's the same item, otherwise add qty 1. Flashes
@@ -151,6 +168,7 @@ export function PosScreen({ staffName, categories, deals }: { staffName: string;
           onLocationKey={order.setLocationKey}
           customerLabel={customerLabel}
           onChangeCustomer={() => setPhoneReady(false)}
+          liveConnected={live.connected}
         />
         {menu.changed && orderInProgress ? (
           <div className="pos-menubanner">Menu updated by the office — refreshing after this order.</div>
@@ -169,6 +187,18 @@ export function PosScreen({ staffName, categories, deals }: { staffName: string;
           deals={deals}
           updateOrder={queue.updateOrder}
           setDrivers={queue.setDrivers}
+          openId={queueOpenId}
+          onOpenChange={setQueueOpenId}
+          liveEvent={orderEvent}
+          liveConnected={live.connected}
+        />
+      ) : view === "cash" ? (
+        <CashTab
+          staffRole={staffRole}
+          locationKey={order.locationKey || undefined}
+          liveEvent={orderEvent}
+          queueOrderIds={queueOrderIds}
+          onOpenOrder={(id) => { setQueueOpenId(id); setView("queue"); }}
         />
       ) : showCustomerStage ? (
         <div className="pos-main">
@@ -193,7 +223,7 @@ export function PosScreen({ staffName, categories, deals }: { staffName: string;
             ) : middleView.kind === "deal" ? (
               <DealPanel deal={middleView.deal} onAdd={(line) => { order.addLine(line); setMiddleView({ kind: "grid" }); }} onCancel={() => setMiddleView({ kind: "grid" })} />
             ) : (
-              <PayPanel order={order} orderType={orderType} boot={boot} onDone={resetAll} onBack={() => setMiddleView({ kind: "grid" })} />
+              <PayPanel order={order} orderType={orderType} boot={boot} onDone={resetAll} onBack={() => setMiddleView({ kind: "grid" })} liveEvent={orderEvent} />
             )}
           </main>
 

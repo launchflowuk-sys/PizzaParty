@@ -5,18 +5,23 @@ import type { PosOrderRef, PosPayment, PosReader } from "@/lib/pos-types";
 
 const LAST_READER_KEY = "pos-last-reader";
 const POLL_MS = 1500;
+/** Live event kinds worth an immediate status check - a webhook landed, no need to wait for the next tick. */
+const LIVE_KINDS = new Set(["paid", "payment_failed", "payment_cancelled"]);
 
 /** Stripe Terminal, server-driven per docs/POS-PLAN.md §5: this panel only starts
  *  the payment and polls its status - the reader itself, and the webhook that
- *  actually places the order, are entirely server-side. */
+ *  actually places the order, are entirely server-side. `liveEvent` (the SSE
+ *  stream) short-circuits the 1.5s poll the moment a matching webhook lands;
+ *  the poll itself stays as-is since it is what actually asks Stripe. */
 export function ReaderPay({
-  orderId, remaining, readers, onSuccess, onBack,
+  orderId, remaining, readers, onSuccess, onBack, liveEvent,
 }: {
   orderId: string;
   remaining: number;
   readers: PosReader[];
   onSuccess: (order: PosOrderRef) => void;
   onBack: () => void;
+  liveEvent?: { orderId: string; kind: string } | null;
 }) {
   const [readerId, setReaderId] = useState(() => {
     try { return localStorage.getItem(LAST_READER_KEY) ?? readers[0]?.id ?? ""; } catch { return readers[0]?.id ?? ""; }
@@ -44,18 +49,26 @@ export function ReaderPay({
     }
   }
 
+  async function checkOnce(paymentId: string) {
+    try {
+      const r = await fetch(`/api/pos/orders/${orderId}/pay/${paymentId}`);
+      const d = (await r.json()) as PosPayment;
+      setPayment(d);
+      if (d.status === "succeeded") { clear(); onSuccess(d.order); }
+      else if (d.status === "failed" || d.status === "cancelled") clear();
+    } catch { /* keep polling - a dropped poll is not a dropped payment */ }
+  }
   function poll(paymentId: string) {
-    timer.current = setInterval(async () => {
-      try {
-        const r = await fetch(`/api/pos/orders/${orderId}/pay/${paymentId}`);
-        const d = (await r.json()) as PosPayment;
-        setPayment(d);
-        if (d.status === "succeeded") { clear(); onSuccess(d.order); }
-        else if (d.status === "failed" || d.status === "cancelled") clear();
-      } catch { /* keep polling - a dropped poll is not a dropped payment */ }
-    }, POLL_MS);
+    timer.current = setInterval(() => void checkOnce(paymentId), POLL_MS);
   }
   function clear() { if (timer.current) { clearInterval(timer.current); timer.current = null; } }
+
+  useEffect(() => {
+    if (!liveEvent || !payment) return;
+    if (liveEvent.orderId !== orderId || !LIVE_KINDS.has(liveEvent.kind)) return;
+    void checkOnce(payment.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveEvent]);
 
   async function cancel() {
     if (!payment) return;

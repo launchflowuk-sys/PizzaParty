@@ -49,7 +49,7 @@ function Row({ label, value, bold }: { label: string; value: number; bold?: bool
  * what the order's state allows.
  */
 export function OrderPanel({
-  orderId, drivers, readers, categories, deals, onClose, onOrderUpdated, onDriversUpdated,
+  orderId, drivers, readers, categories, deals, onClose, onOrderUpdated, onDriversUpdated, liveEvent, liveConnected,
 }: {
   orderId: string;
   drivers: QueueDriver[];
@@ -59,6 +59,8 @@ export function OrderPanel({
   onClose: () => void;
   onOrderUpdated: (o: QueueOrder) => void;
   onDriversUpdated: (d: QueueDriver[]) => void;
+  liveEvent: { orderId: string; kind: string } | null;
+  liveConnected: boolean;
 }) {
   const [detail, setDetail] = useState<PosOrderDetail | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -95,9 +97,16 @@ export function OrderPanel({
 
   useEffect(() => {
     void load();
-    const t = setInterval(load, DETAIL_POLL_MS);
+    const t = setInterval(load, liveConnected ? 30000 : DETAIL_POLL_MS);
     return () => clearInterval(t);
-  }, [load]);
+  }, [load, liveConnected]);
+
+  // A push event about this order - reload now rather than waiting out the poll.
+  useEffect(() => {
+    if (!liveEvent || liveEvent.orderId !== orderId) return;
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveEvent]);
 
   // A different order was opened - drop whatever transient UI (void reasons, reject picker) belonged to the last one.
   useEffect(() => {
@@ -235,7 +244,7 @@ export function OrderPanel({
         ) : mode.kind === "pay" ? (
           <div style={{ padding: 16, overflowY: "auto" }}>
             {actionError ? <p className="fp-error">{actionError}</p> : null}
-            <TakePaymentPanel orderId={orderId} remaining={detail.balance} readers={readers} onCancel={() => { setActionError(""); setMode({ kind: "detail" }); }} onDone={onPaid} />
+            <TakePaymentPanel orderId={orderId} remaining={detail.balance} readers={readers} onCancel={() => { setActionError(""); setMode({ kind: "detail" }); }} onDone={onPaid} liveEvent={liveEvent} />
           </div>
         ) : mode.kind === "refund" ? (
           <div style={{ padding: 16, overflowY: "auto" }}>

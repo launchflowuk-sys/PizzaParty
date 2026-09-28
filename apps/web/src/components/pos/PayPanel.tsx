@@ -19,7 +19,7 @@ function getErrorMessage(e: unknown): string {
  * it. A split simply means: pay part of it, land back on "choose" with the
  * order's own paid/total telling us what's left, pay the rest a different way.
  */
-export function PayPanel({ order, orderType, boot, onDone, onBack }: { order: PosOrderState; orderType: OrderTypeTab; boot: PosBootstrap | null; onDone: () => void; onBack: () => void }) {
+export function PayPanel({ order, orderType, boot, onDone, onBack, liveEvent }: { order: PosOrderState; orderType: OrderTypeTab; boot: PosBootstrap | null; onDone: () => void; onBack: () => void; liveEvent?: { orderId: string; kind: string } | null }) {
   const [stage, setStage] = useState<Stage>({ kind: "choose" });
   const [orderRef, setOrderRef] = useState<PosOrderRef | null>(null);
   const [busy, setBusy] = useState(false);
@@ -100,6 +100,7 @@ export function PayPanel({ order, orderType, boot, onDone, onBack }: { order: Po
         readers={boot?.readers ?? []}
         onSuccess={(o) => { setOrderRef(o); setStage(o.paid >= o.total ? { kind: "done" } : { kind: "choose" }); }}
         onBack={() => setStage({ kind: "choose" })}
+        liveEvent={liveEvent}
       />
     );
   }

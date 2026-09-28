@@ -9,12 +9,12 @@ const TABS: { key: OrderTypeTab; label: string }[] = [
   { key: "phone", label: "Phone" },
 ];
 
-export type PosView = "till" | "queue";
+export type PosView = "till" | "queue" | "cash";
 
 export function TopBar({
   staffName, view, onView, badgeCount, soundOn, onEnableSound,
   orderType, onOrderType, search, onSearch, searchRef, boot,
-  locationKey, onLocationKey, customerLabel, onChangeCustomer,
+  locationKey, onLocationKey, customerLabel, onChangeCustomer, liveConnected,
 }: {
   staffName: string;
   view: PosView;
@@ -33,6 +33,8 @@ export function TopBar({
   onLocationKey: (key: string) => void;
   customerLabel: string | null;
   onChangeCustomer: () => void;
+  /** The live push stream (lib/use-live-events.ts), not the queue's own poll - shown as a small pill next to the staff name. */
+  liveConnected: boolean;
 }) {
   const status = boot?.onlineStatus;
   return (
@@ -46,6 +48,10 @@ export function TopBar({
           <input type="radio" name="pos-view" checked={view === "queue"} onChange={() => onView("queue")} />
           Orders
           {badgeCount > 0 ? <span className="pos-q-badge">{badgeCount}</span> : null}
+        </label>
+        <label className="seg-opt" style={{ minHeight: 60, padding: "0 20px", fontSize: 15, fontWeight: 700 }}>
+          <input type="radio" name="pos-view" checked={view === "cash"} onChange={() => onView("cash")} />
+          Cash &amp; reports
         </label>
       </div>
 
@@ -86,6 +92,10 @@ export function TopBar({
       ) : null}
 
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+        <span className="pos-live-pill" data-connected={liveConnected ? "1" : "0"}>
+          <span className="pos-live-dot" />
+          {liveConnected ? "Live" : "Reconnecting…"}
+        </span>
         {/* Autoplay policy blocks a beep until a tap unlocks it - and a wall of
             new-order chimes going out mid-shift is the kind of thing every
             till on the counter needs to opt into, so it is not on by default. */}

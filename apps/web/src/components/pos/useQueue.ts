@@ -28,8 +28,13 @@ function beep(ctx: AudioContext) {
  * is open (mounted once in PosScreen, not just while the Orders view is on
  * screen) so a new web/app order still chimes while someone is ringing up a
  * counter sale.
+ *
+ * `liveConnected` (the SSE stream from lib/use-live-events.ts) slows the poll
+ * right down, since a push event calls `refresh()` the moment something
+ * actually changes - the poll is then just a safety net. Disconnected, it
+ * falls back to the original interval.
  */
-export function useQueue() {
+export function useQueue(liveConnected: boolean) {
   const [orders, setOrders] = useState<Record<string, QueueOrder>>({});
   const [drivers, setDrivers] = useState<QueueDriver[]>([]);
   const [now, setNow] = useState<string>(() => new Date().toISOString());
@@ -80,11 +85,22 @@ export function useQueue() {
     }
   }, []);
 
-  useEffect(() => {
-    void poll();
-    const t = setInterval(poll, POLL_MS);
-    return () => clearInterval(t);
+  const inFlight = useRef(false);
+  const again = useRef(false);
+  /** Collapses a burst of push events into at most one extra poll, so the cursor never runs two requests at once (and never goes backwards). */
+  const refresh = useCallback(async () => {
+    if (inFlight.current) { again.current = true; return; }
+    inFlight.current = true;
+    await poll();
+    if (again.current) { again.current = false; await poll(); }
+    inFlight.current = false;
   }, [poll]);
+
+  useEffect(() => {
+    void refresh();
+    const t = setInterval(refresh, liveConnected ? 30000 : POLL_MS);
+    return () => clearInterval(t);
+  }, [refresh, liveConnected]);
 
   const enableSound = useCallback(() => {
     if (!audio.current) audio.current = new AudioContext();
@@ -102,7 +118,7 @@ export function useQueue() {
   const badgeCount = list.filter((o) => o.status === "placed").length
     + list.filter((o) => o.status === "ready" && o.paidState !== "paid").length;
 
-  return { orders: list, drivers, now, connected, soundOn, enableSound, justArrived, badgeCount, updateOrder, setDrivers };
+  return { orders: list, drivers, now, connected, soundOn, enableSound, justArrived, badgeCount, updateOrder, setDrivers, refresh };
 }
 
 export type QueueState = ReturnType<typeof useQueue>;

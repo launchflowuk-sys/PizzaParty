@@ -331,3 +331,12 @@
   .pos-slideover { width: 100%; }
   .pos-q-columns { gap: 8px; }
 }
+
+/* ══ Phase 3 — money you can trust (docs/POS-PLAN.md items 23-27) ══ */
+
+.pos-cash-wrap { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 12px 16px; gap: 12px; overflow: hidden; }
+.pos-cash-body { flex: 1; overflow-y: auto; max-width: 800px; width: 100%; margin: 0 auto; padding-bottom: 24px; }
+
+.pos-live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+.pos-live-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--color-action); }
+.pos-live-pill[data-connected="0"] .pos-live-dot { background: var(--warn); }

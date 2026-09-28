@@ -15,13 +15,14 @@ function getErrorMessage(e: unknown): string {
  *  CashPad / ReaderPay the till's own PayPanel uses, aimed at an existing
  *  order id instead of one PayPanel is about to create. */
 export function TakePaymentPanel({
-  orderId, remaining, readers, onDone, onCancel,
+  orderId, remaining, readers, onDone, onCancel, liveEvent,
 }: {
   orderId: string;
   remaining: number;
   readers: PosReader[];
   onDone: (order: PosOrderRef) => void;
   onCancel: () => void;
+  liveEvent?: { orderId: string; kind: string } | null;
 }) {
   const [stage, setStage] = useState<Stage>({ kind: "choose" });
   const [busy, setBusy] = useState(false);
@@ -42,7 +43,7 @@ export function TakePaymentPanel({
   }
 
   if (stage.kind === "cash") return <CashPad remaining={remaining} busy={busy} error={error} onConfirm={confirmCash} onBack={() => setStage({ kind: "choose" })} />;
-  if (stage.kind === "reader") return <ReaderPay orderId={orderId} remaining={remaining} readers={readers} onSuccess={onDone} onBack={() => setStage({ kind: "choose" })} />;
+  if (stage.kind === "reader") return <ReaderPay orderId={orderId} remaining={remaining} readers={readers} onSuccess={onDone} onBack={() => setStage({ kind: "choose" })} liveEvent={liveEvent} />;
 
   return (
     <div style={{ maxWidth: 420 }}>
