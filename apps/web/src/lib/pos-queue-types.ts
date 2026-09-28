@@ -178,6 +178,8 @@ export type PosStatusMove = {
   etaMinutes?: number;
   /** Required-ish for rejected/cancelled; shown to the customer on reject. Rejecting a card-paid order refunds it. */
   reason?: string;
+  /** Rejecting or cancelling an order that has been paid needs a manager; without it the route answers 403 { needsPin: true }. */
+  managerPin?: string;
 };
 
 /** POST /api/pos/orders/:id/driver → PosDriverResult. null takes the order off whoever had it. */

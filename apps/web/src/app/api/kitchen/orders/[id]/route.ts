@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { transitionOrder } from "@/lib/orders";
+import { NeedsManagerError, transitionOrder } from "@/lib/orders";
 import { kitchenOrAdmin } from "@/lib/kitchen-auth";
 import { prisma } from "@launchflow/db";
 import { getClientRow } from "@/lib/menu";
@@ -19,9 +19,12 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   if (!parsed.success) return NextResponse.json({ error: "Bad request" }, { status: 400 });
   if (!(await prisma.order.findFirst({ where: { id, clientId: (await getClientRow()).id }, select: { id: true } }))) return NextResponse.json({ error: "Order not found" }, { status: 404 });
   try {
-    const o = await transitionOrder(id, parsed.data.status, who.role, { etaMinutes: parsed.data.etaMinutes, reason: parsed.data.reason });
+    // A manager signed in to the back office is the approval; everyone else is sent to the till, which asks for a PIN.
+    const approvedBy = who.role === "admin" && (!who.sr || who.sr === "manager") ? (who.nm ?? "Manager") : undefined;
+    const o = await transitionOrder(id, parsed.data.status, who.role, { etaMinutes: parsed.data.etaMinutes, reason: parsed.data.reason, approvedBy });
     return NextResponse.json({ ok: true, status: o.status, etaAt: o.etaAt });
   } catch (e) {
+    if (e instanceof NeedsManagerError) return NextResponse.json({ error: `${e.message} Ask a manager to do it from the till.` }, { status: 403 });
     return NextResponse.json({ error: (e as Error).message }, { status: 409 });
   }
 }

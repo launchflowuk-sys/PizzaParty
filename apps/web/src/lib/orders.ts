@@ -13,7 +13,7 @@ import { formatTime } from "./availability";
 import { deliveryTermsFor } from "./postcode";
 import { revalidateTag } from "next/cache";
 import { MENU_TAG } from "./menu";
-import { remainingPence } from "./pos-money";
+import { paidPence, remainingPence } from "./pos-money";
 import { releaseRefund } from "./refunds";
 import { releaseDriver } from "./dispatch";
 import type { BasketLine, Fulfilment, PricedBasket } from "./basket-types";
@@ -262,16 +262,28 @@ export async function markPlaced(orderId: string, actor: string, paymentData?: P
   return order;
 }
 
-export async function transitionOrder(orderId: string, to: OrderStatus, actor: string, opts: { etaMinutes?: number; reason?: string } = {}) {
+/** Thrown when a move would refund, or leave owed back, money the shop has taken. */
+export class NeedsManagerError extends Error {
+  constructor() { super("This order has been paid, so rejecting or cancelling it needs a manager PIN."); }
+}
+
+/**
+ * `approvedBy` is the manager who signed off. Rejecting a paid order refunds it and
+ * cancelling one leaves the money owed back, so both need a manager - the shop owner
+ * decided every refund goes through a manager (2026-09-28).
+ */
+export async function transitionOrder(orderId: string, to: OrderStatus, actor: string, opts: { etaMinutes?: number; reason?: string; approvedBy?: string } = {}) {
   const current = await prisma.order.findUnique({
     where: { id: orderId },
     select: {
       status: true, scheduledFor: true, fulfilment: true, deliveryPostcode: true,
+      payments: { select: { status: true, amount: true, refundedAmount: true } },
       location: { select: { deliveryMinutes: true, prepMinutes: true, deliveryFee: true, minOrder: true, bands: true } },
     },
   });
   if (!current) throw new Error("Order not found");
   if (!TRANSITIONS[current.status].includes(to)) throw new Error(`Cannot go from ${current.status} to ${to}`);
+  if ((to === "rejected" || to === "cancelled") && paidPence(current.payments) > 0 && !opts.approvedBy) throw new NeedsManagerError();
   const data: Prisma.OrderUpdateManyMutationInput = { status: to };
   if (to === "accepted") {
     // Further-out bands carry extra minutes, so the promised time matches the
@@ -292,7 +304,8 @@ export async function transitionOrder(orderId: string, to: OrderStatus, actor: s
   const moved = await prisma.order.updateMany({ where: { id: orderId, status: current.status }, data });
   if (!moved.count) throw new Error("This order has just been changed on another screen. Try again.");
   const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, include: orderInclude });
-  await addEvent(orderId, to, actor, opts.reason ?? (opts.etaMinutes ? `ETA ${opts.etaMinutes} min` : ""));
+  const note = opts.reason ?? (opts.etaMinutes ? `ETA ${opts.etaMinutes} min` : "");
+  await addEvent(orderId, to, actor, opts.approvedBy ? `${note}${note ? " · " : ""}approved by ${opts.approvedBy}` : note);
   if (to === "completed") await awardLoyalty(order);
 
   const event = STATUS_EVENT[to];
