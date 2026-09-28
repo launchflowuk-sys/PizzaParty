@@ -15,7 +15,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const client = await getClientRow();
   try {
     const r = await editOrder(client.id, id, staff, body);
-    const res: PosEditResult = { order: (await orderDetail(client.id, id))!, eventId: r.eventId, changeTicketUrl: printUrl(id, "changes", r.eventId), printer: r.printer, warnings: r.warnings };
+    const res: PosEditResult = { order: (await orderDetail(client.id, id))!, eventId: r.eventId, changeTicketUrl: printUrl(id, "changes", r.eventId), printer: r.printer, warnings: r.warnings, ...(r.replayed ? { replayed: true } : {}) };
     return NextResponse.json(res);
   } catch (e) {
     return posErrorResponse(e);

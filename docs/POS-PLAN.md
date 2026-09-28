@@ -218,7 +218,8 @@ pushed live until Shoji has tested it locally and approved it.
 
 | Phase | Status |
 |---|---|
-| 1 — Take an order, get paid (incl. card reader) | Not started |
-| 2 — One queue | Not started |
+| 1 — Take an order, get paid (incl. card reader) | Built, reviewed, tested locally on a simulated reader (2026-09-28) |
+| Push offers (item 34) | Built and reviewed. The app's tap-to-open handler is in farm-pizza-app, uncommitted |
+| 2 — One queue | Backend built and tested (2026-09-28). Queue screen and second review in progress |
 | 3 — Money you can trust | Not started |
 | 4 — Beyond Foodhub | Not started |

@@ -13,17 +13,20 @@ import { managerForPin, type PosStaff } from "./pos";
 import { goodwillPence, isSettled, orderMoney, repriceAfterEdit, type EditPromo } from "./pos-money";
 import { EDITABLE, PosError, VOID_NEEDS_PIN } from "./pos-queue";
 import { connectOpts, getStripe } from "./stripe";
+import { releaseRefund } from "./refunds";
 import type { BasketLine, PricedLine } from "./basket-types";
 
 export const EditBody = z.object({
   add: z.array(LineSchema).max(50).default([]),
   remove: z.array(z.object({ orderItemId: z.string().min(1).max(40), reason: z.string().trim().min(2).max(120) })).max(50).default([]),
   managerPin: z.string().min(1).max(64).optional(),
+  /** One per "Save changes" tap; a retry with the same id gets the first result back. */
+  requestId: z.string().trim().min(1).max(64).optional(),
 }).refine((b) => b.add.length + b.remove.length > 0, { message: "Add or remove at least one item." });
 
 /** One line on a change ticket, snapshotted into the event so the ticket prints the same forever. */
 export type ChangeLine = { qty: number; name: string; size: string; modifiers: string[]; components: string[]; notes: string; lineTotal: number; reason?: string };
-export type ChangeData = { added: ChangeLine[]; removed: ChangeLine[]; before: { subtotal: number; discount: number; total: number }; after: { subtotal: number; discount: number; total: number }; manual: { kind: "percent" | "amount"; value: number; pence: number } | null; approvedBy: string | null };
+export type ChangeData = { added: ChangeLine[]; removed: ChangeLine[]; before: { subtotal: number; discount: number; total: number }; after: { subtotal: number; discount: number; total: number }; manual: { kind: "percent" | "amount"; value: number; pence: number } | null; approvedBy: string | null; requestId?: string };
 
 const comp = (c: { name: string; sizeName: string; modifiers: { name: string }[] }) => `${c.name}${c.sizeName ? ` (${c.sizeName})` : ""}${c.modifiers.length ? ` +${c.modifiers.map((m) => m.name).join(", ")}` : ""}`;
 const fromPriced = (l: PricedLine): ChangeLine => ({ qty: l.qty, name: l.name, size: l.sizeName, modifiers: l.modifiers.map((m) => m.name), components: l.components.map(comp), notes: l.notes, lineTotal: l.lineTotal });
@@ -34,26 +37,38 @@ export function changeText(number: number, d: Pick<ChangeData, "added" | "remove
 }
 
 /** The manager discount as last set: from the till's "discount" event, or the last edit that re-applied it. */
-async function currentManual(orderId: string): Promise<ChangeData["manual"]> {
-  const e = await prisma.orderEvent.findFirst({ where: { orderId, type: { in: ["discount", "amended"] } }, orderBy: { createdAt: "desc" }, select: { type: true, data: true } });
+async function currentManual(tx: Prisma.TransactionClient, orderId: string): Promise<ChangeData["manual"]> {
+  const e = await tx.orderEvent.findFirst({ where: { orderId, type: { in: ["discount", "amended"] } }, orderBy: { createdAt: "desc" }, select: { type: true, data: true } });
   const d = (e?.type === "amended" ? (e.data as ChangeData | null)?.manual : e?.data) as { kind?: string; value?: number; pence?: number } | null | undefined;
   return d && (d.kind === "percent" || d.kind === "amount") && typeof d.value === "number" ? { kind: d.kind, value: d.value, pence: d.pence ?? 0 } : null;
 }
 
 type EditBodyT = z.infer<typeof EditBody>;
+export type EditOutcome = { eventId: string; printer: { ok: boolean; error?: string } | null; warnings: string[]; replayed?: true };
+
+/** The edit already made for this requestId on this order, if any. */
+async function priorEdit(db: Prisma.TransactionClient, orderId: string, requestId: string | undefined): Promise<EditOutcome | null> {
+  if (!requestId) return null;
+  const e = await db.orderEvent.findFirst({ where: { orderId, type: "amended", data: { path: ["requestId"], equals: requestId } }, select: { id: true } });
+  return e ? { eventId: e.id, printer: null, warnings: [], replayed: true } : null;
+}
 
 /**
  * Add and void items on a sent order, reprice it, and log it. The order row is
  * locked for the whole write so two tills cannot edit it at once or edit it
  * while /pay is taking the balance.
  */
-export async function editOrder(clientId: string, orderId: string, staff: PosStaff, body: EditBodyT) {
+export async function editOrder(clientId: string, orderId: string, staff: PosStaff, body: EditBodyT): Promise<EditOutcome> {
   const before = await prisma.order.findFirst({
     where: { id: orderId, clientId },
-    select: { status: true, fulfilment: true, deliveryPostcode: true, promoId: true, promoCode: true, location: { select: { deliveryFee: true, minOrder: true, bands: true } } },
+    select: { status: true, source: true, fulfilment: true, deliveryPostcode: true, promoId: true, promoCode: true, location: { select: { deliveryFee: true, minOrder: true, bands: true } } },
   });
   if (!before) throw new PosError("Order not found.", 404);
+  const replay = await priorEdit(prisma, orderId, body.requestId);
+  if (replay) return replay;
   if (!EDITABLE.includes(before.status)) throw new PosError(`This order is ${before.status.replace(/_/g, " ")}; it cannot be changed.`, 409);
+  // An unpaid website/app checkout has a card payment out for its old total; changing it would let that pay the wrong amount.
+  if (before.status === "pending_payment" && before.source !== "pos" && before.source !== "phone") throw new PosError("This online order has not been paid yet; it cannot be changed.", 409);
 
   let approvedBy: string | null = null;
   if (body.remove.length && VOID_NEEDS_PIN.includes(before.status)) {
@@ -66,15 +81,19 @@ export async function editOrder(clientId: string, orderId: string, staff: PosSta
   if (priced.errors.length) throw new PosError(priced.errors[0]!, 409, { errors: priced.errors, removedKeys: priced.removedKeys });
   const promoRow = before.promoId ? await prisma.promo.findUnique({ where: { id: before.promoId }, select: { type: true, value: true } }) : null;
   const promo: EditPromo = promoRow ? { type: promoRow.type as NonNullable<EditPromo>["type"], value: promoRow.value } : null;
-  const manual = await currentManual(orderId);
   const removeIds = [...new Set(body.remove.map((r) => r.orderItemId))];
 
   const out = await prisma.$transaction(async (tx) => {
     const [row] = await tx.$queryRaw<{ status: OrderStatus }[]>`SELECT status::text AS status FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
+    // A double tap: the first one holds the lock, this one finds its event once it gets in.
+    const again = await priorEdit(tx, orderId, body.requestId);
+    if (again) return { replay: again } as const;
     if (!row || !EDITABLE.includes(row.status)) throw new PosError(`This order is ${row?.status ?? "gone"}; it cannot be changed.`, 409);
     if (removeIds.length && VOID_NEEDS_PIN.includes(row.status) && !approvedBy) throw new PosError("The kitchen has just started this order: voiding needs a manager PIN.", 403, { needsPin: true });
     if (await tx.payment.count({ where: { orderId, status: "processing" } })) throw new PosError("A card payment is in progress on this order. Finish or cancel it first.", 409);
 
+    // Read under the lock, so a concurrent edit's new discount pence are seen.
+    const manual = await currentManual(tx, orderId);
     const o = await tx.order.findUniqueOrThrow({ where: { id: orderId }, select: { number: true, subtotal: true, deliveryFee: true, discount: true, total: true, writtenOff: true } });
     const removed = removeIds.length ? await tx.orderItem.findMany({ where: { orderId, parentId: null, id: { in: removeIds } }, include: { modifiers: true, components: { include: { modifiers: true } } } }) : [];
     if (removed.length !== removeIds.length) throw new PosError("That item is not on this order any more.", 404);
@@ -105,14 +124,16 @@ export async function editOrder(clientId: string, orderId: string, staff: PosSta
       after: { subtotal: next.subtotal, discount: next.discount, total: next.total },
       manual: manual ? { ...manual, pence: next.manualPence } : null,
       approvedBy,
+      ...(body.requestId ? { requestId: body.requestId } : {}),
     };
     const message = [
       ...data.added.map((l) => `+${l.qty}× ${l.name}`),
       ...data.removed.map((l) => `−${l.qty}× ${l.name} (${l.reason})`),
     ].join("; ") + ` · ${gbp(o.total)} → ${gbp(next.total)}${approvedBy ? ` · approved by ${approvedBy}` : ""}`;
     const event = await tx.orderEvent.create({ data: { orderId, type: "amended", actor: staff.name, message, data: data as unknown as Prisma.InputJsonValue } });
-    return { event, data, number: o.number, status: row.status, money };
+    return { event, data, number: o.number, status: row.status, money, replay: null };
   });
+  if (out.replay) return out.replay;
 
   const warnings: string[] = [];
   if (before.fulfilment === "delivery") {
@@ -183,14 +204,7 @@ export async function refundPayment(clientId: string, orderId: string, staff: Po
   });
 
   const { refund, payment, goodwill } = r;
-  const undo = async (why: string) => {
-    await prisma.$transaction([
-      prisma.payment.update({ where: { id: payment.id }, data: { refundedAmount: { decrement: body.amount }, status: payment.status } }),
-      prisma.refund.update({ where: { id: refund.id }, data: { status: "failed" } }),
-      ...(goodwill ? [prisma.order.update({ where: { id: orderId }, data: { writtenOff: { decrement: goodwill } } })] : []),
-    ]);
-    await addEvent(orderId, "refund_failed", staff.name, `${gbp(body.amount)}: ${why}`, { refundId: refund.id });
-  };
+  const undo = (why: string) => releaseRefund(refund.id, staff.name, why, goodwill);
 
   let final = refund;
   if (payment.provider !== "cash") {
@@ -203,7 +217,10 @@ export async function refundPayment(clientId: string, orderId: string, staff: Po
         await undo(s.failure_reason ?? s.status);
         throw new PosError(`Stripe refused the refund (${s.failure_reason ?? s.status}).`, 502);
       }
-      final = await prisma.refund.update({ where: { id: refund.id }, data: { stripeRefundId: s.id, status: s.status === "succeeded" ? "succeeded" : "pending" } });
+      // Conditional: a refund.* webhook may already have settled or failed this row.
+      await prisma.refund.updateMany({ where: { id: refund.id, stripeRefundId: "" }, data: { stripeRefundId: s.id } });
+      if (s.status === "succeeded") await prisma.refund.updateMany({ where: { id: refund.id, status: "pending" }, data: { status: "succeeded" } });
+      final = await prisma.refund.findUniqueOrThrow({ where: { id: refund.id } });
     } catch (e) {
       if (e instanceof PosError) throw e;
       const why = (e as Error).message;

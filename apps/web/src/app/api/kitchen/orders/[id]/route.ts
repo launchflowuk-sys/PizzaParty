@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { transitionOrder } from "@/lib/orders";
 import { kitchenOrAdmin } from "@/lib/kitchen-auth";
+import { prisma } from "@launchflow/db";
+import { getClientRow } from "@/lib/menu";
 
 const Body = z.object({
   status: z.enum(["accepted", "preparing", "ready", "out_for_delivery", "completed", "rejected", "cancelled"]),
@@ -15,6 +17,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const { id } = await ctx.params;
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Bad request" }, { status: 400 });
+  if (!(await prisma.order.findFirst({ where: { id, clientId: (await getClientRow()).id }, select: { id: true } }))) return NextResponse.json({ error: "Order not found" }, { status: 404 });
   try {
     const o = await transitionOrder(id, parsed.data.status, who.role, { etaMinutes: parsed.data.etaMinutes, reason: parsed.data.reason });
     return NextResponse.json({ ok: true, status: o.status, etaAt: o.etaAt });

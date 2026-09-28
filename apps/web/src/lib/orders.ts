@@ -14,6 +14,8 @@ import { deliveryTermsFor } from "./postcode";
 import { revalidateTag } from "next/cache";
 import { MENU_TAG } from "./menu";
 import { remainingPence } from "./pos-money";
+import { releaseRefund } from "./refunds";
+import { releaseDriver } from "./dispatch";
 import type { BasketLine, Fulfilment, PricedBasket } from "./basket-types";
 
 export const STATUS_LABEL: Record<OrderStatus, string> = {
@@ -270,7 +272,7 @@ export async function transitionOrder(orderId: string, to: OrderStatus, actor: s
   });
   if (!current) throw new Error("Order not found");
   if (!TRANSITIONS[current.status].includes(to)) throw new Error(`Cannot go from ${current.status} to ${to}`);
-  const data: Prisma.OrderUpdateInput = { status: to };
+  const data: Prisma.OrderUpdateManyMutationInput = { status: to };
   if (to === "accepted") {
     // Further-out bands carry extra minutes, so the promised time matches the
     // distance the driver actually has to cover.
@@ -285,12 +287,18 @@ export async function transitionOrder(orderId: string, to: OrderStatus, actor: s
   }
   if (to === "completed") data.completedAt = new Date();
   if (to === "rejected") data.rejectReason = opts.reason ?? "";
-  const order = await prisma.order.update({ where: { id: orderId }, data, include: orderInclude });
+  // Conditional on the status just checked, so two screens moving the same order
+  // at once cannot both win (a cancel racing a complete, say).
+  const moved = await prisma.order.updateMany({ where: { id: orderId, status: current.status }, data });
+  if (!moved.count) throw new Error("This order has just been changed on another screen. Try again.");
+  const order = await prisma.order.findUniqueOrThrow({ where: { id: orderId }, include: orderInclude });
   await addEvent(orderId, to, actor, opts.reason ?? (opts.etaMinutes ? `ETA ${opts.etaMinutes} min` : ""));
   if (to === "completed") await awardLoyalty(order);
 
   const event = STATUS_EVENT[to];
   if (event) await notify(event, order, { reason: opts.reason });
+  // After notify, which looks the driver up by the order to tell them.
+  if (to === "completed" || to === "rejected" || to === "cancelled") await releaseDriver(order.clientId, orderId);
 
   if (to === "rejected" && order.payments.some((p) => p.stripePaymentIntentId && p.status === "succeeded")) {
     const refunded = await refundOrder(order, "rejected");
@@ -355,15 +363,32 @@ async function refundOrder(order: FullOrder, reason: string): Promise<number | n
   const cfg = getConfig();
   let refunded = 0;
   for (const p of order.payments.filter((p) => p.stripePaymentIntentId && p.status === "succeeded")) {
+    // Reserved under the order lock first, like a till refund, so a till refund
+    // in flight is not refunded twice and the webhook can match it by refundId.
+    const row = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${order.id} FOR UPDATE`;
+      const cur = await tx.payment.findUniqueOrThrow({ where: { id: p.id } });
+      const left = cur.amount - cur.refundedAmount;
+      if (cur.status !== "succeeded" || left <= 0) return null;
+      await tx.payment.update({ where: { id: p.id }, data: { status: "refunded", refundedAmount: { increment: left } } });
+      return tx.refund.create({ data: { orderId: order.id, paymentId: p.id, provider: p.provider, amount: left, reason, status: "pending" } });
+    });
+    if (!row) continue;
     try {
-      // No amount: Stripe sends back whatever the till has not already refunded.
-      const refund = await getStripe().refunds.create({ payment_intent: p.stripePaymentIntentId }, connectOpts(cfg.payments.stripeAccountId));
-      await prisma.payment.update({ where: { id: p.id }, data: { status: "refunded", refundedAmount: { increment: refund.amount } } });
-      await prisma.refund.create({ data: { orderId: order.id, paymentId: p.id, provider: p.provider, amount: refund.amount, reason, status: refund.status === "failed" ? "failed" : "succeeded", stripeRefundId: refund.id } });
-      await addEvent(order.id, "refunded", "system", `Refunded ${gbp(refund.amount)} (${reason})`);
+      const refund = await getStripe().refunds.create(
+        { payment_intent: p.stripePaymentIntentId, amount: row.amount, metadata: { orderId: order.id, refundId: row.id } },
+        { idempotencyKey: `refund_${row.id}`, ...(connectOpts(cfg.payments.stripeAccountId) ?? {}) },
+      );
+      if (refund.status === "failed" || refund.status === "canceled") {
+        await releaseRefund(row.id, "system", refund.failure_reason ?? refund.status, 0);
+        return null;
+      }
+      await prisma.refund.updateMany({ where: { id: row.id, stripeRefundId: "" }, data: { stripeRefundId: refund.id } });
+      if (refund.status === "succeeded") await prisma.refund.updateMany({ where: { id: row.id, status: "pending" }, data: { status: "succeeded" } });
+      await addEvent(order.id, "refunded", "system", `Refunded ${gbp(refund.amount)} (${reason})`, { refundId: row.id });
       refunded += refund.amount;
     } catch (e) {
-      await addEvent(order.id, "refund_failed", "system", (e as Error).message);
+      await releaseRefund(row.id, "system", (e as Error).message, 0);
       return null;
     }
   }

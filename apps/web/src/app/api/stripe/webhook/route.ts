@@ -6,6 +6,7 @@ import { env } from "@/lib/env";
 import { getConfig } from "@/lib/config";
 import { addEvent, settlePayment } from "@/lib/orders";
 import { getClientRow } from "@/lib/menu";
+import { recordStripeRefunds, settleStripeRefund } from "@/lib/refunds";
 
 
 /** Resolve a PaymentIntent's receipt URL, tolerating an unexpanded latest_charge. */
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
     case "payment_intent.payment_failed": {
       const pi = event.data.object;
-      const payment = await prisma.payment.findFirst({ where: { stripePaymentIntentId: pi.id } });
+      const payment = await prisma.payment.findFirst({ where: { stripePaymentIntentId: pi.id, order: { clientId: (await getClientRow()).id } } });
       if (payment) {
         await prisma.payment.update({ where: { id: payment.id }, data: { status: "failed" } });
         await addEvent(payment.orderId, "payment_failed", "stripe", pi.last_payment_error?.message ?? "");
@@ -71,19 +72,19 @@ export async function POST(req: NextRequest) {
     case "charge.refunded": {
       const ch = event.data.object;
       const piId = typeof ch.payment_intent === "string" ? ch.payment_intent : ch.payment_intent?.id;
-      if (piId) {
-        const payment = await prisma.payment.findFirst({ where: { stripePaymentIntentId: piId } });
-        // Fires for partial refunds too. Only a full refund makes the row "refunded";
-        // a partial one keeps it succeeded with the running total, and a late event
-        // never lowers a total the till has already reserved for a newer refund.
-        if (payment && ch.amount_refunded > payment.refundedAmount) {
-          await prisma.payment.update({
-            where: { id: payment.id },
-            data: { refundedAmount: ch.amount_refunded, ...(ch.amount_refunded >= payment.amount ? { status: "refunded" } : {}) },
-          });
-          await addEvent(payment.orderId, "refunded", "stripe", `Refunded ${ch.amount_refunded}p`);
-        }
-      }
+      if (!piId) break;
+      const payment = await prisma.payment.findFirst({ where: { stripePaymentIntentId: piId, order: { clientId: (await getClientRow()).id } }, select: { id: true } });
+      if (!payment) break;
+      // Webhook payloads leave the charge's refunds out, and a dashboard refund
+      // has no row here yet; list them so it can be recorded.
+      const list = await getStripe().refunds.list({ charge: ch.id, limit: 100 }, connectOpts(getConfig().payments.stripeAccountId));
+      await recordStripeRefunds(payment.id, ch.amount_refunded, list.data);
+      break;
+    }
+    case "refund.updated":
+    case "refund.failed":
+    case "charge.refund.updated": {
+      await settleStripeRefund((await getClientRow()).id, event.data.object);
       break;
     }
   }

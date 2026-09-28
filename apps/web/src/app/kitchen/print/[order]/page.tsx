@@ -5,6 +5,7 @@ import { Receipt, type Copy } from "@/components/print/Receipt";
 import { AutoPrint } from "@/components/print/AutoPrint";
 import { ChangeTicket } from "@/components/print/ChangeTicket";
 import { prisma } from "@launchflow/db";
+import { getClientRow } from "@/lib/menu";
 import type { ChangeData } from "@/lib/pos-edit";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +37,8 @@ export default async function PrintOrder({ params, searchParams }: Params) {
   const { copy: rawCopy, auto, event } = await searchParams;
 
   const order = await getFullOrder(id);
-  if (!order) notFound();
+  // Held to this shop: a signed-in session elsewhere must not print another shop's customer.
+  if (!order || order.clientId !== (await getClientRow()).id) notFound();
 
   // `?copy=changes&event=` prints only what an edit added or voided, so the
   // kitchen is not handed the whole order twice.

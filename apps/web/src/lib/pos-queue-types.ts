@@ -200,6 +200,12 @@ export type PosEdit = {
   add?: BasketLine[];
   remove?: { orderItemId: string; reason: string }[];
   managerPin?: string;
+  /**
+   * Optional, up to 64 chars, one per tap of "Save changes". A retry with the
+   * same requestId on the same order is not applied twice: it gets the first
+   * edit's result back with `replayed: true`.
+   */
+  requestId?: string;
 };
 export type PosEditResult = {
   order: PosOrderDetail;
@@ -211,6 +217,8 @@ export type PosEditResult = {
   printer: { ok: boolean; error?: string } | null;
   /** Non-blocking, e.g. "Now below the £15.00 delivery minimum." */
   warnings: string[];
+  /** True when this was a repeat of an edit already applied (same requestId); nothing changed. */
+  replayed?: boolean;
 };
 
 /**
