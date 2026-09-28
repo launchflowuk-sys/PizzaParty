@@ -525,12 +525,16 @@ model Payment {
   refundedAmount        Int           @default(0)
   /// Cash handed over, so change can be shown and the drawer reconciled.
   tendered              Int?
+  /// Cash taken on the doorstep by this driver (taken after the order went out
+  /// for delivery). It is the driver's to hand in, not counter cash in the drawer.
+  collectedByDriverId   String?
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
   refunds               Refund[]
 
   @@index([orderId])
   @@index([stripePaymentIntentId])
+  @@index([collectedByDriverId])
 }
 
 /// Append-only audit log. Kitchen screen and status page read from here.
@@ -941,4 +945,81 @@ model Refund {
 
   @@index([orderId])
   @@index([provider, createdAt])
+}
+
+/// One cash drawer session at one location: opened with a float, closed with a
+/// count. Only one is open per location at a time (enforced under a lock on the
+/// Location row). Once closed, `summary` freezes every figure as it was.
+model DrawerSession {
+  id         String           @id @default(cuid())
+  clientId   String
+  locationId String
+  openedAt   DateTime         @default(now())
+  openedBy   String
+  /// Manager who approved the float.
+  approvedBy String           @default("")
+  float      Int
+  closedAt   DateTime?
+  closedBy   String           @default("")
+  counted    Int?
+  expected   Int?
+  /// PosDrawer at the moment of closing.
+  summary    Json?
+  movements  DrawerMovement[]
+
+  @@index([clientId, locationId, openedAt])
+}
+
+/// Cash put in or taken out of the drawer by hand, with a reason. A driver's
+/// cash hand-in is a pay_in carrying driverId.
+model DrawerMovement {
+  id         String        @id @default(cuid())
+  sessionId  String
+  session    DrawerSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  /// pay_in | pay_out
+  kind       String
+  amount     Int
+  reason     String
+  actor      String
+  approvedBy String        @default("")
+  driverId   String?
+  createdAt  DateTime      @default(now())
+
+  @@index([sessionId])
+  @@index([driverId, createdAt])
+}
+
+/// The end-of-day (Z) report, frozen. One per shop per day; a day is closed
+/// once and never reopened, so its numbers cannot silently change.
+model DayClose {
+  id         String   @id @default(cuid())
+  clientId   String
+  /// YYYY-MM-DD in the shop's timezone.
+  date       String
+  closedAt   DateTime @default(now())
+  closedBy   String
+  approvedBy String
+  counted    Int?
+  /// PosDayReport as it stood at the close.
+  report     Json
+
+  @@unique([clientId, date])
+}
+
+/// Every menu price change: what, from, to, who and when. Append-only.
+model PriceChange {
+  id        String   @id @default(cuid())
+  clientId  String
+  /// size | modifier | deal | supplement | delivery_fee | min_order | band_fee | band_min
+  kind      String
+  refId     String
+  label     String
+  /// Null when the price did not exist before.
+  oldPrice  Int?
+  newPrice  Int
+  /// "Name (Role)", "LaunchFlow (agency)" or "seed".
+  actor     String
+  createdAt DateTime @default(now())
+
+  @@index([clientId, createdAt])
 }

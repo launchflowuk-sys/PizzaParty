@@ -25,7 +25,8 @@ export async function assignDriver(clientId: string, orderId: string, driverId: 
     }),
     ...(driver ? [prisma.driver.update({ where: { id: driver.id }, data: { status: "on_delivery", activeOrderId: orderId, backAt: new Date(Date.now() + BACK_IN_MS) } })] : []),
   ]);
-  await addEvent(orderId, "driver", actor, driver ? `Driver ${driver.name}` : "Driver taken off");
+  // driverId lets doorstep cash be put down to the right driver after they are freed (lib/pos-cash.ts).
+  await addEvent(orderId, "driver", actor, driver ? `Driver ${driver.name}` : "Driver taken off", { driverId: driver?.id ?? null });
   return true;
 }
 

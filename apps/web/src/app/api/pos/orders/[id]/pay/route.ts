@@ -7,6 +7,7 @@ import { stripeEnabled } from "@/lib/stripe";
 import { gbp } from "@/lib/money";
 import { changeDue, outstandingPence } from "@/lib/pos-money";
 import { OPEN_FOR_PAYMENT, paymentView, posGuard, readJson, ReaderError, startReaderPayment } from "@/lib/pos";
+import { driverForCash } from "@/lib/pos-cash";
 
 const Body = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("cash"), amount: z.number().int().positive(), tendered: z.number().int().positive() }),
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const change = body.kind === "cash" ? changeDue(body.amount, body.tendered) : 0;
   if (change === null) return NextResponse.json({ error: "Less cash was handed over than the amount." }, { status: 400 });
   if (body.kind === "reader" && !stripeEnabled()) return NextResponse.json({ error: "Card payments are not set up." }, { status: 503 });
+  // Doorstep cash is the driver's to hand in, not counter cash in the drawer.
+  const collectedByDriverId = body.kind === "cash" ? await driverForCash(client.id, order.id) : null;
 
   // Balance check and the payment row in one transaction, holding the order row,
   // so two tills (or a double tap) cannot both take the same balance. The row is
@@ -38,7 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (body.amount > outstanding) return { error: outstanding === 0 ? "Nothing left to pay." : `Only ${gbp(outstanding)} is left to pay.`, outstanding };
     const payment = await tx.payment.create({
       data: body.kind === "cash"
-        ? { orderId: order.id, provider: "cash", status: "processing", amount: body.amount, tendered: body.tendered }
+        ? { orderId: order.id, provider: "cash", status: "processing", amount: body.amount, tendered: body.tendered, collectedByDriverId }
         : { orderId: order.id, provider: "stripe_terminal", status: "processing", amount: body.amount },
     });
     return { payment };

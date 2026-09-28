@@ -3,6 +3,8 @@ import { join } from "node:path";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // A second dev server beside the first (e.g. :3101 for API tests) needs its own build folder.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   outputFileTracingRoot: join(__dirname, "../../"),
   reactStrictMode: true,
   // Disable streamed metadata for every user agent so <title>/<meta>/<link canonical> always land in <head>

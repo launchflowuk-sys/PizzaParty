@@ -39,13 +39,14 @@ export default async function AdminMenu({
   const client = await getClientRow();
   const { m, e } = await searchParams;
 
-  const [categories, groups] = await Promise.all([
+  const [categories, groups, priceLog] = await Promise.all([
     prisma.category.findMany({
       where: { clientId: client.id },
       orderBy: { sortOrder: "asc" },
       include: { products: { orderBy: { sortOrder: "asc" }, include: { sizes: { orderBy: { sortOrder: "asc" } } } } },
     }),
     prisma.modifierGroup.findMany({ where: { clientId: client.id }, include: { modifiers: { orderBy: { sortOrder: "asc" } } } }),
+    prisma.priceChange.findMany({ where: { clientId: client.id }, orderBy: { createdAt: "desc" }, take: 50 }),
   ]);
 
   const all = categories.flatMap((c) => c.products);
@@ -411,6 +412,33 @@ export default async function AdminMenu({
           </p>
         </div>
       </div>
+
+      {/* Every price edit, with who made it - from here, the deals and zones screens, or a config re-seed. */}
+      <details className="fp-panel" style={{ marginTop: 20 }}>
+        <summary>
+          <div className="fp-panelbar">Price history &middot; last {priceLog.length} change{priceLog.length === 1 ? "" : "s"}</div>
+        </summary>
+        <div className="body">
+          {priceLog.length === 0 ? (
+            <p style={{ fontSize: 13, color: "var(--color-neutral-700)", margin: 0 }}>No prices have been changed yet.</p>
+          ) : (
+            <table className="table" style={{ width: "100%", fontSize: 13 }}>
+              <thead><tr><th>When</th><th>What</th><th style={{ textAlign: "right" }}>Was</th><th style={{ textAlign: "right" }}>Now</th><th>Who</th></tr></thead>
+              <tbody>
+                {priceLog.map((c) => (
+                  <tr key={c.id}>
+                    <td style={{ whiteSpace: "nowrap" }}>{new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(c.createdAt)}</td>
+                    <td>{c.label}</td>
+                    <td style={{ textAlign: "right" }}>{c.oldPrice === null ? "new" : gbp(c.oldPrice)}</td>
+                    <td style={{ textAlign: "right", fontWeight: 700 }}>{gbp(c.newPrice)}</td>
+                    <td>{c.actor}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </details>
     </>
   );
 }

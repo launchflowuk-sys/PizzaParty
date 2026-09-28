@@ -3,7 +3,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@launchflow/db";
 import { COOKIE, verifyToken, type Role } from "./auth";
-import { can, landingFor, STAFF_ROLES, type Screen, type StaffRole } from "./permissions";
+import { can, landingFor, ROLE_LABEL, STAFF_ROLES, type Screen, type StaffRole } from "./permissions";
 
 export async function requireRole(role: Exclude<Role, "customer">) {
   const jar = await cookies();
@@ -75,4 +75,11 @@ export async function requireScreen(screen: Screen): Promise<CurrentStaff> {
     redirect(home === "/admin" ? `/admin?denied=${screen}` : `${home}?denied=${screen}`);
   }
   return staff;
+}
+
+/** Who to name on a price change: the agency when its key is in use, else "Name (Role)". */
+export async function priceActor(): Promise<string> {
+  if (await currentAgency()) return "LaunchFlow (agency)";
+  const staff = await currentStaff();
+  return staff ? `${staff.name} (${ROLE_LABEL[staff.role]})` : "unknown";
 }

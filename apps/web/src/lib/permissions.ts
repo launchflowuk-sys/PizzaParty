@@ -21,7 +21,7 @@ export const ROLE_LABEL: Record<StaffRole, string> = {
 export const SCREENS = [
   "dashboard", "kitchen", "orders", "dispatch", "menu", "deals",
   "promos", "loyalty", "inventory", "customers", "campaigns", "reviews", "marketing",
-  "staff", "hours", "zones", "notifications", "launchflow", "help", "pos",
+  "staff", "hours", "zones", "notifications", "launchflow", "help", "pos", "reports",
 ] as const;
 export type Screen = (typeof SCREENS)[number];
 
@@ -29,7 +29,7 @@ export const SCREEN_LABEL: Record<Screen, string> = {
   dashboard: "Dashboard", kitchen: "Kitchen queue", orders: "Orders", dispatch: "Dispatch",
   menu: "Menu & pricing", deals: "Deals", promos: "Promotions", loyalty: "Rewards club", inventory: "Inventory",
   customers: "Customers", campaigns: "Campaigns", reviews: "Reviews", marketing: "Marketing", staff: "Staff",
-  hours: "Hours & pause", zones: "Delivery zones", notifications: "Notifications", launchflow: "LaunchFlow", help: "Help", pos: "Till",
+  hours: "Hours & pause", zones: "Delivery zones", notifications: "Notifications", launchflow: "LaunchFlow", help: "Help", pos: "Till", reports: "Reports & cash",
 };
 
 /**
@@ -37,7 +37,7 @@ export const SCREEN_LABEL: Record<Screen, string> = {
  * row - that way a new screen cannot accidentally lock the manager out.
  */
 const GRANTS: Record<Exclude<StaffRole, "manager">, Screen[]> = {
-  shift_lead: ["dashboard", "kitchen", "orders", "dispatch", "inventory", "hours", "reviews", "help", "pos"],
+  shift_lead: ["dashboard", "kitchen", "orders", "dispatch", "inventory", "hours", "reviews", "help", "pos", "reports"],
   kitchen: ["kitchen", "help"],
   driver: ["kitchen", "dispatch", "help"],
   front_of_house: ["dashboard", "kitchen", "orders", "help", "pos"],
@@ -48,11 +48,12 @@ export function can(role: StaffRole, screen: Screen): boolean {
   return GRANTS[role].includes(screen);
 }
 
-/** Where a screen actually lives, since three of them are not under /admin/<screen>. */
+/** Where a screen actually lives, since four of them are not under /admin/<screen>. */
 export function pathForScreen(screen: Screen): string {
   if (screen === "dashboard") return "/admin";
   if (screen === "kitchen") return "/kitchen";
-  if (screen === "pos") return "/pos";
+  // Reports and the cash drawer are worked from the till.
+  if (screen === "pos" || screen === "reports") return "/pos";
   return `/admin/${screen}`;
 }
 

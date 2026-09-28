@@ -64,7 +64,7 @@ export function queueOrder(o: QueueRow, drivers: DriverRow[]): QueueOrder {
   };
 }
 
-async function shopTimezone(clientId: string) {
+export async function shopTimezone(clientId: string) {
   const l = await prisma.location.findFirst({ where: { clientId, active: true }, orderBy: { sortOrder: "asc" }, select: { timezone: true } });
   return l?.timezone ?? "Europe/London";
 }

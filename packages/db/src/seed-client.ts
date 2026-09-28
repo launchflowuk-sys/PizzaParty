@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { prisma } from "./index";
 import { clientDir, dayKeys, loadClientConfig, loadMenuConfig, toPence, type ClientConfig, type MenuConfig } from "@launchflow/config";
 import { DEFAULT_RULES } from "./notifications";
+import { logPriceChanges, type PriceChangeRow } from "./price-log";
 
 function hashConfig(slug: string): string {
   const h = createHash("sha256");
@@ -56,6 +57,12 @@ export async function seedClient(slug: string, opts: { reset?: boolean; menu?: M
 
   // Locations + hours
   for (const [i, l] of client.locations.entries()) {
+    // Delivery charges are refreshed from config on every run, so a run that
+    // moves one is a price change like any other and is logged as "seed".
+    const before = await prisma.location.findUnique({
+      where: { clientId_key: { clientId: c.id, key: l.id } },
+      select: { deliveryFee: true, minOrder: true, bands: { select: { name: true, fee: true, minOrder: true } } },
+    });
     const loc = await prisma.location.upsert({
       where: { clientId_key: { clientId: c.id, key: l.id } },
       create: { clientId: c.id, key: l.id, ...locationData(l, i) },
@@ -82,6 +89,21 @@ export async function seedClient(slug: string, opts: { reset?: boolean; menu?: M
           sortOrder: bi,
         })),
       });
+    }
+    if (before) {
+      const rows: PriceChangeRow[] = [
+        { kind: "delivery_fee", refId: loc.id, label: `${loc.name} delivery fee`, oldPrice: before.deliveryFee, newPrice: loc.deliveryFee },
+        { kind: "min_order", refId: loc.id, label: `${loc.name} minimum order`, oldPrice: before.minOrder, newPrice: loc.minOrder },
+      ];
+      // Bands have no key: matched by name, which is what the shop sees.
+      for (const b of l.deliveryBands) {
+        const old = before.bands.find((x) => x.name === b.name);
+        rows.push(
+          { kind: "band_fee", refId: loc.id, label: `${loc.name} · ${b.name} delivery fee`, oldPrice: old?.fee ?? null, newPrice: toPence(b.fee) },
+          { kind: "band_min", refId: loc.id, label: `${loc.name} · ${b.name} minimum order`, oldPrice: old?.minOrder ?? null, newPrice: toPence(b.minOrder) },
+        );
+      }
+      await logPriceChanges(prisma, c.id, "seed", rows);
     }
   }
   if (opts.reset) {
@@ -305,6 +327,8 @@ async function seedMenu(clientId: string, menu: MenuConfig, reset: boolean) {
     });
     groupIds.set(g.id, row.id);
     for (const [i, o] of g.options.entries()) {
+      const old = await prisma.modifier.findUnique({ where: { groupId_key: { groupId: row.id, key: o.id } }, select: { id: true, price: true } });
+      if (old) await logPriceChanges(prisma, clientId, "seed", [{ kind: "modifier", refId: old.id, label: `${g.name}: ${o.name}`, oldPrice: old.price, newPrice: toPence(o.price) }]);
       await prisma.modifier.upsert({
         where: { groupId_key: { groupId: row.id, key: o.id } },
         create: { groupId: row.id, key: o.id, name: o.name, price: toPence(o.price), sortOrder: i },
@@ -327,6 +351,8 @@ async function seedMenu(clientId: string, menu: MenuConfig, reset: boolean) {
       update: data,
     });
     for (const [si, s] of p.sizes.entries()) {
+      const old = await prisma.productSize.findUnique({ where: { productId_key: { productId: row.id, key: s.id } }, select: { id: true, price: true } });
+      if (old) await logPriceChanges(prisma, clientId, "seed", [{ kind: "size", refId: old.id, label: `${p.name} · ${s.name}`, oldPrice: old.price, newPrice: toPence(s.price) }]);
       await prisma.productSize.upsert({
         where: { productId_key: { productId: row.id, key: s.id } },
         create: { productId: row.id, key: s.id, name: s.name, price: toPence(s.price), sortOrder: si },
@@ -352,6 +378,8 @@ async function seedMenu(clientId: string, menu: MenuConfig, reset: boolean) {
       name: d.name, description: d.description, image: d.image, price: toPence(d.price), featured: d.featured,
       sortOrder: i, active: true, daysOfWeek: d.daysOfWeek, fulfilment: d.fulfilment,
     };
+    const old = await prisma.deal.findUnique({ where: { clientId_slug: { clientId, slug: d.slug } }, select: { id: true, price: true } });
+    if (old) await logPriceChanges(prisma, clientId, "seed", [{ kind: "deal", refId: old.id, label: d.name, oldPrice: old.price, newPrice: data.price }]);
     const row = await prisma.deal.upsert({
       where: { clientId_slug: { clientId: clientId, slug: d.slug } },
       create: { clientId: clientId, slug: d.slug, ...data },
