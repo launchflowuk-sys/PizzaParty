@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getConfig, absoluteAssetUrl } from "@/lib/config";
+import { getConfig, appImageUrl } from "@/lib/config";
 import { getLocations } from "@/lib/menu";
 import { availability } from "@/lib/availability";
 import { stripeEnabled } from "@/lib/stripe";
@@ -29,7 +29,7 @@ export async function GET() {
       phone: cfg.contact.phone ?? "",
       email: cfg.contact.email ?? "",
       address: cfg.contact.address ?? "",
-      logo: absoluteAssetUrl(cfg.brand.logo),
+      logo: appImageUrl(cfg.brand.logo, 414),
       primary: cfg.brand.primary,
       reviewUrl: cfg.contact.reviewUrl ?? "",
     },
@@ -47,8 +47,8 @@ export async function GET() {
      * because the app already falls back on it.
      */
     media: {
-      hero: absoluteAssetUrl(cfg.brand.hero),
-      banner: absoluteAssetUrl(cfg.brand.banner),
+      hero: appImageUrl(cfg.brand.hero, 1200),
+      banner: appImageUrl(cfg.brand.banner, 1200),
     },
     fulfilment: cfg.fulfilment,
     payments: {

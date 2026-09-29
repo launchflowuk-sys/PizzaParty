@@ -1,6 +1,7 @@
 import "server-only";
 import { loadClientConfig, loadMenuConfig, loadLocalityCopy, type ClientConfig, type MenuConfig } from "@launchflow/config";
 import { env } from "./env";
+import { optimisedImageUrl, type AppImageWidth } from "./image-url";
 
 let clientCache: ClientConfig | null = null;
 let menuCache: MenuConfig | null = null;
@@ -48,6 +49,11 @@ export function absoluteAssetUrl(rel: string): string {
   const url = assetUrl(rel);
   if (!url || /^https?:\/\//.test(url)) return url;
   return env.siteUrl + url;
+}
+
+/** `absoluteAssetUrl`, but a resized photograph - for app payloads. See lib/image-url.ts. */
+export function appImageUrl(rel: string, width: AppImageWidth): string {
+  return optimisedImageUrl(env.siteUrl, assetUrl(rel), width);
 }
 
 export const localitySlug = (locality: string) => locality.toLowerCase().replace(/[^a-z0-9]+/g, "-");
