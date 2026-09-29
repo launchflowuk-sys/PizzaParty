@@ -2296,7 +2296,7 @@ footer::before {
    menu - the cheapest way to order from this shop, set out like a price list
    and placed after the thing it undercuts. And the photographs existed all
    along without ever being rendered, which is why they could not be seen. */
-.fp-dealsec { padding: 0 32px 56px; }
+.fp-dealsec { padding: clamp(40px, 5vw, 64px) 32px 56px; }
 
 .fp-dealgrid {
   display: grid;
