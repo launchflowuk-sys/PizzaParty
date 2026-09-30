@@ -59,4 +59,17 @@ find "$ASSETS" -type f \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -n
   done
 done
 
+# The home hero is the one image the site asks for at quality 82 (app/page.tsx),
+# and it is the page's LCP image - so the q=75 pass above never warmed the
+# variant customers actually get, and the first visitor after a new hero waited
+# seconds for it. Full-bleed, so only the device widths apply.
+find "$ASSETS" -maxdepth 1 -type f -name 'hero*' \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.webp' \) | while read -r file; do
+  rel=$(basename "$file")
+  for w in 414 828 1200; do
+    url="$BASE/_next/image?url=%2Fbrand%2F$rel&w=$w&q=82"
+    fetch "image/avif,image/webp,*/*" "$url" || true
+    fetch "image/webp,*/*" "$url" || true
+  done
+done
+
 echo "[warm] done in $(($(date +%s) - start))s"
