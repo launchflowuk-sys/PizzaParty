@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { getConfig, assetUrl } from "@/lib/config";
 import { getMenu, getLocations, topSellers, productPath, dealsToday } from "@/lib/menu";
@@ -124,6 +125,10 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Everything under the hero hydrates as its own Suspense boundary, so React
+          can hand the main thread back between the hero and the rest of the page
+          instead of hydrating all of it in one long task on a slow phone. */}
+      <Suspense fallback={null}>
       <div className="fp-rule" />
 
       {/* The four numbers.
@@ -218,13 +223,12 @@ export default async function Home() {
           <Link href="/menu" style={{ fontSize: 14 }}>Full menu &rarr;</Link>
         </div>
         <div className="fp-grid fp-grid-4">
-          {featured.map(({ product, category }, i) => (
+          {featured.map(({ product, category }) => (
             <div key={product.slug} className="fp-cell">
               <Photo
                 src={assetUrl(product.image)}
                 alt={product.name}
                 caption={`photo · ${product.name.toLowerCase()} · b/w`}
-                priority={i < 4}
               />
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
                 <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: 17, lineHeight: 1.2 }}>{product.name}</span>
@@ -291,6 +295,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      </Suspense>
     </>
   );
 }
