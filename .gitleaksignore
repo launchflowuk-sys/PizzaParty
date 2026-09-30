@@ -1,0 +1,9 @@
+# gitleaks allowlist - generated 2026-09-30 after secret-leak remediation.
+# Every entry below is in git HISTORY only and is either a confirmed false
+# positive or a secret that has been rotated/dead - do not un-ignore.
+# Never add a live or unverified secret here: remove it and rotate instead.
+
+# FP: empty JSX prop, no value
+812a1b185806347d2b44b12094ac5e80cef1f307:apps/web/src/app/pay/[id]/page.tsx:generic-api-key:44
+# FP: dummy CI-only value
+f1faaee1cbdbdf70f4b8f2fbbd28356aad8a9fb8:.github/workflows/ci.yml:generic-api-key:20
