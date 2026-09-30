@@ -13,6 +13,14 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
+/* Below-the-fold home sections and the footer are skipped for style, layout and
+   paint until they scroll near the viewport. On a mid-range phone the first
+   layout of the whole 8000px home page was the single longest task before the
+   hero could paint (Lighthouse CI: LCP render delay, TBT). `auto` in the
+   intrinsic size remembers each section's real height once it has rendered. */
+main:has(> .fp-hero) > section:not(.fp-hero),
+body > footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+
 /* Page-level constants the prototypes use that the design system does not carry. */
 .fp-wrap { max-width: 1200px; margin: 0 auto; padding-inline: 32px; }
 .fp-kicker { display: block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-accent-700); }
