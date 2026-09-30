@@ -2213,18 +2213,33 @@ footer::before {
 /* A pulse while the kitchen is genuinely taking orders. It stops when the shop
    closes, because a light that is always on tells you nothing. */
 .fp-num-dot {
+  position: relative;
   width: 9px; height: 9px; border-radius: 50%;
   background: var(--color-action);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-action) 60%, transparent);
-  animation: fp-num-pulse 2.2s ease-out infinite;
   flex: none;
 }
-@keyframes fp-num-pulse {
-  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-action) 55%, transparent); }
-  70%  { box-shadow: 0 0 0 9px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
+/* The ring is a disc that scales out from the dot and fades, rather than an
+   animated box-shadow: same shape (a 9px spread on a 9px dot is a 27px disc,
+   so scale 3), same colour, same timing - but transform and opacity run on the
+   compositor. A box-shadow animation repainted on the main thread every frame
+   for as long as the page was open, which Lighthouse flagged as the page's one
+   non-composited animation and counted against Total Blocking Time. */
+.fp-num-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--color-action) 55%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: fp-num-pulse 2.2s ease-out infinite;
 }
-@media (prefers-reduced-motion: reduce) { .fp-num-dot { animation: none; } }
+@keyframes fp-num-pulse {
+  0%   { transform: scale(1); opacity: 1; }
+  70%  { transform: scale(3); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .fp-num-dot::after { animation: none; } }
 
 @media (max-width: 900px) {
   .fp-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
