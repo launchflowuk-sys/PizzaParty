@@ -114,8 +114,30 @@ export function TypewriterTitle({
       timer = setTimeout(step, typeMs);
     };
 
-    timer = setTimeout(step, holdMs);
-    return () => { clearTimeout(timer); cancelAnimationFrame(frame); };
+    // Only type while the headline is on screen, and not before the page has
+    // finished loading: every keystroke is a style/layout/paint pass, and the
+    // closing band's copy used to type away unseen at the foot of the page while
+    // the hero was still trying to paint on a slow phone.
+    let visible = false;
+    let loaded = document.readyState === "complete";
+    let started = false;
+    const sync = () => {
+      clearTimeout(timer);
+      if (!visible || !loaded) return;
+      timer = setTimeout(step, started ? typeMs : holdMs);
+      started = true;
+    };
+    const onLoad = () => { loaded = true; sync(); };
+    if (!loaded) window.addEventListener("load", onLoad, { once: true });
+    const io = new IntersectionObserver(([entry]) => { visible = !!entry?.isIntersecting; sync(); });
+    io.observe(node);
+
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(frame);
+      io.disconnect();
+      window.removeEventListener("load", onLoad);
+    };
   }, [animate, words, typeMs, deleteMs, holdMs]);
 
   const Tag = as;
