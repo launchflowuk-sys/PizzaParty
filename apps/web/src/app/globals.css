@@ -13,6 +13,23 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
+/* The tail of the page - the review marquee (four dozen cards), the closing band
+   and the footer - is skipped for style, layout and paint until it scrolls near
+   the viewport. On a mid-range phone the first layout of the whole home page was
+   the longest task before the hero could paint (Lighthouse CI: LCP render delay,
+   TBT). Only the tail, so a back-navigation that restores the scroll position
+   into the deals or the menu lands exactly where it was; the placeholder sizes
+   are the measured heights, so landing further down is off by a few pixels at
+   most. `auto` keeps the real height once a section has rendered. */
+.fp-rv { content-visibility: auto; contain-intrinsic-size: auto 624px; }
+.fp-close { content-visibility: auto; contain-intrinsic-size: auto 366px; }
+body > footer { content-visibility: auto; contain-intrinsic-size: auto 1075px; }
+@media (min-width: 900px) {
+  .fp-rv { contain-intrinsic-size: auto 554px; }
+  .fp-close { contain-intrinsic-size: auto 309px; }
+  body > footer { contain-intrinsic-size: auto 492px; }
+}
+
 /* Page-level constants the prototypes use that the design system does not carry. */
 .fp-wrap { max-width: 1200px; margin: 0 auto; padding-inline: 32px; }
 .fp-kicker { display: block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-accent-700); }
