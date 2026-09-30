@@ -16,7 +16,7 @@ import { join } from "node:path";
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { hasOwnShape, shapesFor, FOOD_SHAPES } from "../../apps/web/src/theme/food-shapes.ts";
+import { hasOwnShape, shapesFor, FOOD_SHAPES } from "../../apps/web/src/theme/food-shapes";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const CONFIG = join(ROOT, "config");
